@@ -1,35 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Play, Calendar, ExternalLink } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { useState, useMemo } from "react";
+import { Play } from "lucide-react";
+import { VideoCard, VideoGallary } from "./VideoCard";
 
-// Video type from API
-interface VideoGallary {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail: string | null;
-  video_url: string;
-  added_by: string;
-  addedBy: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  video_gallary_category_id: string;
-  videoGallaryCategory: {
-    id: string;
-    title: string;
-  };
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-// Category type from API
 interface VideoCategory {
   id: string;
   title: string;
@@ -43,57 +17,51 @@ interface VideoGalleryProps {
   categories?: VideoCategory[];
 }
 
+// Utility: Extract YouTube Video ID from URL safely
+export const getYoutubeId = (url: string): string | null => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
+// Utility: Get thumbnail with guaranteed hqdefault fallback
+export const getThumbnail = (video: VideoGallary): string => {
+  if (video.thumbnail) return video.thumbnail;
+  const youtubeId = getYoutubeId(video.video_url);
+  if (youtubeId) {
+    return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+  }
+  return "/placeholder-video.jpg";
+};
+
+// Utility: Get YouTube watch URL for direct navigation
+export const getYoutubeWatchUrl = (url: string): string => {
+  const youtubeId = getYoutubeId(url);
+  if (youtubeId) {
+    return `https://www.youtube.com/watch?v=${youtubeId}`;
+  }
+  return url;
+};
+
 export default function VideoGallery({
   videos = [],
   categories = [],
 }: VideoGalleryProps) {
   const [filter, setFilter] = useState("all");
-  const [allCategories, setAllCategories] = useState<
-    { id: string; label: string }[]
-  >([]);
 
-  // Set up categories when props change
-  useEffect(() => {
-    if (categories.length > 0) {
-      const catList = [
-        { id: "all", label: "All Videos" },
-        ...categories.map((cat) => ({
-          id: cat.id,
-          label: cat.title,
-        })),
-      ];
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAllCategories(catList);
-    }
+  // Derive categories directly during render (No useEffect needed)
+  const allCategories = useMemo(() => {
+    if (categories.length === 0) return [];
+
+    return [
+      { id: "all", label: "All Videos" },
+      ...categories.map((cat) => ({
+        id: cat.id,
+        label: cat.title,
+      })),
+    ];
   }, [categories]);
-
-  // Extract YouTube ID from URL
-  const getYoutubeId = (url: string): string => {
-    if (!url) return "";
-    const regExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : "";
-  };
-
-  // Get thumbnail from YouTube or use fallback
-  const getThumbnail = (video: VideoGallary) => {
-    if (video.thumbnail) return video.thumbnail;
-    const youtubeId = getYoutubeId(video.video_url);
-    if (youtubeId) {
-      return `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
-    }
-    return "/placeholder-video.jpg";
-  };
-
-  // Get YouTube watch URL for direct link
-  const getYoutubeWatchUrl = (url: string): string => {
-    const youtubeId = getYoutubeId(url);
-    if (youtubeId) {
-      return `https://www.youtube.com/watch?v=${youtubeId}`;
-    }
-    return url;
-  };
 
   const filteredVideos =
     filter === "all"
@@ -168,73 +136,15 @@ export default function VideoGallery({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredVideos?.map((video) => {
-            const thumbnail = getThumbnail(video);
-            const watchUrl = getYoutubeWatchUrl(video.video_url);
-
-            return (
-              <Link
-                key={video.id}
-                href={watchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer block"
-              >
-                {/* Thumbnail */}
-                <div className="relative aspect-video overflow-hidden bg-slate-900">
-                  <Image
-                    src={thumbnail}
-                    alt={video.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "/placeholder-video.jpg";
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-all duration-300" />
-
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Play className="w-8 h-8 text-emerald-600 fill-emerald-600 ml-1" />
-                    </div>
-                  </div>
-
-                  {/* YouTube Badge */}
-                  <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
-                    <Play className="w-3 h-3 fill-white" />
-                    YouTube
-                  </div>
-
-                  {/* Open in New Tab Indicator */}
-                  <div className="absolute bottom-3 right-3 bg-black/80 text-white text-xs font-medium px-2 py-1 rounded flex items-center gap-1">
-                    <ExternalLink className="w-3 h-3" />
-                    Watch
-                  </div>
-                </div>
-
-                {/* Video Info */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-slate-800 text-sm md:text-base line-clamp-1">
-                    {video.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 mb-2 line-clamp-2">
-                    {video.description}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {formatDate(video.created_at)}
-                    </span>
-                    <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs">
-                      {video.videoGallaryCategory?.title || "Uncategorized"}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+          {filteredVideos.map((video) => (
+            <VideoCard
+              key={video.id}
+              video={video}
+              getThumbnail={getThumbnail}
+              getYoutubeWatchUrl={getYoutubeWatchUrl}
+              formatDate={formatDate}
+            />
+          ))}
         </div>
       )}
     </section>
