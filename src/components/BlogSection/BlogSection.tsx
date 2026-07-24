@@ -41,12 +41,6 @@ function formatDate(d?: string) {
   });
 }
 
-// function blogImg(path?: string | null) {
-//   if (!path) return null;
-//   const IMG_BASE = process.env.NEXT_PUBLIC_IMAGE_PATH || "";
-//   return path.startsWith("http") ? path : IMG_BASE + path;
-// }
-
 const BlogSkeletonCard = () => (
   <div className="bg-white rounded-2xl overflow-hidden shadow-sm flex flex-col animate-pulse">
     <div className="h-48 bg-gray-200" />
@@ -115,7 +109,7 @@ export default function BlogPage() {
           categoryId: activeCategoryId,
         });
 
-        // ✅ IMPORTANT: response.data contains the blogs array
+        //  IMPORTANT: response.data contains the blogs array
         const newBlogs = response.data || [];
         const hasMoreData = response.meta?.has_more || false;
 
@@ -174,10 +168,6 @@ export default function BlogPage() {
   useEffect(() => {
     return () => observerRef.current?.disconnect();
   }, []);
-
-  console.log("Blogs count:", blogs.length);
-  console.log("Has more:", hasMore);
-  console.log("Is loading:", isLoading);
 
   return (
     <section className="min-h-screen bg-gray-50">

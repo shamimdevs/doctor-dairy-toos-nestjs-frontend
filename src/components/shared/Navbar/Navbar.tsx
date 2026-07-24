@@ -1,20 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Search,
-  Heart,
   ShoppingBag,
-  User,
   Menu,
   X,
   ChevronLeft,
   ChevronRight,
-  LogOut,
-  LayoutDashboard,
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
@@ -22,35 +18,10 @@ import { sidebarToggle } from "@/src/redux/features/sidebarSlice";
 import CartSidebar from "./CartSidebar";
 import { useGetAllProductCategoriesQuery } from "@/src/redux/api/productCategoriesApi";
 import { slugify } from "@/src/utils/slugify";
-import {
-  authApi,
-  useGetMyProfileQuery,
-  useSignOutMutation,
-} from "@/src/redux/api/authApi";
-import { logout, storeUser } from "@/src/redux/features/auth/authSlice";
-import { toast } from "react-toastify";
-import { ApiError } from "@/src/types/authType";
-import { selectWishlistTotal } from "@/src/redux/features/wishlistSlice";
-
-interface RootState {
-  auth: {
-    user: {
-      email: string;
-      role: string;
-    } | null;
-  };
-}
 
 export default function Navbar() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state: any) => state?.cart?.cartItems || []);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  const router = useRouter();
-
-  const { user: userData } = useSelector((state: RootState) => state.auth);
-  const { data: myInfo } = useGetMyProfileQuery();
-  const [signOut, { isLoading: isLoggingOut }] = useSignOutMutation();
 
   const { data: catData } = useGetAllProductCategoriesQuery(undefined);
   const filteredData = catData?.data || [];
@@ -63,47 +34,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLAnchorElement>(null);
-
-  // ✅ Get wishlist count from Redux
-  const wishlistCount = useSelector(selectWishlistTotal) || 0;
-
-  const user = myInfo?.data?.user;
-  const isLoggedIn = !!(userData || user);
-
-  // Sync user to redux
-  useEffect(() => {
-    if (user && !userData) {
-      dispatch(storeUser({ email: user.email, role: user.role }));
-    }
-  }, [user, userData, dispatch]);
-
-  const handleLogout = async () => {
-    try {
-      const response = await signOut().unwrap();
-      if (response) {
-        dispatch(logout());
-        dispatch(authApi.util.resetApiState());
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        document.cookie =
-          "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        toast.success("Successfully logged out!");
-        setShowLogoutModal(false);
-        router.push("/");
-      }
-    } catch (err: unknown) {
-      const error = err as ApiError;
-      dispatch(logout());
-      dispatch(authApi.util.resetApiState());
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      document.cookie =
-        "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-      toast.error(error?.data?.message || "Sign out failed", { theme: "dark" });
-      setShowLogoutModal(false);
-      router.push("/");
-    }
-  };
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -194,7 +124,8 @@ export default function Navbar() {
             >
               {filteredData?.map((cat: any) => {
                 const slug = slugify(cat?.name);
-                const targetPath = slug === "home" ? "/" : `/category/${slug}`;
+                const targetPath =
+                  slug === "home" ? "/" : `/category/${cat?.slug}`;
                 const isActive = pathname === targetPath;
 
                 return (

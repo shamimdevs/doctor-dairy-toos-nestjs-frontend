@@ -139,51 +139,58 @@ export default function CartSidebar() {
                     <p className="text-sm font-bold text-slate-800 truncate">
                       {item.name}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {item.packSizeLabel}
-                    </p>
 
                     {/* Quantity Controls */}
-                    <div className="flex items-center gap-2 mt-1">
-                      <button
-                        onClick={() =>
-                          handleRemoveFromCart(item.id, item.packSizeId)
-                        }
-                        className="p-1 cursor-pointer rounded-lg hover:bg-slate-200 transition-colors text-slate-500"
-                        aria-label="Decrease quantity"
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="text-sm font-bold text-slate-700 min-w-5 text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => handleAddToCart(item)}
-                        className="p-1 cursor-pointer rounded-lg hover:bg-slate-200 transition-colors text-slate-500"
-                        aria-label="Increase quantity"
-                      >
-                        <Plus size={14} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleDeleteItem(item.id, item.packSizeId)
-                        }
-                        className="p-1 cursor-pointer rounded-lg hover:bg-red-100 transition-colors text-red-500 ml-2"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-2">
+                        {/* Quantity Box */}
+                        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() =>
+                              handleRemoveFromCart(item.id, item.packSizeId)
+                            }
+                            className="px-2.5 cursor-pointer py-1.5 hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-700 border-r border-slate-200"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="text-sm font-bold text-slate-700 min-w-7 text-center px-1">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => handleAddToCart(item)}
+                            className="px-2.5 py-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-700 border-l border-slate-200"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+
+                        {/* Remove Button */}
+                        <button
+                          onClick={() =>
+                            handleDeleteItem(item.id, item.packSizeId)
+                          }
+                          className="p-1.5 cursor-pointer rounded-lg hover:bg-red-100 transition-colors text-slate-400 hover:text-red-500"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Price */}
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-extrabold text-emerald-600">
-                      ৳ {(item.price * item.quantity).toFixed(2)}
+                  {/* Price */}
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-emerald-600">
+                      ৳{(item.price * item.quantity).toFixed(2)}
                     </p>
-                    <p className="text-[10px] text-slate-400">
-                      ৳ {item.price.toFixed(2)} each
-                    </p>
+                    {item.quantity > 1 && (
+                      <p className="text-[10px] text-slate-400">
+                        ৳{item.price.toFixed(2)} x {item.quantity}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -223,14 +230,6 @@ export default function CartSidebar() {
               </span>
             </div>
           )}
-
-          {/* Delivery Info */}
-          {/* {cartItems && cartItems.length > 0 && (
-            <div className="flex justify-between items-center text-xs text-slate-400">
-              <span>Delivery Charge:</span>
-              <span className="font-semibold text-emerald-600">Free</span>
-            </div>
-          )} */}
 
           {/* Checkout Button */}
           <Link

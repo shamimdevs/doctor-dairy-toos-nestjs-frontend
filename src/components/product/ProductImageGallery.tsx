@@ -8,14 +8,11 @@ import { ShoppingBag } from "lucide-react";
 interface ProductImageGalleryProps {
   product: any;
   discountPercentage: number;
-  isInStock: boolean;
-  selectedVariant: any;
 }
 
 export function ProductImageGallery({
   product,
   discountPercentage,
-  isInStock,
 }: ProductImageGalleryProps) {
   return (
     <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-6 min-h-80 md:min-h-100 relative">
@@ -39,15 +36,6 @@ export function ProductImageGallery({
         <span className="absolute top-4 left-4 bg-red-500 text-white font-extrabold text-xs px-2.5 py-1 rounded-lg shadow-lg">
           {discountPercentage}% OFF
         </span>
-      )}
-
-      {/* Out of Stock Badge */}
-      {!isInStock && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
-          <span className="bg-red-500 text-white font-extrabold text-lg px-6 py-3 rounded-xl">
-            Out of Stock
-          </span>
-        </div>
       )}
 
       {/* Prescription Required Badge */}

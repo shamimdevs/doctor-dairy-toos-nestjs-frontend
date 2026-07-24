@@ -18,6 +18,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({
 }) => {
   const catName = blog.category?.category_name;
   const FALLBACK_IMAGE = "/placeholder-blog.jpg";
+
   return (
     <article className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col group">
       {/* Thumbnail */}
@@ -43,7 +44,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({
           </span>
         )}
 
-        <Link href={`/bn/blog/${blog.slug}`}>
+        <Link href={`/blog/${blog.slug}`}>
           <h2 className="text-gray-900 font-semibold text-base leading-snug mb-2 group-hover:text-[#059669] transition-colors duration-200 cursor-pointer line-clamp-2">
             {blog.title}
           </h2>

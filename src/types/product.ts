@@ -32,6 +32,11 @@ export interface Product {
   manufacturer?: string;
   is_prescription_required: boolean;
   is_active: boolean;
+  price: number; // Regular price
+  original_price: number; // Regular price
+  discount_price?: number; // Discounted price (optional)
+  stock: number; // Stock quantity
+  weight?: number; // Product weight
   category?: {
     id: string;
     name: string;
@@ -41,8 +46,20 @@ export interface Product {
     id: string;
     name: string;
   };
-  variants: ProductVariant[];
-  price_range: {
+  addedBy?: {
+    id: string;
+    name: string;
+    email: string;
+    role?: string;
+  };
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
+  created_at: string;
+  updated_at: string;
+  // Optional: If you still need these for some cases
+  variants?: ProductVariant[];
+  price_range?: {
     min: number;
     max: number;
   };
@@ -50,6 +67,4 @@ export interface Product {
     min: number;
     max: number;
   };
-  created_at: string;
-  updated_at: string;
 }

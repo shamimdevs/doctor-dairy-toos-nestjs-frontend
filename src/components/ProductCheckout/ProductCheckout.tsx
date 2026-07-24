@@ -1,33 +1,29 @@
 /* eslint-disable react-hooks/purity */
-/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ChevronLeft,
   Truck,
   RefreshCw,
   Lock,
-  CreditCard,
-  Building2,
   MapPin,
   User,
-  Mail,
   Phone,
   MessageSquare,
-  Percent,
-  CheckCircle,
   ShoppingBag,
   Trash2,
   Plus,
   Minus,
   AlertCircle,
+  Building2,
+  Weight,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -37,7 +33,6 @@ import {
   UPDATE_QUANTITY,
 } from "@/src/redux/features/cartSlice";
 import { useCreateOrderMutation } from "@/src/redux/api/orderApi";
-import { useGetMyProfileQuery } from "@/src/redux/api/authApi";
 
 // Types
 interface CartItem {
@@ -52,6 +47,7 @@ interface CartItem {
   discount?: number;
   originalPrice?: number;
   sku?: string;
+  weight?: number; // Add weight field
 }
 
 interface CheckoutFormData {
@@ -60,9 +56,6 @@ interface CheckoutFormData {
   emailAddress: string;
   fullAddress: string;
   optionalNote: string;
-  deliveryMethod: "inside-dhaka" | "outside-dhaka";
-  paymentMethod: "cod" | "online";
-  addressId?: string;
 }
 
 // Response type from backend
@@ -103,96 +96,10 @@ interface IOrderApiResponse {
   };
 }
 
-// Components
-const DeliveryMethodCard: React.FC<{
-  method: "inside-dhaka" | "outside-dhaka";
-  selected: boolean;
-  onSelect: () => void;
-  label: string;
-  price: number;
-  description: string;
-}> = ({ selected, onSelect, label, price, description }) => (
-  <button
-    type="button"
-    onClick={onSelect}
-    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-      selected
-        ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200"
-        : "border-slate-200 hover:border-slate-300 bg-white"
-    }`}
-  >
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-            selected ? "border-emerald-500 bg-emerald-500" : "border-slate-300"
-          }`}
-        >
-          {selected && <CheckCircle size={12} className="text-white" />}
-        </div>
-        <div>
-          <p className="font-bold text-slate-800">{label}</p>
-          <p className="text-xs text-slate-500">{description}</p>
-        </div>
-      </div>
-      <p className="font-bold text-emerald-600">৳{price}</p>
-    </div>
-  </button>
-);
-
-const PaymentMethodCard: React.FC<{
-  method: "cod" | "online";
-  selected: boolean;
-  onSelect: () => void;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  subDescription?: string;
-}> = ({ selected, onSelect, icon, title, description, subDescription }) => (
-  <button
-    type="button"
-    onClick={onSelect}
-    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-      selected
-        ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200"
-        : "border-slate-200 hover:border-slate-300 bg-white"
-    }`}
-  >
-    <div className="flex items-start gap-3">
-      <div
-        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 shrink-0 ${
-          selected ? "border-emerald-500 bg-emerald-500" : "border-slate-300"
-        }`}
-      >
-        {selected && <CheckCircle size={12} className="text-white" />}
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          {icon}
-          <p className="font-bold text-slate-800">{title}</p>
-        </div>
-        <p className="text-xs text-slate-500 mt-1">{description}</p>
-        {subDescription && (
-          <p className="text-xs font-medium text-emerald-600 mt-1">
-            {subDescription}
-          </p>
-        )}
-      </div>
-    </div>
-  </button>
-);
-
 // Main Checkout Page
 export default function ProductCheckout() {
   const router = useRouter();
   const dispatch = useDispatch();
-
-  // Get user profile
-  const { data: profileData, isLoading: profileLoading } =
-    useGetMyProfileQuery();
-
-  const user = profileData?.data?.user;
-  // const isAuthenticated = !!user;
 
   // Get cart data from Redux
   const cartItems = useSelector((state: any) => state?.cart?.cartItems || []);
@@ -210,42 +117,44 @@ export default function ProductCheckout() {
     emailAddress: "",
     fullAddress: "",
     optionalNote: "",
-    deliveryMethod: "inside-dhaka",
-    paymentMethod: "cod",
-    addressId: "",
   });
 
-  const [couponCode, setCouponCode] = useState("");
-  const [isCouponApplied, setIsCouponApplied] = useState(false);
+  console.log(cartItems, "cartItems");
+
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Populate form with user data when available
-  useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        fullName: user.name || "",
-        emailAddress: user.email || "",
-        mobileNumber: user.mobile || "",
-      }));
-    }
-  }, [user]);
+  // Calculate total weight
+  const totalWeight = useMemo(() => {
+    return cartItems.reduce((sum: number, item: CartItem) => {
+      const weight = item.weight || 0.15; // Default weight 150g per item
+      return sum + weight * item.quantity;
+    }, 0);
+  }, [cartItems]);
 
-  // Calculate order summary from real cart data
+  // Calculate delivery fee based on weight
+  const calculateDeliveryFee = (weight: number) => {
+    const baseWeight = 1; // 1 kg base
+    const baseFee = 150;
+    const extraPerKg = 20;
+
+    if (weight <= baseWeight) {
+      return baseFee;
+    }
+
+    const extraKg = Math.ceil(weight - baseWeight);
+    return baseFee + extraKg * extraPerKg;
+  };
+
+  const deliveryFee = calculateDeliveryFee(totalWeight);
+
+  // Calculate order summary
   const subtotal = cartItems.reduce(
     (sum: number, item: CartItem) =>
       sum + (item.price || 0) * (item.quantity || 0),
     0,
   );
 
-  const totalDiscount = cartItems.reduce(
-    (sum: number, item: CartItem) =>
-      sum + (item.discount || 0) * (item.quantity || 0),
-    0,
-  );
-
-  const deliveryFee = formData.deliveryMethod === "inside-dhaka" ? 60 : 120;
-  const totalPayable = subtotal - totalDiscount + deliveryFee;
+  const totalPayable = subtotal + deliveryFee;
 
   // Handlers
   const handleInputChange = (
@@ -254,16 +163,6 @@ export default function ProductCheckout() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setApiError(null);
-  };
-
-  const handleApplyCoupon = () => {
-    if (couponCode.trim()) {
-      setIsCouponApplied(true);
-      toast.success("Coupon applied successfully!", {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
-    }
   };
 
   const handleUpdateQuantity = (item: CartItem, newQuantity: number) => {
@@ -293,17 +192,6 @@ export default function ProductCheckout() {
   };
 
   const handlePlaceOrder = async () => {
-    // Check authentication
-    // if (!isAuthenticated) {
-    //   toast.error("Please login to place your order!", {
-    //     position: "bottom-right",
-    //     autoClose: 3000,
-    //   });
-    //   sessionStorage.setItem("redirectAfterLogin", "/checkout");
-    //   router.push("/login");
-    //   return;
-    // }
-
     // Validate form
     if (!formData.fullName || !formData.mobileNumber || !formData.fullAddress) {
       toast.error("Please fill in all required fields!", {
@@ -326,7 +214,7 @@ export default function ProductCheckout() {
 
     try {
       const orderData = {
-        payment_method: formData.paymentMethod === "cod" ? "COD" : "SSLCOMMERZ",
+        payment_method: "COD",
         notes: formData.optionalNote || "",
         items: cartItems.map((item: CartItem) => ({
           product_variant_id: item.packSizeId || item.id,
@@ -335,6 +223,7 @@ export default function ProductCheckout() {
           quantity: item.quantity,
           unit_price: item.price,
           total_price: item.price * item.quantity,
+          weight: item.weight || 0.15,
         })),
         shipping_address: {
           address_line: formData.fullAddress,
@@ -348,9 +237,6 @@ export default function ProductCheckout() {
         orderData,
       ).unwrap()) as unknown as IOrderApiResponse;
 
-      console.log("📥 Full response:", JSON.stringify(response, null, 2));
-
-      // ✅ Get order and items from response.data
       const { order, items } = response.data;
 
       if (!order) {
@@ -373,22 +259,19 @@ export default function ProductCheckout() {
           quantity: item.quantity,
           image: item.image,
           packSizeLabel: item.packSizeLabel,
+          weight: item.weight || 0.15,
         })),
         subtotal: Number(order.subtotal) || subtotal,
-        discount: Number(order.discount) || totalDiscount,
         deliveryFee: Number(order.delivery_charge) || deliveryFee,
         total: Number(order.total_amount) || totalPayable,
-        paymentMethod: formData.paymentMethod,
-        deliveryMethod:
-          formData.deliveryMethod === "inside-dhaka"
-            ? "Inside Dhaka"
-            : "Outside Dhaka",
+        paymentMethod: "Cash on Delivery",
         optionalNote: formData.optionalNote,
         orderStatus: order.order_status || "pending",
         paymentStatus: order.payment_status || "unpaid",
         estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         paymentMethodFromBackend: order.payment_method,
         itemsFromBackend: items || [],
+        totalWeight: totalWeight,
       };
 
       sessionStorage.setItem(
@@ -410,22 +293,10 @@ export default function ProductCheckout() {
       // Redirect to order confirmation
       setTimeout(() => {
         router.push("/order-confirmation");
-      }, 500);
+      }, 200);
     } catch (error: any) {
       console.error("❌ Order placement error:", error);
 
-      // Handle authentication errors
-      if (error?.status === 401 || error?.status === 403) {
-        toast.error("Your session has expired. Please login again.", {
-          position: "bottom-right",
-          autoClose: 3000,
-        });
-        sessionStorage.setItem("redirectAfterLogin", "/checkout");
-        router.push("/login");
-        return;
-      }
-
-      // Handle validation errors from backend
       if (error?.data?.message) {
         const messages = Array.isArray(error.data.message)
           ? error.data.message.join(", ")
@@ -448,18 +319,6 @@ export default function ProductCheckout() {
       });
     }
   };
-
-  // Show loading state while checking authentication
-  if (profileLoading) {
-    return (
-      <div className="bg-slate-50 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent mx-auto mb-4" />
-          <p className="text-slate-600 font-semibold">Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   // If cart is empty, show empty state
   if (cartItems.length === 0) {
@@ -493,32 +352,14 @@ export default function ProductCheckout() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <Link
-            href="/cart"
+            href="/"
             className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
           >
             <ChevronLeft size={20} />
-            <span className="font-semibold">Back to Cart</span>
+            <span className="font-semibold">Back to Home</span>
           </Link>
           <h1 className="text-2xl font-extrabold text-slate-900">Checkout</h1>
           <div className="w-24" />
-        </div>
-
-        {/* User Info Banner */}
-        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <User size={18} className="text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-slate-800">
-                {user?.name || "User"}
-              </p>
-              <p className="text-xs text-slate-500">{user?.email}</p>
-            </div>
-          </div>
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">
-            Logged In
-          </span>
         </div>
 
         {/* API Error Display */}
@@ -553,7 +394,7 @@ export default function ProductCheckout() {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      placeholder="John Doe"
+                      placeholder="Monirul Islam"
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
                       required
                     />
@@ -574,29 +415,9 @@ export default function ProductCheckout() {
                       name="mobileNumber"
                       value={formData.mobileNumber}
                       onChange={handleInputChange}
-                      placeholder="01712345678"
+                      placeholder="017123......."
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
                       required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail
-                      size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type="email"
-                      name="emailAddress"
-                      value={formData.emailAddress}
-                      onChange={handleInputChange}
-                      placeholder="john@example.com"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
                     />
                   </div>
                 </div>
@@ -644,90 +465,96 @@ export default function ProductCheckout() {
               </div>
             </div>
 
-            {/* Delivery Method */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-lg font-extrabold text-slate-900 mb-4">
-                Delivery Method
+            {/* Delivery & Payment Method - Combined */}
+            <div className="bg-white rounded-2xl md:p-6 p-3 shadow-sm border border-slate-100">
+              <h2 className="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+                <Truck size={20} className="text-emerald-500" />
+                Delivery & Payment
               </h2>
-              <div className="space-y-3">
-                <DeliveryMethodCard
-                  method="inside-dhaka"
-                  selected={formData.deliveryMethod === "inside-dhaka"}
-                  onSelect={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      deliveryMethod: "inside-dhaka",
-                    }))
-                  }
-                  label="Inside Dhaka"
-                  price={60}
-                  description="First delivery"
-                />
-                <DeliveryMethodCard
-                  method="outside-dhaka"
-                  selected={formData.deliveryMethod === "outside-dhaka"}
-                  onSelect={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      deliveryMethod: "outside-dhaka",
-                    }))
-                  }
-                  label="Outside Dhaka"
-                  price={120}
-                  description="First delivery"
-                />
-              </div>
-            </div>
 
-            {/* Payment Method */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-lg font-extrabold text-slate-900 mb-4">
-                Payment Method
-              </h2>
-              <div className="space-y-3">
-                <PaymentMethodCard
-                  method="cod"
-                  selected={formData.paymentMethod === "cod"}
-                  onSelect={() =>
-                    setFormData((prev) => ({ ...prev, paymentMethod: "cod" }))
-                  }
-                  icon={<Building2 size={18} className="text-emerald-600" />}
-                  title="Cash on Delivery"
-                  description="পণ্য পেয়ে ক্যাশ দিন — Pay when you receive"
-                />
-                <PaymentMethodCard
-                  method="online"
-                  selected={formData.paymentMethod === "online"}
-                  onSelect={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      paymentMethod: "online",
-                    }))
-                  }
-                  icon={<CreditCard size={18} className="text-emerald-600" />}
-                  title="Online Payment"
-                  description="SSL Commerz — Card, bKash, Nagad, Rocket ও অন্যান্য"
-                  subDescription="SSLCommerz"
-                />
+              {/* Cash on Delivery Card */}
+              <div className="md:p-4 p-2 bg-linear-to-r from-emerald-50 to-emerald-100/50 border-2 border-emerald-200 rounded-xl">
+                <div className="flex items-start gap-4">
+                  {/* Icon */}
+                  <div className="p-3 md:flex hidden bg-emerald-600 rounded-xl shadow-lg shadow-emerald-200">
+                    <Building2 size={24} className="text-white" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div>
+                        <p className="font-bold text-slate-800 text-lg">
+                          Cash on Delivery
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Pay with cash when your order arrives
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          COD
+                        </span>
+                        <span className="text-lg font-extrabold text-emerald-600">
+                          ৳{deliveryFee}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Weight & Delivery Info */}
+                    <div className="mt-3 flex flex-wrap items-center gap-3 p-2 bg-white/50 rounded-lg border border-emerald-100">
+                      <div className="flex items-center gap-1.5">
+                        <Weight size={14} className="text-emerald-600" />
+                        <span className="text-xs text-slate-600">
+                          Total Weight: {totalWeight.toFixed(2)} kg
+                        </span>
+                      </div>
+                      <span className="text-slate-300">|</span>
+                      <div className="flex items-center gap-1.5">
+                        <Truck size={14} className="text-emerald-600" />
+                        <span className="text-xs text-slate-600">
+                          {totalWeight <= 1
+                            ? "Base delivery (1 kg)"
+                            : `Base (1kg) + ${(totalWeight - 1).toFixed(1)}kg extra`}
+                        </span>
+                      </div>
+                      <span className="text-slate-300">|</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-emerald-600">
+                          ৳{150} + {Math.max(0, Math.ceil(totalWeight - 1))} ×
+                          ৳20
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-slate-400 mt-2">
+                      * Delivery fee: ৳150 for first 1kg, ৳20 for each
+                      additional kg
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Right Column - Order Summary */}
+          {/* Right Column - Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 sticky top-6">
-              <h2 className="text-lg font-extrabold text-slate-900 mb-4">
+              <h2 className="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+                <ShoppingBag size={20} className="text-emerald-500" />
                 Order Summary ({totalQuantity} items)
               </h2>
 
               {/* Cart Items */}
-              <div className="space-y-3 max-h-60 overflow-y-auto scrollbar-thin">
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
                 {cartItems.map((item: CartItem) => (
                   <div
                     key={`${item.id}-${item.packSizeId}`}
-                    className="flex gap-3 pb-3 border-b border-slate-100"
+                    className="flex items-center gap-3 pb-3 border-b border-slate-100 last:border-0"
                   >
-                    <div className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-slate-50">
+                    {/* Product Image */}
+                    <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
                       <Image
                         src={item.image || "/placeholder.png"}
                         alt={item.name}
@@ -735,123 +562,117 @@ export default function ProductCheckout() {
                         className="object-cover"
                       />
                     </div>
+
+                    {/* Product Details */}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-slate-800 truncate">
                         {item.name}
                       </p>
-                      <p className="text-[10px] text-slate-500">
-                        {item.packSizeLabel}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleUpdateQuantity(item, item.quantity - 1)
-                          }
-                          className="p-0.5 rounded hover:bg-slate-200 transition-colors"
-                        >
-                          <Minus size={12} className="text-slate-500" />
-                        </button>
-                        <span className="text-xs font-bold text-slate-700 min-w-4 text-center">
-                          {item.quantity}
+
+                      {/* Weight Display */}
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Weight size={10} className="text-slate-400" />
+                        <span className="text-[10px] text-slate-500">
+                          {(item.weight || 0.15).toFixed(2)} kg
                         </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleUpdateQuantity(item, item.quantity + 1)
-                          }
-                          className="p-0.5 rounded hover:bg-slate-200 transition-colors"
-                        >
-                          <Plus size={12} className="text-slate-500" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveItem(item)}
-                          className="p-0.5 rounded hover:bg-red-100 transition-colors ml-1"
-                        >
-                          <Trash2 size={12} className="text-red-500" />
-                        </button>
                       </div>
-                      <p className="text-sm font-bold text-emerald-600">
-                        ৳{(item.price * item.quantity).toFixed(2)}
-                      </p>
+
+                      {/* Quantity & Price - Inline */}
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="flex space-x-1">
+                          {/* Quantity Controls - Inline */}
+                          <div className="flex items-center gap-1 bg-slate-50 rounded-lg border border-slate-200 p-0.5">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleUpdateQuantity(item, item.quantity - 1)
+                              }
+                              className="p-1 rounded-md hover:bg-slate-200 transition-colors"
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus size={12} className="text-slate-500" />
+                            </button>
+                            <span className="text-xs font-bold text-slate-700 min-w-5 text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleUpdateQuantity(item, item.quantity + 1)
+                              }
+                              className="p-1 rounded-md hover:bg-slate-200 transition-colors"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus size={12} className="text-slate-500" />
+                            </button>
+                          </div>
+
+                          {/* Delete Button - Left */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(item)}
+                            className="shrink-0 p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                            aria-label="Remove item"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+
+                        {/* Price */}
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-emerald-600">
+                            ৳{(item.price * item.quantity).toFixed(2)}
+                          </p>
+                          {item.quantity > 1 && (
+                            <p className="text-[10px] text-slate-400">
+                              ৳{item.price.toFixed(2)} x {item.quantity}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Price Breakdown */}
-              <div className="space-y-2 py-4 border-b border-slate-200">
-                <div className="flex justify-between text-sm">
+              <div className="space-y-2 py-4 border-t border-slate-200 mt-2">
+                <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-600">Subtotal</span>
                   <span className="font-semibold text-slate-800">
                     ৳{subtotal.toFixed(2)}
                   </span>
                 </div>
-                {totalDiscount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-green-600">Discount</span>
-                    <span className="font-semibold text-green-600">
-                      −৳{totalDiscount.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Delivery</span>
+
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600">Total Weight</span>
+                  <span className="font-semibold text-slate-800">
+                    {totalWeight.toFixed(2)} kg
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600">Delivery Fee</span>
                   <span className="font-semibold text-slate-800">
                     ৳{deliveryFee.toFixed(2)}
                   </span>
                 </div>
+                <div className="flex justify-between items-center text-[10px] text-slate-400 pl-4">
+                  <span>Base (1kg)</span>
+                  <span>+ {Math.max(0, Math.ceil(totalWeight - 1))} × ৳20</span>
+                </div>
               </div>
 
               {/* Total */}
-              <div className="pt-4">
+              <div className="pt-4 border-t border-slate-200">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-extrabold text-slate-900">
+                  <span className="text-base font-extrabold text-slate-900">
                     Total Payable
                   </span>
                   <span className="text-2xl font-extrabold text-emerald-600">
                     ৳{totalPayable.toFixed(2)}
                   </span>
                 </div>
-                {totalDiscount > 0 && (
-                  <p className="text-sm font-bold text-green-600 mt-1">
-                    Saving ৳{totalDiscount.toFixed(2)} on this order!
-                  </p>
-                )}
-              </div>
-
-              {/* Coupon Code */}
-              <div className="mt-4 p-3 bg-slate-50 rounded-xl">
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Percent
-                      size={16}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      placeholder="Coupon Code"
-                      disabled={isCouponApplied}
-                      className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:opacity-50 transition-all"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleApplyCoupon}
-                    disabled={isCouponApplied || !couponCode.trim()}
-                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-300 text-white font-bold text-sm rounded-lg transition-all whitespace-nowrap"
-                  >
-                    {isCouponApplied ? "Applied" : "Apply"}
-                  </button>
-                </div>
-                {isCouponApplied && (
-                  <p className="text-xs text-green-600 mt-2">
-                    ✓ Coupon applied successfully!
-                  </p>
-                )}
               </div>
 
               {/* Place Order Button */}
@@ -869,10 +690,10 @@ export default function ProductCheckout() {
                   <button
                     type="button"
                     onClick={handlePlaceOrder}
-                    className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full py-3.5 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-extrabold rounded-xl transition-all shadow-lg shadow-emerald-200 hover:shadow-emerald-300 active:scale-95 flex items-center justify-center gap-2"
                   >
-                    Place Order{" "}
-                    {formData.paymentMethod === "cod" ? "(COD)" : ""}
+                    <ShoppingBag size={18} />
+                    Place Order (COD)
                   </button>
                 )}
               </div>

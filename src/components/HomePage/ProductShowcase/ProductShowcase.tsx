@@ -61,17 +61,17 @@ export default function ProductShowcase({ products }: { products: any[] }) {
     <section className="bg-slate-50 min-h-screen py-10 font-sans">
       <div className="container">
         {/* Promotional Top Bar */}
-        <div className="bg-emerald-600 text-white rounded-2xl p-4 sm:p-6 mb-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="bg-linear-to-r from-emerald-600 to-emerald-700 text-white rounded-2xl p-4 sm:p-6 mb-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500 rounded-xl">
+            <div className="p-2 bg-emerald-500/50 rounded-xl backdrop-blur-sm">
               <Sparkles className="text-amber-300 animate-pulse" size={24} />
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-extrabold tracking-tight">
-                Medico Seasonal Wellness Festival
+                🐄 Doctor Dairy Tools & Equipment
               </h2>
               <p className="text-xs sm:text-sm text-emerald-100 font-semibold mt-0.5">
-                Sourcing 100% genuine products directly to your doorstep.
+                Premium quality dairy farm supplies & veterinary tools
               </p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
 
         {/* Dynamic Category Carousels */}
         <div className="space-y-12">
-          {categoriesList.map((category) => {
+          {categoriesList?.map((category) => {
             const filteredProducts = products?.filter(
               (p) => p.category?.name === category.name,
             );
@@ -98,20 +98,20 @@ export default function ProductShowcase({ products }: { products: any[] }) {
 
             return (
               <div
-                key={category.slug}
+                key={category?.slug}
                 className="md:bg-white p-0.5 md:p-5 md:rounded-2xl md:shadow-sm md:border md:border-slate-100 relative group"
               >
                 {/* Category Header */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="space-y-1">
                     <h3 className="text-lg md:text-xl font-black text-slate-900 flex items-center gap-2">
-                      {category.name}
+                      {category?.name}
                     </h3>
                   </div>
 
                   <div className="md:flex items-center gap-3">
                     <Link
-                      href={`/category/${category.slug}`}
+                      href={`/category/${category?.slug}`}
                       className="text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-emerald-500/20 px-2 py-1 rounded"
                     >
                       See All
@@ -119,7 +119,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
 
                     <div className="md:flex hidden items-center gap-1.5">
                       <button
-                        onClick={() => handleScroll(category.slug, "left")}
+                        onClick={() => handleScroll(category?.slug, "left")}
                         className="p-2 cursor-pointer rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-emerald-600 hover:border-emerald-300 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                         aria-label={`Scroll Left in ${category.name}`}
                       >
@@ -127,7 +127,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
                       </button>
 
                       <button
-                        onClick={() => handleScroll(category.slug, "right")}
+                        onClick={() => handleScroll(category?.slug, "right")}
                         className="p-2 cursor-pointer rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-emerald-600 hover:border-emerald-300 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                         aria-label={`Scroll Right in ${category.name}`}
                       >

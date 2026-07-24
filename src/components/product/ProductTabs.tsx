@@ -75,7 +75,7 @@ export function ProductTabs({ product }: ProductTabsProps) {
                       )}
                     </div>
                     <div className="text-xs text-gray-500">
-                      Stock: {v.stock} {v.weight && `• Weight: ${v.weight}kg`}
+                      {v.weight && `Weight: ${v.weight}kg`}
                     </div>
                     {v.expiry_date && (
                       <div className="text-xs text-amber-600">

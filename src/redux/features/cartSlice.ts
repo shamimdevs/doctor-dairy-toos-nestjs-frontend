@@ -11,6 +11,7 @@ export interface CartItem {
   packSizeLabel: string;
   image?: string;
   maxQuantity?: number;
+  weight?: number;
   discount?: number;
   originalPrice?: number;
 }
@@ -61,8 +62,6 @@ const cartSlice = createSlice({
         existingItem.quantity++;
       }
       calculateTotals(state);
-      // Log for debugging
-      console.log("Cart after ADD:", state.cartItems);
     },
 
     REMOVE_FROM_CART: (

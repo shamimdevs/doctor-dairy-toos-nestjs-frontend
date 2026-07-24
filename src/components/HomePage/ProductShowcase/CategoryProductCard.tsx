@@ -1,4 +1,3 @@
-// src/components/HomePage/ProductShowcase/CategoryProductCard.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -14,10 +13,6 @@ import { Product } from "@/src/types/product";
 
 interface CategoryProductCardProps {
   product: Product;
-  addToCart?: (
-    product: Product,
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => void;
 }
 
 const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
@@ -28,49 +23,25 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
 
   const image = product.thumbnail || "/placeholder.png";
 
-  const variants = product?.variants || [];
-  const sortedVariants = [...variants].sort(
-    (a: any, b: any) => a.price - b.price,
-  );
-  const cheapestVariant = sortedVariants[0] || null;
+  // Use the fields from API response
+  const currentPrice = product.price || 0; // 555
+  const originalPrice = product.original_price || product.price || 0; // 585
 
-  const defaultPack = cheapestVariant
-    ? {
-        id: cheapestVariant.id || "default",
-        label: cheapestVariant.pack_size || "1 Unit",
-        quantity: 1,
-        price: cheapestVariant.discount_price || cheapestVariant.price || 0,
-        originalPrice: cheapestVariant.price || 0,
-        discount: cheapestVariant.discount_price
-          ? Math.round(
-              ((cheapestVariant.price - cheapestVariant.discount_price) /
-                cheapestVariant.price) *
-                100,
-            )
-          : 0,
-        inStock: cheapestVariant.stock > 0,
-      }
-    : {
-        id: "default",
-        label: "1 Unit",
-        quantity: 1,
-        price: product.price_range?.min || 0,
-        originalPrice: product.price_range?.max || 0,
-        discount: product.discount_range?.min || 0,
-        inStock: true,
-      };
+  // Calculate discount percentage
+  const discountPercentage =
+    originalPrice > currentPrice
+      ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+      : 0;
 
-  const [selectedPack, setSelectedPack] = useState(defaultPack);
+  const inStock = (product.stock || 0) > 0;
+
   const [isAdded, setIsAdded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const getCartItemQuantity = () => {
-    const existingItem = cartItems.find(
-      (item: any) =>
-        item.id === product.id && item.packSizeId === selectedPack.id,
-    );
+    const existingItem = cartItems.find((item: any) => item.id === product.id);
     return existingItem ? existingItem.quantity : 0;
   };
 
@@ -81,32 +52,31 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    const price =
-      typeof selectedPack.price === "number"
-        ? selectedPack.price
-        : parseFloat(selectedPack.price) || 0;
-    const originalPrice =
-      typeof selectedPack.originalPrice === "number"
-        ? selectedPack.originalPrice
-        : parseFloat(selectedPack.originalPrice) || 0;
+    if (!inStock) {
+      toast.error("Product is out of stock!", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+      return;
+    }
 
     const cartItem = {
       id: product.id,
       productId: product.id,
-      name: `${product.name} (${selectedPack.label})`,
-      price: price,
+      name: product.name,
+      price: currentPrice,
       quantity: 1,
-      packSizeId: selectedPack.id,
-      packSizeLabel: selectedPack.label,
+      packSizeId: product.id,
+      packSizeLabel: "Default",
       image: image,
-      maxQuantity: 99,
-      discount: selectedPack.discount || 0,
+      discount: discountPercentage,
       originalPrice: originalPrice,
+      sku: product.slug || "",
     };
 
     dispatch(ADD_TO_CART(cartItem));
 
-    toast.success(` ${product.name} added to cart!`, {
+    toast.success(`${product.name} added to cart!`, {
       position: "bottom-right",
       autoClose: 3000,
       hideProgressBar: false,
@@ -123,9 +93,14 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
   const handleRemoveFromCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    dispatch(REMOVE_FROM_CART({ id: product.id, packSizeId: selectedPack.id }));
+    dispatch(
+      REMOVE_FROM_CART({
+        id: product.id,
+        packSizeId: product.id,
+      }),
+    );
 
-    toast.info(` Removed 1 ${product.name} from cart`, {
+    toast.info(`Removed 1 ${product.name} from cart`, {
       position: "bottom-right",
       autoClose: 2000,
       hideProgressBar: false,
@@ -136,57 +111,11 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
     });
   };
 
-  const handlePackChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const variant = variants.find((v: any) => v.id === e.target.value);
-    if (variant) {
-      const price = variant.discount_price || variant.price || 0;
-      const originalPrice = variant.price || 0;
-      setSelectedPack({
-        id: variant.id,
-        label: variant.pack_size,
-        quantity: 1,
-        price: price,
-        originalPrice: originalPrice,
-        discount: variant.discount_price
-          ? Math.round(
-              ((variant.price - variant.discount_price) / variant.price) * 100,
-            )
-          : 0,
-        inStock: variant.stock > 0,
-      });
-    }
-  };
-
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsWishlisted(!isWishlisted);
   };
-
-  const packSizes = variants.map((v: any) => ({
-    id: v.id,
-    label: v.pack_size,
-    price: v.discount_price || v.price || 0,
-    originalPrice: v.price || 0,
-    discount: v.discount_price
-      ? Math.round(((v.price - v.discount_price) / v.price) * 100)
-      : 0,
-    inStock: v.stock > 0,
-  }));
-
-  if (packSizes.length === 0 && product.price_range) {
-    packSizes.push({
-      id: "default",
-      label: "1 Unit",
-      price: product.price_range?.min || 0,
-      originalPrice: product.price_range?.max || 0,
-      discount: product.discount_range?.min || 0,
-      inStock: true,
-    });
-  }
-
-  // Calculate discount display
-  const displayDiscount = selectedPack.discount || 0;
 
   return (
     <div
@@ -196,9 +125,14 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
     >
       {/* Badges - Top Left */}
       <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
-        {displayDiscount > 0 && (
+        {discountPercentage > 0 && (
           <span className="bg-red-500 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
-            {displayDiscount}% OFF
+            {discountPercentage}% OFF
+          </span>
+        )}
+        {!inStock && (
+          <span className="bg-red-500 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
+            OUT OF STOCK
           </span>
         )}
         {isInCart && (
@@ -215,7 +149,7 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
         </div>
       )}
 
-      {/* Wishlist Button - Top Right (below Rx) */}
+      {/* Wishlist Button */}
       <button
         onClick={handleWishlist}
         className="absolute top-8 right-2.5 z-10 p-1 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-all"
@@ -276,28 +210,17 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
           </Link>
         </div>
 
-        {/* Pack Size Selector */}
-        {packSizes.length > 1 && (
-          <select
-            value={selectedPack.id}
-            onChange={handlePackChange}
-            className="w-full text-[10px] font-semibold border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
-            onClick={(e) => e.stopPropagation()}
+        {/* Category Info */}
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-[10px] text-slate-400">
+            {product.category?.name || "Uncategorized"}
+          </span>
+          <span
+            className={`text-[10px] font-medium ${inStock ? "text-emerald-600" : "text-red-500"}`}
           >
-            {packSizes.map((pack: any) => {
-              const inCart = cartItems.some(
-                (item: any) =>
-                  item.id === product.id && item.packSizeId === pack.id,
-              );
-              return (
-                <option key={pack.id} value={pack.id}>
-                  {pack.label} - ৳{pack.price.toFixed(2)}
-                  {inCart ? " ✓" : ""}
-                </option>
-              );
-            })}
-          </select>
-        )}
+            {inStock ? `${product.stock} in stock` : "Out of stock"}
+          </span>
+        </div>
 
         {/* Price and Add to Cart */}
         <div className="pt-3 flex items-center justify-between gap-1 mt-2">
@@ -305,13 +228,13 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
             href={`/product/${product.slug}`}
             className="flex flex-col hover:opacity-80 transition-opacity"
           >
-            {(selectedPack.originalPrice || 0) > selectedPack.price && (
+            {originalPrice > currentPrice && (
               <span className="text-[10px] text-slate-400 line-through">
-                ৳ {(selectedPack.originalPrice ?? 0).toFixed(2)}
+                ৳ {originalPrice.toFixed(2)}
               </span>
             )}
             <span className="text-xs sm:text-sm font-extrabold text-emerald-600">
-              ৳ {selectedPack.price.toFixed(2)}
+              ৳ {currentPrice.toFixed(2)}
             </span>
           </Link>
 
@@ -338,13 +261,18 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
           ) : (
             <button
               onClick={handleAddToCart}
+              disabled={!inStock}
               className={`font-black text-xs px-2.5 py-1.5 rounded-xl transition-all shadow-sm active:scale-95 flex items-center gap-1 uppercase tracking-wider hover:shadow-md ${
-                isAdded
-                  ? "bg-emerald-600 text-white"
-                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
+                !inStock
+                  ? "bg-slate-300 text-white cursor-not-allowed"
+                  : isAdded
+                    ? "bg-emerald-600 text-white"
+                    : "bg-emerald-500 hover:bg-emerald-600 text-white"
               }`}
             >
-              {isAdded ? (
+              {!inStock ? (
+                "OUT OF STOCK"
+              ) : isAdded ? (
                 <>
                   <Check size={12} className="stroke-3" /> ADDED
                 </>

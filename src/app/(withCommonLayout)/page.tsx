@@ -295,7 +295,6 @@ const Page = async () => {
       <FeaturesSection />
       <CategorySection categories={categories} />
       <ProductShowcase products={products} />
-      {/* Pass video data and categories to VideoGallery */}
       <VideoGallery videos={videos} categories={videoCategories} />
       <BlogSection />
       <TestimonialSection />

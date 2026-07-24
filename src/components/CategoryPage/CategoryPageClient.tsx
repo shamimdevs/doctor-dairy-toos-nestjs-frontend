@@ -174,10 +174,10 @@ export default function CategoryPageClient({
             <h1 className="text-2xl sm:text-3xl font-extrabold text-emerald-600">
               {initialCategory.name}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
+            {/* <p className="text-sm text-slate-500 mt-1">
               Browsing items under {initialCategory.name} and related filter
               sets.
-            </p>
+            </p> */}
           </div>
 
           {/* Sort By Dropdown UI */}

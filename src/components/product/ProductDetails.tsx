@@ -45,6 +45,9 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
   // Get cart items from Redux
   const cartItems = useSelector((state: any) => state?.cart?.cartItems || []);
 
+  // ✅ Get weight from product
+  const productWeight = product?.weight;
+
   // ✅ Get variants as pack sizes
   const packSizes = React.useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
@@ -155,6 +158,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
       packSizeId: selectedPack.id,
       packSizeLabel: selectedPack.label,
       image: product.thumbnail,
+      weight: productWeight,
       maxQuantity: 99,
       discount: selectedPack.discount || discountPercentage,
       originalPrice: selectedPack.originalPrice || selectedPack.price,
@@ -173,6 +177,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
           <p className="text-xs text-slate-500">
             {selectedPack.label} × {quantity}
           </p>
+          <p className="text-xs text-slate-500">Weight: {productWeight} kg</p>
         </div>
       </div>,
       {
@@ -235,6 +240,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
       packSizeId: selectedPack.id,
       packSizeLabel: selectedPack.label,
       image: product.thumbnail,
+      weight: productWeight, // ✅ Include weight for checkout
       maxQuantity: 99,
       discount: selectedPack.discount || discountPercentage,
       originalPrice: selectedPack.originalPrice || selectedPack.price,
@@ -328,6 +334,12 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
             By {product.manufacturer}
           </p>
         )}
+      </div>
+
+      {/* ✅ Weight Display */}
+      <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 px-4 py-2 rounded-xl">
+        <span className="font-medium">Weight:</span>
+        <span>{productWeight} kg</span>
       </div>
 
       {/* Price */}

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  Plus,
   Heart,
   Phone,
   Mail,
@@ -205,6 +204,14 @@ export default function MedicoFooter() {
                 className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
               >
                 Track Your Order
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/blog"
+                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
+              >
+                Our Blog
               </Link>
             </li>
             <li>
