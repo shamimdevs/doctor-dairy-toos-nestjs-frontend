@@ -49,3 +49,105 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* src/app/globals.css or src/styles/globals.css */
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #059669 #f1f5f9;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #059669;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
+/* For specific containers with custom class */
+.scrollbar-emerald {
+  scrollbar-width: thin;
+  scrollbar-color: #059669 #f1f5f9;
+}
+
+.scrollbar-emerald::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-emerald::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+
+.scrollbar-emerald::-webkit-scrollbar-thumb {
+  background: #059669;
+  border-radius: 9999px;
+}
+
+.scrollbar-emerald::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
+/* Custom scrollbar with different sizes */
+.scrollbar-sm::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-md::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-lg::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hidden::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+/* Rounded scrollbar track with gradient */
+.scrollbar-gradient::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #059669, #047857);
+  border-radius: 9999px;
+}
+
+/* For dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  *::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #059669;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #047857;
+  }
+}
