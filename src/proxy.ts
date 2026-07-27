@@ -18,11 +18,11 @@ export async function proxy(request: NextRequest) {
 
   // 1. Prevent logged-in users from accessing authentication pages
   if (token && authRoutes.includes(pathname)) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/dr-dashboard", request.url));
   }
 
   // 2. Redirect unauthenticated users to login page for protected routes
-  if (!token && pathname.startsWith("/dashboard")) {
+  if (!token && pathname.startsWith("/dr-dashboard")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -44,10 +44,9 @@ export const config = {
     "/login",
     "/forget-password",
     "/otp",
-
     "/signup",
     "/verify-otp",
-    "/dashboard",
-    "/dashboard/:path*",
+    "/dr-dashboard",
+    "/dr-dashboard/:path*",
   ],
 };

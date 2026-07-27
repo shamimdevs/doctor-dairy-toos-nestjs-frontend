@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/purity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
@@ -37,17 +36,15 @@ import { useCreateOrderMutation } from "@/src/redux/api/orderApi";
 // Types
 interface CartItem {
   id: string;
-  productId: string;
+  productId?: string;
   name: string;
   price: number;
   quantity: number;
-  packSizeId: string;
-  packSizeLabel: string;
   image?: string;
   discount?: number;
   originalPrice?: number;
   sku?: string;
-  weight?: number; // Add weight field
+  weight?: number;
 }
 
 interface CheckoutFormData {
@@ -58,45 +55,40 @@ interface CheckoutFormData {
   optionalNote: string;
 }
 
-// Response type from backend
 interface IOrderApiResponse {
-  apiVersion: string;
-  success: boolean;
-  message: string;
-  status: number;
-  data: {
-    order: {
+  apiVersion?: string;
+  success?: boolean;
+  message?: string;
+  status?: number;
+  data?: {
+    order?: {
       id: string;
-      order_number: string;
-      user_id: string;
-      address_id: string;
-      subtotal: number;
-      discount: string | number;
-      delivery_charge: string | number;
-      total_amount: number;
-      payment_status: string;
-      payment_method: string;
-      order_status: string;
+      order_number?: string;
+      subtotal?: number;
+      discount?: string | number;
+      delivery_charge?: string | number;
+      total_amount?: number;
+      payment_status?: string;
+      payment_method?: string;
+      order_status?: string;
       notes?: string;
-      placed_at: string;
-      created_at: string;
-      updated_at: string;
+      placed_at?: string;
+      created_at?: string;
+      updated_at?: string;
     };
-    items: Array<{
+    items?: Array<{
       id: string;
-      order_id: string;
-      product_variant_id: string;
-      product_name: string;
-      sku: string;
-      quantity: number;
-      unit_price: number;
-      total_price: number;
-      created_at: string;
+      order_id?: string;
+      product_name?: string;
+      sku?: string;
+      quantity?: number;
+      unit_price?: number;
+      total_price?: number;
+      created_at?: string;
     }>;
   };
 }
 
-// Main Checkout Page
 export default function ProductCheckout() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -110,7 +102,7 @@ export default function ProductCheckout() {
   // RTK Query mutation hook
   const [createOrder, { isLoading: isOrderPlacing }] = useCreateOrderMutation();
 
-  // State
+  // Form State
   const [formData, setFormData] = useState<CheckoutFormData>({
     fullName: "",
     mobileNumber: "",
@@ -119,22 +111,20 @@ export default function ProductCheckout() {
     optionalNote: "",
   });
 
-  console.log(cartItems, "cartItems");
-
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Calculate total weight
+  // Calculate total weight (Defaulting missing weights to 0.15 kg)
   const totalWeight = useMemo(() => {
     return cartItems.reduce((sum: number, item: CartItem) => {
-      const weight = item.weight || 0.15; // Default weight 150g per item
+      const weight = item.weight ?? 0.15;
       return sum + weight * item.quantity;
     }, 0);
   }, [cartItems]);
 
-  // Calculate delivery fee based on weight
+  // Dynamic delivery fee calculation based on total weight
   const calculateDeliveryFee = (weight: number) => {
-    const baseWeight = 1; // 1 kg base
-    const baseFee = 150;
+    const baseWeight = 1;
+    const baseFee = 120;
     const extraPerKg = 20;
 
     if (weight <= baseWeight) {
@@ -147,16 +137,18 @@ export default function ProductCheckout() {
 
   const deliveryFee = calculateDeliveryFee(totalWeight);
 
-  // Calculate order summary
-  const subtotal = cartItems.reduce(
-    (sum: number, item: CartItem) =>
-      sum + (item.price || 0) * (item.quantity || 0),
-    0,
-  );
+  // Order summary calculations
+  const subtotal = useMemo(() => {
+    return cartItems.reduce(
+      (sum: number, item: CartItem) =>
+        sum + (item.price || 0) * (item.quantity || 0),
+      0,
+    );
+  }, [cartItems]);
 
   const totalPayable = subtotal + deliveryFee;
 
-  // Handlers
+  // Form Input Change Handler
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -165,10 +157,11 @@ export default function ProductCheckout() {
     setApiError(null);
   };
 
+  // Quantity Update Handler
   const handleUpdateQuantity = (item: CartItem, newQuantity: number) => {
     if (newQuantity < 1) {
-      dispatch(REMOVE_FROM_CART({ id: item.id, packSizeId: item.packSizeId }));
-      toast.info(`Removed ${item.name} from cart`, {
+      dispatch(REMOVE_FROM_CART({ id: item.id }));
+      toast.info(`${item.name} কার্ট থেকে সরানো হয়েছে`, {
         position: "bottom-right",
         autoClose: 2000,
       });
@@ -176,34 +169,39 @@ export default function ProductCheckout() {
       dispatch(
         UPDATE_QUANTITY({
           id: item.id,
-          packSizeId: item.packSizeId,
           quantity: newQuantity,
         }),
       );
     }
   };
 
+  // Item Removal Handler
   const handleRemoveItem = (item: CartItem) => {
-    dispatch(REMOVE_FROM_CART({ id: item.id, packSizeId: item.packSizeId }));
-    toast.info(`Removed ${item.name} from cart`, {
+    dispatch(REMOVE_FROM_CART({ id: item.id }));
+    toast.info(`${item.name} কার্ট থেকে সরানো হয়েছে`, {
       position: "bottom-right",
       autoClose: 2000,
     });
   };
 
+  // Main Order Submission Handler
   const handlePlaceOrder = async () => {
-    // Validate form
-    if (!formData.fullName || !formData.mobileNumber || !formData.fullAddress) {
-      toast.error("Please fill in all required fields!", {
+    // Basic Form Validation
+    if (
+      !formData.fullName.trim() ||
+      !formData.mobileNumber.trim() ||
+      !formData.fullAddress.trim()
+    ) {
+      toast.error("দয়া করে সকল প্রয়োজনীয় তথ্য পূরণ করুন!", {
         position: "bottom-right",
         autoClose: 3000,
       });
       return;
     }
 
-    // Validate mobile number
-    if (!/^01[3-9]\d{8}$/.test(formData.mobileNumber)) {
-      toast.error("Please enter a valid Bangladesh mobile number!", {
+    // Bangladesh Mobile Number Validation (11 digits starting with 013-019)
+    if (!/^01[3-9]\d{8}$/.test(formData.mobileNumber.trim())) {
+      toast.error("দয়া করে একটি বৈধ বাংলাদেশ মোবাইল নম্বর দিন!", {
         position: "bottom-right",
         autoClose: 3000,
       });
@@ -213,65 +211,59 @@ export default function ProductCheckout() {
     setApiError(null);
 
     try {
+      // Prepare Payload matching the required JSON format exactly
       const orderData = {
-        payment_method: "COD",
-        notes: formData.optionalNote || "",
+        fullName: formData.fullName.trim(),
+        phone: formData.mobileNumber.trim(),
+        address: formData.fullAddress.trim(),
+        notes: formData.optionalNote.trim() || "",
         items: cartItems.map((item: CartItem) => ({
-          product_variant_id: item.packSizeId || item.id,
+          product_id: item.productId || item.id,
           product_name: item.name,
-          sku: item.sku || `SKU-${item.id}`,
           quantity: item.quantity,
-          unit_price: item.price,
-          total_price: item.price * item.quantity,
-          weight: item.weight || 0.15,
+          price: item.price,
+          weight: item.weight ?? 0.15,
+          image: item.image || "",
         })),
-        shipping_address: {
-          address_line: formData.fullAddress,
-          phone: formData.mobileNumber,
-          email: formData.emailAddress || "",
-        },
       };
 
-      // Call API using RTK Query mutation
+      // Trigger RTK Query Mutation
       const response = (await createOrder(
         orderData,
       ).unwrap()) as unknown as IOrderApiResponse;
 
-      const { order, items } = response.data;
+      const order = response?.data?.order;
+      const items = response?.data?.items || [];
 
-      if (!order) {
-        console.error("❌ Order not found in response:", response);
-        throw new Error("Order not found in response");
-      }
-
-      // Store order data in sessionStorage for confirmation page
+      // Store Order Details in SessionStorage for Order Confirmation Page
       const orderConfirmationData = {
-        orderId: order.order_number || order.id || `ORD-${Date.now()}`,
+        orderId: order?.order_number || order?.id || `ORD-${Date.now()}`,
         customerName: formData.fullName,
         customerEmail: formData.emailAddress || "N/A",
         customerPhone: formData.mobileNumber,
         shippingAddress: formData.fullAddress,
-        orderDate: new Date(),
+        orderDate: new Date().toISOString(),
         items: cartItems.map((item: CartItem) => ({
           id: item.id,
           name: item.name,
           price: item.price,
           quantity: item.quantity,
           image: item.image,
-          packSizeLabel: item.packSizeLabel,
-          weight: item.weight || 0.15,
+          weight: item.weight ?? 0.15,
         })),
-        subtotal: Number(order.subtotal) || subtotal,
-        deliveryFee: Number(order.delivery_charge) || deliveryFee,
-        total: Number(order.total_amount) || totalPayable,
-        paymentMethod: "Cash on Delivery",
+        subtotal: Number(order?.subtotal) || subtotal,
+        deliveryFee: Number(order?.delivery_charge) || deliveryFee,
+        total: Number(order?.total_amount) || totalPayable,
+        paymentMethod: "ক্যাশ অন ডেলিভারি",
         optionalNote: formData.optionalNote,
-        orderStatus: order.order_status || "pending",
-        paymentStatus: order.payment_status || "unpaid",
-        estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-        paymentMethodFromBackend: order.payment_method,
-        itemsFromBackend: items || [],
-        totalWeight: totalWeight,
+        orderStatus: order?.order_status || "pending",
+        paymentStatus: order?.payment_status || "unpaid",
+        estimatedDelivery: new Date(
+          Date.now() + 3 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        paymentMethodFromBackend: order?.payment_method,
+        itemsFromBackend: items,
+        totalWeight,
       };
 
       sessionStorage.setItem(
@@ -279,66 +271,58 @@ export default function ProductCheckout() {
         JSON.stringify(orderConfirmationData),
       );
 
-      // Clear cart after successful order
+      // Clear Redux Cart
       dispatch(CLEAR_CART());
 
       toast.success(
-        "🎉 Order placed successfully! Thank you for shopping with us.",
+        "অর্ডার সফলভাবে সম্পন্ন হয়েছে! আমাদের সাথে কেনাকাটার জন্য ধন্যবাদ।",
         {
           position: "bottom-right",
-          autoClose: 3000,
+          autoClose: 200,
         },
       );
 
-      // Redirect to order confirmation
-      setTimeout(() => {
-        router.push("/order-confirmation");
-      }, 200);
+      // Redirect to Confirmation Page
+      router.push("/order-confirmation");
     } catch (error: any) {
-      console.error("❌ Order placement error:", error);
-
-      if (error?.data?.message) {
-        const messages = Array.isArray(error.data.message)
-          ? error.data.message.join(", ")
-          : error.data.message;
-        setApiError(messages);
-        toast.error(messages, {
-          position: "bottom-right",
-          autoClose: 5000,
-        });
-        return;
-      }
+      console.error("Order placement failed:", error);
 
       const errorMessage =
-        error?.message || "Failed to place order. Please try again.";
-      setApiError(errorMessage);
+        error?.data?.message ||
+        error?.message ||
+        "অর্ডার প্লেস করতে ব্যর্থ হয়েছে। দয়া করে আবার চেষ্টা করুন।";
 
-      toast.error(errorMessage, {
+      const formattedError = Array.isArray(errorMessage)
+        ? errorMessage.join(", ")
+        : errorMessage;
+
+      setApiError(formattedError);
+      toast.error(formattedError, {
         position: "bottom-right",
-        autoClose: 5000,
+        autoClose: 400,
       });
     }
   };
 
-  // If cart is empty, show empty state
+  // Empty Cart State
   if (cartItems.length === 0) {
     return (
       <div className="bg-slate-50 min-h-screen py-20">
         <div className="container mx-auto px-4 max-w-4xl text-center">
-          <div className="bg-white rounded-2xl p-12 shadow-sm">
-            <ShoppingBag size={64} className="mx-auto text-slate-300 mb-4" />
+          <div className="bg-white rounded-2xl p-12 shadow-sm border border-slate-100">
+            <ShoppingBag size={64} className="mx-auto mb-4 text-slate-300" />
             <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
-              Your Cart is Empty
+              আপনার কার্ট খালি
             </h2>
             <p className="text-slate-500 mb-6">
-              Looks like you haven&apos;t added any items to your cart yet.
+              মনে হচ্ছে আপনি এখনো কোনো পণ্য কার্টে যোগ করেননি।
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg"
             >
               <ChevronLeft size={18} />
-              Continue Shopping
+              কেনাকাটা চালিয়ে যান
             </Link>
           </div>
         </div>
@@ -349,40 +333,40 @@ export default function ProductCheckout() {
   return (
     <div className="bg-slate-50 min-h-screen py-6">
       <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
+        {/* Header Navigation */}
         <div className="flex items-center justify-between mb-6">
           <Link
             href="/"
             className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
           >
             <ChevronLeft size={20} />
-            <span className="font-semibold">Back to Home</span>
+            <span className="font-semibold">হোমে ফিরে যান</span>
           </Link>
-          <h1 className="text-2xl font-extrabold text-slate-900">Checkout</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900">চেকআউট</h1>
           <div className="w-24" />
         </div>
 
-        {/* API Error Display */}
+        {/* API Error Alert Banner */}
         {apiError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
-            <AlertCircle size={20} />
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 shadow-sm">
+            <AlertCircle size={20} className="shrink-0" />
             <span className="text-sm font-medium">{apiError}</span>
           </div>
         )}
 
-        {/* Main Grid */}
+        {/* Checkout Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Form */}
+          {/* Left Column: Customer Form & Shipping Info */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Personal Information */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
               <h2 className="text-lg font-extrabold text-slate-900 mb-4">
-                Personal Information
+                ব্যক্তিগত তথ্য
               </h2>
               <div className="space-y-4">
+                {/* Full Name */}
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">
-                    Full Name <span className="text-red-500">*</span>
+                    পূর্ণ নাম <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <User
@@ -394,16 +378,17 @@ export default function ProductCheckout() {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      placeholder="Monirul Islam"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                      placeholder="মোঃ মনিরুল ইসলাম"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-slate-800"
                       required
                     />
                   </div>
                 </div>
 
+                {/* Mobile Number */}
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">
-                    Mobile Number <span className="text-red-500">*</span>
+                    মোবাইল নম্বর <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Phone
@@ -415,16 +400,17 @@ export default function ProductCheckout() {
                       name="mobileNumber"
                       value={formData.mobileNumber}
                       onChange={handleInputChange}
-                      placeholder="017123......."
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                      placeholder="০১৭১২৩৪৫৬৭৮"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-slate-800"
                       required
                     />
                   </div>
                 </div>
 
+                {/* Full Address */}
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">
-                    Full Address <span className="text-red-500">*</span>
+                    সম্পূর্ণ ঠিকানা <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <MapPin
@@ -435,17 +421,18 @@ export default function ProductCheckout() {
                       name="fullAddress"
                       value={formData.fullAddress}
                       onChange={handleInputChange}
-                      placeholder="House #123, Road #45, Block C, Bashundhara R/A, Dhaka"
+                      placeholder="বাড়ি #১২৩, বাশুন্ধরা আর/এ, ঢাকা"
                       rows={3}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all resize-none"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all resize-none text-slate-800"
                       required
                     />
                   </div>
                 </div>
 
+                {/* Optional Note */}
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">
-                    Optional Note
+                    ঐচ্ছিক নোট
                   </label>
                   <div className="relative">
                     <MessageSquare
@@ -456,44 +443,41 @@ export default function ProductCheckout() {
                       name="optionalNote"
                       value={formData.optionalNote}
                       onChange={handleInputChange}
-                      placeholder="Any special instructions for delivery..."
+                      placeholder="ডেলিভারির জন্য কোনো বিশেষ নির্দেশনা (যেমন: ডেলিভারির আগে ফোন করবেন)..."
                       rows={2}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all resize-none"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all resize-none text-slate-800"
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Delivery & Payment Method - Combined */}
-            <div className="bg-white rounded-2xl md:p-6 p-3 shadow-sm border border-slate-100">
+            {/* Delivery & Payment Method */}
+            <div className="bg-white rounded-2xl md:p-6 p-4 shadow-sm border border-slate-100">
               <h2 className="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
                 <Truck size={20} className="text-emerald-500" />
-                Delivery & Payment
+                ডেলিভারি ও পেমেন্ট
               </h2>
 
-              {/* Cash on Delivery Card */}
-              <div className="md:p-4 p-2 bg-linear-to-r from-emerald-50 to-emerald-100/50 border-2 border-emerald-200 rounded-xl">
+              <div className="p-4 bg-emerald-50/60 border-2 border-emerald-200 rounded-xl">
                 <div className="flex items-start gap-4">
-                  {/* Icon */}
                   <div className="p-3 md:flex hidden bg-emerald-600 rounded-xl shadow-lg shadow-emerald-200">
                     <Building2 size={24} className="text-white" />
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div>
                         <p className="font-bold text-slate-800 text-lg">
-                          Cash on Delivery
+                          ক্যাশ অন ডেলিভারি
                         </p>
-                        <p className="text-xs text-slate-500">
-                          Pay with cash when your order arrives
+                        <p className="text-sm text-slate-600">
+                          অর্ডার আসার সময় নগদ অর্থ প্রদান করুন
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                          COD
+                        <span className="bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                          সিওডি
                         </span>
                         <span className="text-lg font-extrabold text-emerald-600">
                           ৳{deliveryFee}
@@ -501,35 +485,33 @@ export default function ProductCheckout() {
                       </div>
                     </div>
 
-                    {/* Weight & Delivery Info */}
-                    <div className="mt-3 flex flex-wrap items-center gap-3 p-2 bg-white/50 rounded-lg border border-emerald-100">
+                    <div className="mt-3 flex flex-wrap items-center gap-3 p-2 bg-white/70 rounded-lg border border-emerald-100">
                       <div className="flex items-center gap-1.5">
                         <Weight size={14} className="text-emerald-600" />
-                        <span className="text-xs text-slate-600">
-                          Total Weight: {totalWeight.toFixed(2)} kg
+                        <span className="text-sm font-medium text-slate-700">
+                          মোট ওজন: {totalWeight.toFixed(2)} কেজি
                         </span>
                       </div>
                       <span className="text-slate-300">|</span>
                       <div className="flex items-center gap-1.5">
                         <Truck size={14} className="text-emerald-600" />
-                        <span className="text-xs text-slate-600">
+                        <span className="text-sm font-medium text-slate-700">
                           {totalWeight <= 1
-                            ? "Base delivery (1 kg)"
-                            : `Base (1kg) + ${(totalWeight - 1).toFixed(1)}kg extra`}
+                            ? "বেস ডেলিভারি (১ কেজি)"
+                            : `বেস (১কেজি) + ${(totalWeight - 1).toFixed(2)}কেজি অতিরিক্ত`}
                         </span>
                       </div>
                       <span className="text-slate-300">|</span>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-emerald-600">
-                          ৳{150} + {Math.max(0, Math.ceil(totalWeight - 1))} ×
-                          ৳20
+                        <span className="text-sm font-bold text-emerald-600">
+                          ৳120 + {Math.max(0, Math.ceil(totalWeight - 1))} × ৳২০
                         </span>
                       </div>
                     </div>
 
-                    <p className="text-[10px] text-slate-400 mt-2">
-                      * Delivery fee: ৳150 for first 1kg, ৳20 for each
-                      additional kg
+                    <p className="text-xs text-slate-500 mt-2">
+                      * ডেলিভারি চার্জ: প্রথম ১ কেজির জন্য ৳১২০, অতিরিক্ত প্রতি
+                      কেজির জন্য ৳২০
                     </p>
                   </div>
                 </div>
@@ -537,62 +519,63 @@ export default function ProductCheckout() {
             </div>
           </div>
 
-          {/* Right Column - Order Summary */}
-          {/* Right Column - Order Summary */}
+          {/* Right Column: Order Summary Side Panel */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 sticky top-6">
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 sticky top-6">
               <h2 className="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
                 <ShoppingBag size={20} className="text-emerald-500" />
-                Order Summary ({totalQuantity} items)
+                অর্ডার সারাংশ ({totalQuantity} টি আইটেম)
               </h2>
 
-              {/* Cart Items */}
-              <div className="space-y-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
-                {cartItems.map((item: CartItem) => (
+              {/* Cart List */}
+              <div className="max-h-80 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
+                {cartItems.map((item: CartItem, index: number) => (
                   <div
-                    key={`${item.id}-${item.packSizeId}`}
-                    className="flex items-center gap-3 pb-3 border-b border-slate-100 last:border-0"
+                    key={`${item.id}-${index}`}
+                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-emerald-200 transition-all"
                   >
-                    {/* Product Image */}
-                    <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-slate-50 border border-slate-100">
-                      <Image
-                        src={item.image || "/placeholder.png"}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                      />
+                    <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          width={56}
+                          height={56}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <span className="text-xs font-bold text-slate-400">
+                          Med
+                        </span>
+                      )}
                     </div>
 
-                    {/* Product Details */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-slate-800 truncate">
+                      <p className="text-sm font-bold text-slate-800 truncate">
                         {item.name}
                       </p>
 
-                      {/* Weight Display */}
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Weight size={10} className="text-slate-400" />
-                        <span className="text-[10px] text-slate-500">
-                          {(item.weight || 0.15).toFixed(2)} kg
+                      <div className="flex items-center gap-1 mt-0.5 text-slate-500">
+                        <Weight size={12} />
+                        <span className="text-xs">
+                          {item.weight ?? 0.15} কেজি
                         </span>
                       </div>
 
-                      {/* Quantity & Price - Inline */}
-                      <div className="flex items-center justify-between mt-1">
-                        <div className="flex space-x-1">
-                          {/* Quantity Controls - Inline */}
-                          <div className="flex items-center gap-1 bg-slate-50 rounded-lg border border-slate-200 p-0.5">
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-1.5">
+                          <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden">
                             <button
                               type="button"
                               onClick={() =>
                                 handleUpdateQuantity(item, item.quantity - 1)
                               }
-                              className="p-1 rounded-md hover:bg-slate-200 transition-colors"
-                              aria-label="Decrease quantity"
+                              className="px-2 py-1 hover:bg-slate-100 transition-colors text-slate-600"
+                              aria-label="পরিমাণ কমান"
                             >
-                              <Minus size={12} className="text-slate-500" />
+                              <Minus size={12} />
                             </button>
-                            <span className="text-xs font-bold text-slate-700 min-w-5 text-center">
+                            <span className="text-xs font-bold text-slate-700 min-w-6 text-center">
                               {item.quantity}
                             </span>
                             <button
@@ -600,34 +583,27 @@ export default function ProductCheckout() {
                               onClick={() =>
                                 handleUpdateQuantity(item, item.quantity + 1)
                               }
-                              className="p-1 rounded-md hover:bg-slate-200 transition-colors"
-                              aria-label="Increase quantity"
+                              className="px-2 py-1 hover:bg-slate-100 transition-colors text-slate-600"
+                              aria-label="পরিমাণ বাড়ান"
                             >
-                              <Plus size={12} className="text-slate-500" />
+                              <Plus size={12} />
                             </button>
                           </div>
 
-                          {/* Delete Button - Left */}
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(item)}
-                            className="shrink-0 p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
-                            aria-label="Remove item"
+                            className="p-1 rounded-lg hover:bg-red-100 transition-colors text-slate-400 hover:text-red-500"
+                            aria-label="আইটেম সরান"
                           >
                             <Trash2 size={14} />
                           </button>
                         </div>
 
-                        {/* Price */}
                         <div className="text-right">
-                          <p className="text-sm font-bold text-emerald-600">
-                            ৳{(item.price * item.quantity).toFixed(2)}
+                          <p className="text-xs font-bold text-emerald-600">
+                            ৳{item.price * item.quantity}
                           </p>
-                          {item.quantity > 1 && (
-                            <p className="text-[10px] text-slate-400">
-                              ৳{item.price.toFixed(2)} x {item.quantity}
-                            </p>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -635,86 +611,81 @@ export default function ProductCheckout() {
                 ))}
               </div>
 
-              {/* Price Breakdown */}
-              <div className="space-y-2 py-4 border-t border-slate-200 mt-2">
+              {/* Price Calculation Breakdown */}
+              <div className="space-y-2 py-4 border-t border-slate-200 mt-4">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600">Subtotal</span>
+                  <span className="text-slate-600">সাবটোটাল</span>
                   <span className="font-semibold text-slate-800">
-                    ৳{subtotal.toFixed(2)}
+                    ৳{subtotal}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600">Total Weight</span>
+                  <span className="text-slate-600">মোট ওজন</span>
                   <span className="font-semibold text-slate-800">
-                    {totalWeight.toFixed(2)} kg
+                    {totalWeight.toFixed(2)} কেজি
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600">Delivery Fee</span>
+                  <span className="text-slate-600">ডেলিভারি চার্জ</span>
                   <span className="font-semibold text-slate-800">
-                    ৳{deliveryFee.toFixed(2)}
+                    ৳{deliveryFee}
                   </span>
-                </div>
-                <div className="flex justify-between items-center text-[10px] text-slate-400 pl-4">
-                  <span>Base (1kg)</span>
-                  <span>+ {Math.max(0, Math.ceil(totalWeight - 1))} × ৳20</span>
                 </div>
               </div>
 
-              {/* Total */}
-              <div className="pt-4 border-t border-slate-200">
+              {/* Total Payable Amount */}
+              <div className="pt-3 border-t border-slate-200">
                 <div className="flex justify-between items-center">
                   <span className="text-base font-extrabold text-slate-900">
-                    Total Payable
+                    মোট প্রদেয়
                   </span>
                   <span className="text-2xl font-extrabold text-emerald-600">
-                    ৳{totalPayable.toFixed(2)}
+                    ৳{totalPayable}
                   </span>
                 </div>
               </div>
 
-              {/* Place Order Button */}
-              <div className="mt-4">
-                {isOrderPlacing ? (
-                  <button
-                    type="button"
-                    disabled
-                    className="w-full py-3.5 bg-slate-300 text-white font-extrabold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed"
-                  >
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                    Processing...
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handlePlaceOrder}
-                    className="w-full py-3.5 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-extrabold rounded-xl transition-all shadow-lg shadow-emerald-200 hover:shadow-emerald-300 active:scale-95 flex items-center justify-center gap-2"
-                  >
-                    <ShoppingBag size={18} />
-                    Place Order (COD)
-                  </button>
-                )}
+              {/* Submit Button */}
+              <div className="mt-5">
+                <button
+                  type="button"
+                  onClick={handlePlaceOrder}
+                  disabled={isOrderPlacing}
+                  className="w-full py-3.5 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-extrabold rounded-xl transition-all shadow-lg shadow-emerald-200 hover:shadow-emerald-300 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isOrderPlacing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                      প্রক্রিয়াকরণ...
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag size={18} />
+                      অর্ডার করুন (সিওডি)
+                    </>
+                  )}
+                </button>
               </div>
 
-              <p className="text-[10px] text-slate-400 text-center mt-3">
-                By placing order you agree to our Terms & Conditions
+              <p className="text-xs text-slate-400 text-center mt-3">
+                অর্ডার করার মাধ্যমে আপনি আমাদের শর্তাবলী মেনে নিচ্ছেন
               </p>
 
               {/* Trust Badges */}
-              <div className="mt-4 flex justify-center gap-6">
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                  <Lock size={14} className="text-emerald-500" />
-                  <span>Secure</span>
+              <div className="mt-5 pt-4 border-t border-slate-100 flex justify-center gap-4 text-slate-500">
+                <div className="flex items-center gap-1 text-xs">
+                  <Lock size={13} className="text-emerald-500" />
+                  <span>সুরক্ষিত</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                  <Truck size={14} className="text-emerald-500" />
-                  <span>Fast Delivery</span>
+                <div className="flex items-center gap-1 text-xs">
+                  <Truck size={13} className="text-emerald-500" />
+                  <span>দ্রুত ডেলিভারি</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                  <RefreshCw size={14} className="text-emerald-500" />
-                  <span>Easy Return</span>
+                <div className="flex items-center gap-1 text-xs">
+                  <RefreshCw size={13} className="text-emerald-500" />
+                  <span>সহজ রিটার্ন</span>
                 </div>
               </div>
             </div>

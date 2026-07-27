@@ -7,8 +7,6 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  packSizeId: string;
-  packSizeLabel: string;
   image?: string;
   maxQuantity?: number;
   weight?: number;
@@ -46,12 +44,14 @@ const cartSlice = createSlice({
     ADD_TO_CART: (state, action: PayloadAction<CartItem>) => {
       const newItem = action.payload;
       const existingItem = state.cartItems.find(
-        (item) =>
-          item.id === newItem.id && item.packSizeId === newItem.packSizeId,
+        (item) => item.id === newItem.id,
       );
 
       if (!existingItem) {
-        state.cartItems.push({ ...newItem, quantity: 1 });
+        state.cartItems.push({
+          ...newItem,
+          quantity: newItem.quantity || 1,
+        });
       } else {
         if (
           newItem.maxQuantity &&
@@ -59,25 +59,18 @@ const cartSlice = createSlice({
         ) {
           return;
         }
-        existingItem.quantity++;
+        existingItem.quantity += newItem.quantity || 1;
       }
       calculateTotals(state);
     },
 
-    REMOVE_FROM_CART: (
-      state,
-      action: PayloadAction<{ id: string; packSizeId: string }>,
-    ) => {
-      const { id, packSizeId } = action.payload;
-      const existingItem = state.cartItems.find(
-        (item) => item.id === id && item.packSizeId === packSizeId,
-      );
+    REMOVE_FROM_CART: (state, action: PayloadAction<{ id: string }>) => {
+      const { id } = action.payload;
+      const existingItem = state.cartItems.find((item) => item.id === id);
 
       if (existingItem) {
         if (existingItem.quantity === 1) {
-          state.cartItems = state.cartItems.filter(
-            (item) => !(item.id === id && item.packSizeId === packSizeId),
-          );
+          state.cartItems = state.cartItems.filter((item) => item.id !== id);
         } else {
           existingItem.quantity--;
         }
@@ -85,14 +78,9 @@ const cartSlice = createSlice({
       calculateTotals(state);
     },
 
-    DELETE_ITEM: (
-      state,
-      action: PayloadAction<{ id: string; packSizeId: string }>,
-    ) => {
-      const { id, packSizeId } = action.payload;
-      state.cartItems = state.cartItems.filter(
-        (item) => !(item.id === id && item.packSizeId === packSizeId),
-      );
+    DELETE_ITEM: (state, action: PayloadAction<{ id: string }>) => {
+      const { id } = action.payload;
+      state.cartItems = state.cartItems.filter((item) => item.id !== id);
       calculateTotals(state);
     },
 
@@ -106,14 +94,12 @@ const cartSlice = createSlice({
       state,
       action: PayloadAction<{
         id: string;
-        packSizeId: string;
         quantity: number;
       }>,
     ) => {
-      const { id, packSizeId, quantity } = action.payload;
-      const item = state.cartItems.find(
-        (item) => item.id === id && item.packSizeId === packSizeId,
-      );
+      const { id, quantity } = action.payload;
+      const item = state.cartItems.find((item) => item.id === id);
+
       if (item && quantity > 0) {
         if (item.maxQuantity && quantity > item.maxQuantity) {
           item.quantity = item.maxQuantity;
@@ -133,4 +119,5 @@ export const {
   CLEAR_CART,
   UPDATE_QUANTITY,
 } = cartSlice.actions;
+
 export default cartSlice.reducer;

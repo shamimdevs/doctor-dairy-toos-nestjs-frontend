@@ -109,7 +109,7 @@ export default function CartSidebar() {
         </div>
 
         {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4">
+        <div className="flex-1 overflow-y-scroll p-6 space-y-4">
           {cartItems && cartItems.length > 0 ? (
             <>
               {cartItems.map((item: CartItem, index: number) => (

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/redux/api/orderApi.ts
 import { tagTypes } from "../tag-types";
 import { baseApi } from "./baseApi";
 
@@ -10,49 +8,55 @@ const ORDER_URL = "/orders";
 // ==========================================
 
 export interface IOrderItem {
-  id: string;
-  product_variant_id: string;
+  product_id: string;
   product_name: string;
-  sku: string;
   quantity: number;
-  unit_price: number;
+  price: number;
+  weight?: number;
   total_price: number;
-  created_at: string;
+  image?: string | null;
 }
 
 export interface IOrder {
   id: string;
   order_number: string;
-  user_id: string;
+  user_id?: string;
+  customer_name: string;
+  phone: string;
+  address: string;
+  notes?: string;
   subtotal: number;
-  discount: number;
   delivery_charge: number;
   total_amount: number;
-  payment_status: string;
-  payment_method?: string;
-  order_status: string;
-  notes?: string;
+  total_weight: number;
+  order_status: string; // 'pending' | 'processing' | 'delivered' | 'cancelled'
+  payment_method: string;
+  payment_status: string; // 'pending' | 'paid' | 'failed'
   items: IOrderItem[];
-  placed_at: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface ICreateOrderDto {
-  payment_method: string;
-  notes?: string;
-  items?: any[];
-  shipping_address?: any;
+export interface IOrderItemDto {
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  weight?: number;
+  image?: string;
 }
 
-export interface ICreateOrderResponse {
-  order: IOrder;
-  items: IOrderItem[];
+export interface ICreateOrderDto {
+  fullName: string;
+  phone: string;
+  address: string;
+  notes?: string;
+  items: IOrderItemDto[];
 }
 
 export interface IUpdateOrderDto {
-  order_status?: string;
-  payment_status?: string;
+  order_status?: "pending" | "processing" | "delivered" | "cancelled";
+  payment_status?: "pending" | "paid" | "failed";
   notes?: string;
 }
 
@@ -72,10 +76,10 @@ export interface ILinks {
 }
 
 export interface IApiResponse<T> {
-  apiVersion: string;
+  apiVersion?: string;
   success: boolean;
   message: string;
-  status: number;
+  status?: number;
   meta?: IMeta;
   links?: ILinks;
   data: T;
@@ -88,7 +92,7 @@ export interface IApiResponse<T> {
 export const orderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     // Create Order
-    createOrder: build.mutation<ICreateOrderResponse, ICreateOrderDto>({
+    createOrder: build.mutation<IApiResponse<IOrder>, ICreateOrderDto>({
       query: (data) => ({
         url: ORDER_URL,
         method: "POST",
@@ -99,7 +103,7 @@ export const orderApi = baseApi.injectEndpoints({
 
     // Get All Orders (Admin)
     getAllOrders: build.query<
-      IApiResponse<IOrder[]>,
+      IApiResponse<IOrder[]> | IOrder[],
       { page?: number; limit?: number; order_status?: string } | void
     >({
       query: (params) => ({
@@ -110,9 +114,9 @@ export const orderApi = baseApi.injectEndpoints({
       providesTags: [tagTypes.orders],
     }),
 
-    // ✅ Get My Orders (User's own orders)
+    // Get My Orders (User's own orders)
     getMyOrders: build.query<
-      IApiResponse<IOrder[]>,
+      IApiResponse<IOrder[]> | IOrder[],
       { page?: number; limit?: number; order_status?: string } | void
     >({
       query: (params) => ({
@@ -124,7 +128,7 @@ export const orderApi = baseApi.injectEndpoints({
     }),
 
     // Get Single Order by ID
-    getOrderById: build.query<IApiResponse<IOrder>, string>({
+    getOrderById: build.query<IApiResponse<IOrder> | IOrder, string>({
       query: (id) => ({
         url: `${ORDER_URL}/${id}`,
         method: "GET",
@@ -134,7 +138,7 @@ export const orderApi = baseApi.injectEndpoints({
 
     // Get User's Orders
     getUserOrders: build.query<
-      IApiResponse<IOrder[]>,
+      IApiResponse<IOrder[]> | IOrder[],
       { page?: number; limit?: number; order_status?: string } | void
     >({
       query: (params) => ({
@@ -189,7 +193,7 @@ export const {
   useCreateOrderMutation,
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
-  useGetMyOrdersQuery, // ✅ Export this
+  useGetMyOrdersQuery,
   useGetUserOrdersQuery,
   useUpdateOrderMutation,
   useCancelOrderMutation,
