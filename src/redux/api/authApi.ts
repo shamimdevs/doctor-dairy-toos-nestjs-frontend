@@ -2,6 +2,7 @@
 import {
   EmailRequest,
   LoginResponse,
+  LogoutResponse,
   ResetPasswordRequest,
   SignInRequest,
   UserProfileResponse,
@@ -13,11 +14,6 @@ import { tagTypes } from "../tag-types";
 import { baseApi } from "./baseApi";
 
 const AUTH_URL = "/auth";
-
-// ✅ Add SignOutResponse type
-export interface SignOutResponse {
-  message: string;
-}
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -31,7 +27,7 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.user],
     }),
     // ✅ LOGOUT - Fix response type
-    signOut: builder.mutation<SignOutResponse, void>({
+    signOut: builder.mutation<LogoutResponse, void>({
       query: () => ({
         url: `${AUTH_URL}/sign-out`,
         method: "POST",

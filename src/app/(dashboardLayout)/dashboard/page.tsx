@@ -17,7 +17,6 @@ const MetricCard: React.FC<MetricCardProps> = ({
   title,
   value,
   change,
-  isPositive,
   bgGradient,
   badgeBg,
   iconBg,
@@ -164,7 +163,7 @@ const VetDashboard = () => {
     <div className="space-y-6">
       {/* Category Cards Displaying Product Length */}
       <div>
-        <div className="flex items-center justify-between mb-3">
+        <div className="md:flex items-center justify-between mb-3">
           <h2 className="text-lg font-extrabold text-gray-900">
             পণ্য বিভাগ (Categories & Product Count)
           </h2>
@@ -223,8 +222,8 @@ const VetDashboard = () => {
             </select>
           </div>
 
-          <div className="flex-1 min-h-[220px] bg-gradient-to-br from-teal-500/10 via-emerald-500/5 to-amber-500/10 rounded-2xl border-2 border-dashed border-teal-200/80 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-white text-2xl shadow-lg mb-3 animate-bounce">
+          <div className="flex-1 min-h-55 bg-linear-to-br from-teal-500/10 via-emerald-500/5 to-amber-500/10 rounded-2xl border-2 border-dashed border-teal-200/80 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+            <div className="w-16 h-16 rounded-full bg-linear-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-white text-2xl shadow-lg mb-3 animate-bounce">
               📈
             </div>
             <p className="text-gray-900 font-extrabold text-base">
@@ -249,7 +248,7 @@ const VetDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="p-3.5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/60 flex items-center justify-between">
+            <div className="p-3.5 bg-linear-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/60 flex items-center justify-between">
               <div>
                 <p className="font-extrabold text-gray-900 text-xs sm:text-sm">
                   FMD Vaccine (Cattle)
@@ -263,7 +262,7 @@ const VetDashboard = () => {
               </span>
             </div>
 
-            <div className="p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200/60 flex items-center justify-between">
+            <div className="p-3.5 bg-linear-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200/60 flex items-center justify-between">
               <div>
                 <p className="font-extrabold text-gray-900 text-xs sm:text-sm">
                   Gumboro Vaccine (Poultry)
@@ -277,7 +276,7 @@ const VetDashboard = () => {
               </span>
             </div>
 
-            <div className="p-3.5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/60 flex items-center justify-between">
+            <div className="p-3.5 bg-linear-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/60 flex items-center justify-between">
               <div>
                 <p className="font-extrabold text-gray-900 text-xs sm:text-sm">
                   Anthrax Spore Vaccine

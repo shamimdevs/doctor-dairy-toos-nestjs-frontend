@@ -18,11 +18,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
 import { useCreateUserMutation } from "@/src/redux/api/usersApi";
 import { storeOTPData } from "@/src/redux/features/otpSlice";
 import { ApiError } from "@/src/types/authType";
@@ -43,7 +40,7 @@ interface SignUpFormData {
 
 const SignUp = () => {
   const dispatch = useDispatch();
-  const router = useRouter();
+
   const [credential, setCredential] = useState<SignUpFormData | null>(null);
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [createUser, { isLoading }] = useCreateUserMutation();
@@ -392,11 +389,6 @@ const SignUp = () => {
           credential={credential}
           onSuccess={() => {
             setOtpModalOpen(false);
-            toast.success("Account verified successfully!");
-            // Redirect to login after verification
-            setTimeout(() => {
-              router.push("/login");
-            }, 1500);
           }}
         />
       </CommonModal>

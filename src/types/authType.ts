@@ -16,7 +16,6 @@ export interface UserProfileResponse {
   };
 }
 
-// // This matches exactly what the backend returns
 export interface VerifyResponse {
   success: boolean;
   message: string;
@@ -46,12 +45,6 @@ export interface EmailRequest {
   email: string;
 }
 
-export interface LoginResponse {
-  success: boolean;
-  message: string;
-  data: OtpData;
-}
-
 export interface ResetPasswordRequest {
   email: string;
   otp: string;
@@ -64,12 +57,14 @@ export interface SignInRequest {
 }
 
 export interface LoginResponse {
-  apiVersion: string;
   success: boolean;
   message: string;
-  status: number;
   data: OtpData;
-  links: AuthLinks;
+}
+
+export interface LogoutResponse {
+  success: boolean;
+  message: string;
 }
 
 export interface OtpData {

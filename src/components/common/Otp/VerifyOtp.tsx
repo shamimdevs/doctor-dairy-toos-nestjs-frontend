@@ -1,14 +1,21 @@
 "use client";
+
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { toast } from "react-toastify";
 import { Loader } from "lucide-react";
-import { ApiError, OtpData, VerifyOtpRequest } from "@/src/types/authType";
+import { useRouter } from "next/navigation";
+
+import {
+  ApiError,
+  OtpData,
+  VerifyOtpRequest,
+  UserProfileResponse,
+} from "@/src/types/authType";
 import { removeOtpData } from "@/src/redux/features/otpSlice";
 import { storeUser } from "@/src/redux/features/auth/authSlice";
-// import ResendOTP from "./ResendOTP";
 import { useVerifyOTPMutation } from "@/src/redux/api/authApi";
-import { useRouter } from "next/navigation";
 
 type LoginFormValues = {
   email: string;
@@ -31,7 +38,11 @@ interface Props {
   redirectPath?: string;
 }
 
-const VerifyOtp: React.FC<Props> = ({ credential, onSuccess }) => {
+const VerifyOtp: React.FC<Props> = ({
+  credential,
+  onSuccess,
+  redirectPath,
+}) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { otpData } = useSelector((state: RootState) => state.otp);
@@ -49,31 +60,47 @@ const VerifyOtp: React.FC<Props> = ({ credential, onSuccess }) => {
 
   const onSubmit: SubmitHandler<VerifyOtpForm> = async (data) => {
     if (!otpData?.id) {
-      toast.error("OTP session expired");
+      toast.error("OTP session expired. Please request a new OTP.");
       return;
     }
 
     try {
-      // ✅ Payload matches VerifyOtpRequest interface exactly
       const payload: VerifyOtpRequest = {
         user_id: otpData.id,
         otp_code: data.otp_code,
       };
 
-      const res = await verifyOTP(payload).unwrap();
+      // Cast unwrap() to UserProfileResponse (or your specific response interface)
+      const res = (await verifyOTP(payload).unwrap()) as UserProfileResponse;
 
-      if (res.success) {
-        toast.success("OTP verified successfully");
+      if (res?.success) {
+        const user = res?.data?.user;
+
+        toast.success(res?.message || "OTP verified successfully");
+
+        // Clean up OTP state & sync user to Redux
         dispatch(removeOtpData());
+        if (user) {
+          dispatch(storeUser(user));
+        }
+
         reset();
-        dispatch(storeUser(res?.data?.user));
-        if (onSuccess) onSuccess();
-        router.push("/");
+
+        if (onSuccess) {
+          onSuccess();
+        }
+
+        // Role-based Navigation
+        if (user?.role === "super_admin") {
+          router.push("/dashboard");
+        } else {
+          router.push(redirectPath || "/");
+        }
       }
     } catch (err: unknown) {
       const error = err as ApiError;
       const message =
-        error?.data?.message || error?.message || "Something went wrong.";
+        error?.data?.message || error?.message || "Invalid or expired OTP.";
       toast.error(message);
     }
   };
@@ -97,6 +124,7 @@ const VerifyOtp: React.FC<Props> = ({ credential, onSuccess }) => {
             })}
             className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter 6-digit OTP"
+            disabled={isLoading}
           />
           {errors.otp_code && (
             <p className="text-xs text-red-400 mt-1">
@@ -108,19 +136,15 @@ const VerifyOtp: React.FC<Props> = ({ credential, onSuccess }) => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition"
+          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
         >
-          {isLoading ? <Loader /> : "Confirm Verification"}
+          {isLoading ? (
+            <Loader className="w-5 h-5 animate-spin" />
+          ) : (
+            "Confirm Verification"
+          )}
         </button>
       </form>
-
-      <div className="mt-6">
-        {/* <ResendOTP
-          email={displayEmail}
-          added_by={otpData?.added_by || ""}
-          otpData={otpData}
-        /> */}
-      </div>
     </div>
   );
 };

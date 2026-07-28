@@ -29,10 +29,6 @@ export const DNavbar: React.FC<DNavbarProps> = ({ onOpenSidebar }) => {
             />
           </svg>
         </button>
-
-        {/* <h1 className="text-base sm:text-lg font-semibold text-gray-800">
-          Doctor Dairy Tools
-        </h1> */}
       </div>
 
       <div className="flex items-center gap-4">
