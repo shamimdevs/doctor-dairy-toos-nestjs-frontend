@@ -1,72 +1,7 @@
-// import { tagTypes } from "../tag-types";
-// import { baseApi } from "./baseApi";
-
-// const PRODUCT_CATEGORY_URL = "/product-categories";
-
-// // ==========================================
-// // TYPE DEFINITIONS
-// // ==========================================
-
-// export interface IProductCategory {
-//   id: string;
-//   name: string;
-//   image: string;
-//   created_at: string;
-//   updated_at: string;
-// }
-
-// export interface IMeta {
-//   total: number;
-//   page: number;
-//   limit: number;
-//   totalPages: number;
-// }
-
-// export interface ILinks {
-//   first: string;
-//   last: string;
-//   current: string;
-//   next: string;
-//   previous: string;
-// }
-
-// // Global API Wrapper Type Definition matching your backend structure
-// export interface IApiResponse<T> {
-//   apiVersion: string;
-//   success: boolean;
-//   message: string;
-//   status: number;
-//   meta?: IMeta;
-//   links?: ILinks;
-//   data: T;
-// }
-
-// // ==========================================
-// // API ENDPOINTS
-// // ==========================================
-
-// export const productCategoryApi = baseApi.injectEndpoints({
-//   endpoints: (build) => ({
-//     getAllProductCategories: build.query<
-//       IApiResponse<IProductCategory[]>,
-//       Record<string, unknown> | undefined
-//     >({
-//       query: (arg) => ({
-//         url: PRODUCT_CATEGORY_URL,
-//         method: "GET",
-//         params: arg,
-//       }),
-//       providesTags: [tagTypes.product_categories],
-//     }),
-//   }),
-// });
-
-// export const { useGetAllProductCategoriesQuery } = productCategoryApi;
-
 import type { ApiResponse } from "../../types/axios";
 import { baseApi } from "./baseApi";
 import { tagTypes } from "../tag-types";
-import {
+import type {
   PaginationQuery,
   ProductCategoriesPaginatedResponse,
   ProductCategory,
@@ -77,13 +12,13 @@ const PRODUCT_CATEGORIES_URL = "/product-categories";
 
 export const productCategoriesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // ✅ CREATE
+    // CREATE
     createProductCategory: builder.mutation<
       ApiResponse<ProductCategory>,
       FormData
     >({
       query: (formData) => ({
-        url: `${PRODUCT_CATEGORIES_URL}/create`,
+        url: PRODUCT_CATEGORIES_URL,
         method: "POST",
         data: formData,
         contentType: true,
@@ -91,7 +26,7 @@ export const productCategoriesApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.product_categories],
     }),
 
-    // ✅ GET ALL
+    // GET ALL
     getAllProductCategories: builder.query<
       ProductCategoriesPaginatedResponse,
       PaginationQuery
@@ -104,19 +39,19 @@ export const productCategoriesApi = baseApi.injectEndpoints({
       providesTags: [tagTypes.product_categories],
     }),
 
-    // ✅ GET SINGLE
+    // GET SINGLE
     getSingleProductCategory: builder.query<
       ApiResponse<ProductCategory>,
       string
     >({
       query: (id) => ({
-        url: `${PRODUCT_CATEGORIES_URL}/id/${id}`,
+        url: `${PRODUCT_CATEGORIES_URL}/${id}`,
         method: "GET",
       }),
       providesTags: [tagTypes.product_categories],
     }),
 
-    // ✅ UPDATE
+    // UPDATE
     updateProductCategory: builder.mutation<
       ApiResponse<ProductCategory>,
       UpdateProductCategoryRequest
@@ -130,7 +65,7 @@ export const productCategoriesApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.product_categories],
     }),
 
-    // ✅ DELETE
+    // DELETE
     deleteProductCategory: builder.mutation<ApiResponse<void>, string>({
       query: (id) => ({
         url: `${PRODUCT_CATEGORIES_URL}/${id}`,

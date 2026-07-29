@@ -52,6 +52,19 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
+    label: "Project  Category",
+    icon: FolderKanban,
+    children: [
+      {
+        label: "All Projects Category",
+        href: "/dashboard/product-category/all-product-category",
+        icon: List,
+      },
+      { label: "Active", href: "/projects/active", icon: Clock },
+      { label: "Archived", href: "/projects/archived", icon: Archive },
+    ],
+  },
+  {
     label: "Settings",
     icon: Settings,
     children: [
@@ -126,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={() => toggleDropdown(item.label)}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`w-full flex items-center justify-between px-1.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isChildActive
                       ? "bg-gray-100 text-emerald-700 font-semibold"
                       : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
@@ -161,7 +174,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             key={child.href}
                             href={child.href || "#"}
                             onClick={onClose}
-                            className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
+                            className={`flex items-center gap-3 px-1.5 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
                               childActive
                                 ? "bg-emerald-50 text-emerald-700 font-semibold"
                                 : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
