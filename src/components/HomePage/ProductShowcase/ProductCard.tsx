@@ -21,9 +21,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   // Image handling
   const image = product.thumbnail || "/placeholder.png";
 
+  console.log(product, "product");
+
   // Price handling - using API fields directly
-  const currentPrice = product.price || 0;
-  const originalPrice = product.original_price || product.price || 0;
+  const currentPrice = product?.price;
+  const originalPrice = product.original_price || product.price;
 
   //  Get weight from product
   const productWeight = product?.weight;
@@ -52,7 +54,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       id: product.id,
       productId: product.id,
       name: product.name,
-      price: currentPrice,
+      price: product?.price,
       quantity: 1,
       packSizeId: product.id,
       packSizeLabel: "Default",
@@ -60,7 +62,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       maxQuantity: 99,
       weight: productWeight,
       discount: discountPercentage,
-      originalPrice: originalPrice,
+      originalPrice: product?.original_price,
       sku: product.slug || "",
     };
 
@@ -86,7 +88,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     dispatch(
       REMOVE_FROM_CART({
         id: product.id,
-        packSizeId: product.id,
       }),
     );
 
@@ -134,16 +135,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="">
           <Link href={`/product/${product.slug}`}>
             <h4 className="text-sm sm:text-base text-slate-800 tracking-tight line-clamp-2 min-h-8 hover:text-emerald-600 transition-colors">
-              {product.name}
+              {product?.name}
             </h4>
           </Link>
         </div>
 
-        {/* ✅ Weight Display */}
-        <div className="flex items-center gap-1 text-sm text-slate-500 mt-0.5">
-          <Weight size={14} className="text-emerald-500" />
-          <span>{productWeight} Kg</span>
-        </div>
+        {/*  Weight Display */}
+        {productWeight != 0 && (
+          <div className="flex items-center gap-1 text-sm text-slate-500 mt-0.5">
+            <Weight size={14} className="text-emerald-500" />
+            <span>{productWeight} Kg</span>
+          </div>
+        )}
 
         {/* Price and Add to Cart */}
         <div className="flex flex-col gap-2 mt-2">
@@ -152,15 +155,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div className="flex items-center flex-wrap gap-2">
               {/* Current Price */}
               <span className="text-base sm:text-lg font-extrabold text-emerald-600">
-                ৳ {currentPrice}
+                ৳ {product?.price}
               </span>
 
               {/* Original Price (strikethrough) */}
-              {originalPrice > currentPrice && (
-                <span className="text-xs sm:text-sm text-slate-400 line-through">
-                  ৳ {originalPrice}
-                </span>
-              )}
+
+              <span className="text-xs sm:text-sm text-slate-400 line-through">
+                ৳ {product?.original_price}
+              </span>
 
               {/* Discount Badge */}
               {product?.discount_price > 0 && (

@@ -7,7 +7,7 @@ import HeroSection from "@/src/components/HomePage/HeroSection/HeroSection";
 import ProductShowcase from "@/src/components/HomePage/ProductShowcase/ProductShowcase";
 import TestimonialSection from "@/src/components/TestimonialSection/TestimonialSection";
 import VideoGallery from "@/src/components/VideoGallery/VideoGallery";
-import { IProductCategory } from "@/src/types/productCategoriesType";
+import { ProductCategory } from "@/src/types/productCategoriesType";
 
 // Video API Response Types
 interface IVideoGallary {
@@ -66,7 +66,7 @@ interface ICategoriesApiResponse {
   success: boolean;
   message: string;
   status: number;
-  data: IProductCategory[];
+  data: ProductCategory[];
 }
 
 interface IProductsApiResponse {
@@ -220,7 +220,7 @@ async function fetchQuestionAnswerss(baseUrl: string) {
 }
 
 const Page = async () => {
-  let categories: IProductCategory[] = [];
+  let categories: ProductCategory[] = [];
   let products: any[] = [];
   let videos: IVideoGallary[] = [];
   let videoCategories: any[] = [];

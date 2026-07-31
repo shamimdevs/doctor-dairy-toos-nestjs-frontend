@@ -3,18 +3,10 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import CategoryCard from "./CategoryCard";
-
-interface IProductCategory {
-  id: string;
-  name: string;
-  slug: string;
-  image: string;
-  created_at: string;
-  updated_at: string;
-}
+import { ProductCategory } from "@/src/types/productCategoriesType";
 
 interface CategorySectionProps {
-  categories: IProductCategory[];
+  categories: ProductCategory[];
 }
 
 export default function CategorySection({

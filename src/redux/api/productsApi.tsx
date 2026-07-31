@@ -1,272 +1,160 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/redux/api/productsApi.ts
-import { tagTypes } from "../tag-types";
+import type { ApiResponse } from "../../types/axios";
 import { baseApi } from "./baseApi";
-import { Product } from "@/src/types/product";
-import { slugify } from "@/src/utils/slugify";
-import { IApiResponse } from "./productCategoriesApi";
+import { tagTypes } from "../tag-types";
+import type {
+  AutocompleteQueryParams,
+  Product,
+  ProductQueryParams,
+  ProductsPaginatedResponse,
+  SimilarProductsQueryParams,
+  UpdateProductRequest,
+} from "@/src/types/productsType";
 
 const PRODUCTS_URL = "/products";
 
-// ✅ Extended Product type with slug in category
-export interface ProductWithCategorySlug extends Omit<Product, "category"> {
-  category: {
-    id: string;
-    name: string;
-    slug: string;
-  } | null;
-}
-
-// ✅ Response type with extended product
-export interface IApiResponseWithSlug<T> {
-  apiVersion: string;
-  success: boolean;
-  message: string;
-  status: number;
-  data: T;
-  meta?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-  links?: {
-    first: string;
-    last: string;
-    current: string;
-    next: string;
-    previous: string;
-  };
-}
-
-/**
- * ✅ Reusable Helper to safely inject slug properties into product categories
- * Handles both arrays (bulk endpoints) and standalone items (single query endpoints)
- */
-const transformProductResponse = (response: any): any => {
-  if (!response || !response.data) return response;
-
-  const injectCategorySlug = (product: any) => ({
-    ...product,
-    category: product.category
-      ? {
-          id: product.category.id,
-          name: product.category.name,
-          slug: slugify(product.category.name || ""),
-        }
-      : null,
-  });
-
-  return {
-    ...response,
-    data: Array.isArray(response.data)
-      ? response.data.map(injectCategorySlug)
-      : injectCategorySlug(response.data),
-  };
-};
-
 export const productsApi = baseApi.injectEndpoints({
-  // ✅ Crucial fix: Prevents duplicate endpoint injection warnings during HMR/Fast Refresh
-  overrideExisting: true,
+  endpoints: (builder) => ({
+    // 1. CREATE PRODUCT
+    createProduct: builder.mutation<ApiResponse<Product>, FormData>({
+      query: (formData) => ({
+        url: PRODUCTS_URL,
+        method: "POST",
+        data: formData,
+        contentType: true, // Enables multipart/form-data for file upload
+      }),
+      invalidatesTags: [tagTypes.products],
+    }),
 
-  endpoints: (build) => ({
-    // ✅ Get all products with filters
-    getAllProducts: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug[]>,
-      {
-        page?: number;
-        limit?: number;
-        category?: string;
-        categoryName?: string;
-        categoryId?: string;
-        search?: string;
-        name?: string;
-        manufacturer?: string;
-        minPrice?: number;
-        maxPrice?: number;
-        is_prescription_required?: boolean;
-        is_active?: boolean;
-      } | void
+    // 2. GET ALL PRODUCTS (Paginated & Filtered)
+    getAllProducts: builder.query<
+      ProductsPaginatedResponse,
+      ProductQueryParams | void
     >({
       query: (params) => ({
         url: PRODUCTS_URL,
         method: "GET",
         params: params || {},
       }),
-      transformResponse: transformProductResponse,
       providesTags: [tagTypes.products],
     }),
 
-    // ✅ Get products by category name (uses category param in getAllProducts)
-    getProductsByCategory: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug[]>,
-      { category: string; limit?: number; page?: number }
+    // 3. GET PRODUCTS BY CATEGORY ID
+    getProductsByCategory: builder.query<
+      ProductsPaginatedResponse,
+      { categoryId: string; params?: ProductQueryParams }
     >({
-      query: ({ category, limit = 50, page = 1 }) => ({
-        url: PRODUCTS_URL,
-        method: "GET",
-        params: {
-          category,
-          limit,
-          page,
-        },
-      }),
-      transformResponse: transformProductResponse,
-      providesTags: [tagTypes.products],
-    }),
-
-    // ✅ Get products by category ID (dedicated endpoint)
-    getProductsByCategoryId: build.query<
-      IApiResponse<Product[]>,
-      { categoryId: string; limit?: number; page?: number }
-    >({
-      query: ({ categoryId, limit = 50, page = 1 }) => ({
+      query: ({ categoryId, params }) => ({
         url: `${PRODUCTS_URL}/category/${categoryId}`,
         method: "GET",
-        params: { limit, page },
+        params,
       }),
       providesTags: [tagTypes.products],
     }),
 
-    // ✅ Get products by category name (dedicated endpoint)
-    getProductsByCategoryName: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug[]>,
-      { name: string; limit?: number; page?: number }
+    // 4. GET PRODUCTS BY CATEGORY NAME
+    getProductsByCategoryName: builder.query<
+      ProductsPaginatedResponse,
+      { name: string; params?: ProductQueryParams }
     >({
-      query: ({ name, limit = 50, page = 1 }) => ({
+      query: ({ name, params }) => ({
         url: `${PRODUCTS_URL}/category-name/${encodeURIComponent(name)}`,
         method: "GET",
-        params: { limit, page },
+        params,
       }),
-      transformResponse: transformProductResponse,
       providesTags: [tagTypes.products],
     }),
 
-    // ✅ Get single product by ID
-    getProductById: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug>,
-      string
-    >({
-      query: (id) => ({
-        url: `${PRODUCTS_URL}/${id}`,
-        method: "GET",
-      }),
-      transformResponse: transformProductResponse,
-      providesTags: (result, error, id) => [{ type: tagTypes.products, id }],
-    }),
-
-    // ✅ Get product by slug
-    getProductBySlug: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug>,
-      string
-    >({
+    // 5. GET PRODUCT BY SLUG (SEO Friendly)
+    getProductBySlug: builder.query<ApiResponse<Product>, string>({
       query: (slug) => ({
         url: `${PRODUCTS_URL}/slug/${slug}`,
         method: "GET",
       }),
-      transformResponse: transformProductResponse,
-      providesTags: (result, error, slug) => [
-        { type: tagTypes.products, id: slug },
-      ],
+      providesTags: [tagTypes.products],
     }),
 
-    // ✅ Search products
-    searchProducts: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug[]>,
-      { query: string; limit?: number; page?: number }
+    // 6. GET SINGLE PRODUCT BY ID
+    getSingleProduct: builder.query<ApiResponse<Product>, string>({
+      query: (id) => ({
+        url: `${PRODUCTS_URL}/${id}`,
+        method: "GET",
+      }),
+      providesTags: [tagTypes.products],
+    }),
+
+    // 7. UPDATE PRODUCT
+    updateProduct: builder.mutation<ApiResponse<Product>, UpdateProductRequest>(
+      {
+        query: ({ id, data }) => ({
+          url: `${PRODUCTS_URL}/${id}`,
+          method: "PATCH",
+          data,
+          contentType: true,
+        }),
+        invalidatesTags: [tagTypes.products],
+      },
+    ),
+
+    // 8. SEARCH PRODUCTS
+    searchProducts: builder.query<
+      ProductsPaginatedResponse,
+      ProductQueryParams
     >({
-      query: ({ query, limit = 20, page = 1 }) => ({
+      query: (params) => ({
         url: `${PRODUCTS_URL}/search`,
         method: "GET",
-        params: { q: query, limit, page },
+        params,
       }),
-      transformResponse: transformProductResponse,
       providesTags: [tagTypes.products],
     }),
 
-    // ✅ Get featured products
-    getFeaturedProducts: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug[]>,
-      { limit?: number } | void
+    // 9. AUTOCOMPLETE SUGGESTIONS
+    getAutocompleteSuggestions: builder.query<
+      ApiResponse<string[] | Product[]>,
+      AutocompleteQueryParams
     >({
       query: (params) => ({
-        url: `${PRODUCTS_URL}/featured`,
+        url: `${PRODUCTS_URL}/autocomplete`,
         method: "GET",
-        params: params || { limit: 10 },
+        params,
       }),
-      transformResponse: transformProductResponse,
-      providesTags: [tagTypes.products],
     }),
 
-    // ✅ Get discounted products
-    getDiscountedProducts: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug[]>,
-      { limit?: number; minDiscount?: number }
+    // 10. GET SIMILAR PRODUCTS
+    getSimilarProducts: builder.query<
+      ApiResponse<Product[]>,
+      SimilarProductsQueryParams
     >({
-      query: ({ limit = 20, minDiscount = 10 }) => ({
-        url: `${PRODUCTS_URL}/discounted`,
-        method: "GET",
-        params: { limit, minDiscount },
-      }),
-      transformResponse: transformProductResponse,
-      providesTags: [tagTypes.products],
-    }),
-
-    // ✅ Get new arrivals
-    getNewArrivals: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug[]>,
-      { limit?: number } | void
-    >({
-      query: (params) => ({
-        url: `${PRODUCTS_URL}/new-arrivals`,
-        method: "GET",
-        params: params || { limit: 10 },
-      }),
-      transformResponse: transformProductResponse,
-      providesTags: [tagTypes.products],
-    }),
-
-    // ✅ Get related products
-    getRelatedProducts: build.query<
-      IApiResponseWithSlug<ProductWithCategorySlug[]>,
-      { productId: string; limit?: number }
-    >({
-      query: ({ productId, limit = 10 }) => ({
-        url: `${PRODUCTS_URL}/${productId}/related`,
+      query: ({ id, limit = 10 }) => ({
+        url: `${PRODUCTS_URL}/${id}/similar`,
         method: "GET",
         params: { limit },
       }),
-      transformResponse: transformProductResponse,
       providesTags: [tagTypes.products],
     }),
 
-    // ✅ Get product reviews
-    getProductReviews: build.query<
-      IApiResponse<any[]>,
-      { productId: string; page?: number; limit?: number }
-    >({
-      query: ({ productId, page = 1, limit = 10 }) => ({
-        url: `${PRODUCTS_URL}/${productId}/reviews`,
-        method: "GET",
-        params: { page, limit },
+    // 11. DELETE PRODUCT
+    deleteProduct: builder.mutation<ApiResponse<void>, string>({
+      query: (id) => ({
+        url: `${PRODUCTS_URL}/${id}`,
+        method: "DELETE",
       }),
-      providesTags: [tagTypes.products],
+      invalidatesTags: [tagTypes.products],
     }),
   }),
 });
 
-// Export hooks
+// Auto-generated hooks for components
 export const {
+  useCreateProductMutation,
   useGetAllProductsQuery,
   useGetProductsByCategoryQuery,
-  useGetProductsByCategoryIdQuery,
   useGetProductsByCategoryNameQuery,
-  useGetProductByIdQuery,
   useGetProductBySlugQuery,
+  useGetSingleProductQuery,
+  useUpdateProductMutation,
   useSearchProductsQuery,
-  useGetFeaturedProductsQuery,
-  useGetDiscountedProductsQuery,
-  useGetNewArrivalsQuery,
-  useGetRelatedProductsQuery,
-  useGetProductReviewsQuery,
+  useGetAutocompleteSuggestionsQuery,
+  useGetSimilarProductsQuery,
+  useDeleteProductMutation,
 } = productsApi;

@@ -1,0 +1,469 @@
+"use client";
+
+/* eslint-disable react-hooks/incompatible-library */
+
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useForm, SubmitHandler } from "react-hook-form";
+import Swal from "sweetalert2";
+import { Save } from "lucide-react";
+import { toast } from "react-toastify";
+
+import { ApiError } from "@/src/types/authType";
+import {
+  useGetSingleProductQuery,
+  useUpdateProductMutation,
+} from "@/src/redux/api/productsApi";
+import { useGetAllProductCategoriesQuery } from "@/src/redux/api/productCategoriesApi";
+
+import PageHeader from "@/src/components/common/PageHeader/PageHeader";
+import GradientButton from "@/src/components/common/PageHeader/GradientButton";
+import Input from "@/src/components/common/Form/Input";
+import SelectAndSearch from "@/src/components/common/Form/SelectAndSearch";
+
+interface EditProductsProps {
+  id: string;
+}
+
+interface EditProductFormValues {
+  category_id: string;
+  name: string;
+  slug: string;
+  price: number;
+  discount_price?: number;
+  original_price?: number;
+  stock?: number;
+  weight?: number;
+  thumbnail?: FileList;
+  is_active: boolean;
+  meta_title?: string;
+  meta_keywords?: string;
+  meta_description?: string;
+}
+
+// Supports English + Bangla
+const generateSlug = (text: string) => {
+  return text
+    .normalize("NFC")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{L}\p{M}\p{N}\s-]/gu, "")
+    .replace(/-+/g, "-");
+};
+
+const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
+  const router = useRouter();
+
+  // Fetch product data and categories
+  const { data: productData, isLoading: isFetchingProduct } =
+    useGetSingleProductQuery(id);
+
+  const { data: categoriesData, isLoading: isCategoriesLoading } =
+    useGetAllProductCategoriesQuery({ limit: 100 });
+
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+
+  const categories = categoriesData?.data || [];
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<EditProductFormValues>({
+    defaultValues: {
+      category_id: "",
+      name: "",
+      slug: "",
+      price: 0,
+      discount_price: 0,
+      original_price: 0,
+      stock: 0,
+      weight: 0,
+      is_active: true,
+      meta_title: "",
+      meta_keywords: "",
+      meta_description: "",
+    },
+  });
+
+  const nameValue = watch("name");
+  const categoryIdValue = watch("category_id");
+  const originalPriceValue = watch("original_price");
+  const discountPriceValue = watch("discount_price");
+
+  // Load existing product details into the form
+  useEffect(() => {
+    if (productData?.data) {
+      const product = productData.data;
+
+      const currentPrice = Number(product.price || 0);
+      const discountPrice = Number(product.discount_price || 0);
+      const originalPrice =
+        product.original_price ?? currentPrice + discountPrice;
+
+      reset({
+        category_id: product.category_id || product.category?.id || "",
+        name: product.name || "",
+        slug: product.slug || "",
+        price: currentPrice,
+        discount_price: discountPrice,
+        original_price: originalPrice,
+        stock: product.stock || 0,
+        weight: product.weight || 0,
+        is_active: product.is_active ?? true,
+        meta_title: product.meta_title || "",
+        meta_keywords: product.meta_keywords || "",
+        meta_description: product.meta_description || "",
+      });
+
+      if (product.thumbnail) {
+        setThumbnailPreview(product.thumbnail);
+      }
+    }
+  }, [productData, reset]);
+
+  // Handle auto slug creation on name change
+  useEffect(() => {
+    if (nameValue) {
+      setValue("slug", generateSlug(nameValue));
+    } else {
+      setValue("slug", "");
+    }
+  }, [nameValue, setValue]);
+
+  // Automatically calculate selling price: Price = Original Price - Discount Price
+  useEffect(() => {
+    const origPrice = Number(originalPriceValue || 0);
+    const discPrice = Number(discountPriceValue || 0);
+    const calculatedSellingPrice = Math.max(0, origPrice - discPrice);
+
+    setValue("price", calculatedSellingPrice);
+  }, [originalPriceValue, discountPriceValue, setValue]);
+
+  // Handle Thumbnail File Preview
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  // Form Submit Handler
+  const onSubmit: SubmitHandler<EditProductFormValues> = async (values) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("category_id", values.category_id);
+      formData.append("name", values.name);
+      formData.append("slug", values.slug);
+      formData.append("price", String(Number(values.price)));
+      formData.append("is_active", String(values.is_active));
+
+      // Note: original_price is omitted here as backend calculates it dynamically
+      if (
+        values.discount_price !== undefined &&
+        values.discount_price !== null &&
+        !isNaN(values.discount_price)
+      ) {
+        formData.append(
+          "discount_price",
+          String(Number(values.discount_price)),
+        );
+      }
+
+      if (
+        values.stock !== undefined &&
+        values.stock !== null &&
+        !isNaN(values.stock)
+      ) {
+        formData.append("stock", String(Number(values.stock)));
+      }
+
+      if (
+        values.weight !== undefined &&
+        values.weight !== null &&
+        !isNaN(values.weight)
+      ) {
+        formData.append("weight", String(Number(values.weight)));
+      }
+
+      if (values.meta_title) {
+        formData.append("meta_title", values.meta_title);
+      }
+
+      if (values.meta_keywords) {
+        formData.append("meta_keywords", values.meta_keywords);
+      }
+
+      if (values.meta_description) {
+        formData.append("meta_description", values.meta_description);
+      }
+
+      if (values.thumbnail?.[0]) {
+        formData.append("thumbnail", values.thumbnail[0]);
+      }
+
+      await updateProduct({
+        id,
+        data: formData,
+      }).unwrap();
+
+      toast.success("Product updated successfully!");
+      router.push("/dashboard/products/all-products");
+    } catch (err) {
+      const error = err as ApiError;
+
+      Swal.fire({
+        title: "Update Failed",
+        text:
+          (Array.isArray(error.data?.message)
+            ? error.data.message.join(", ")
+            : error.data?.message) || "Something went wrong.",
+        icon: "error",
+      });
+    }
+  };
+
+  if (isFetchingProduct) {
+    return (
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        Loading product details...
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border bg-white border-gray-200 overflow-hidden p-6">
+      <PageHeader
+        title="Edit Product"
+        breadcrumbs={[
+          {
+            title: "Dashboard",
+            link: "/dashboard",
+          },
+          {
+            title: "Products",
+            link: "/dashboard/products/all-products",
+          },
+          {
+            title: "Edit Product",
+          },
+        ]}
+      />
+
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Category Dropdown */}
+          <SelectAndSearch<EditProductFormValues>
+            label="Category"
+            options={categories}
+            name="category_id"
+            value={categoryIdValue}
+            setValue={setValue}
+            errors={errors}
+            placeholder="Select category"
+            required={true}
+            disabled={isCategoriesLoading}
+          />
+
+          {/* Product Name */}
+          <Input
+            label="Product Name"
+            text="name"
+            register={register("name", {
+              required: "Product name is required",
+            })}
+            errors={errors}
+          />
+
+          {/* Slug */}
+          <Input
+            label="Slug"
+            text="slug"
+            register={register("slug", {
+              required: "Slug is required",
+            })}
+            readOnly
+            errors={errors}
+          />
+
+          {/* Original Price (Editable) */}
+          <Input
+            label="Original Price "
+            text="original_price"
+            type="number"
+            register={register("original_price", {
+              required: "Original price is required",
+              valueAsNumber: true,
+              min: { value: 0, message: "Original price must be >= 0" },
+            })}
+            errors={errors}
+          />
+
+          {/* Discount Price (Editable) */}
+          <Input
+            label="Discount Price "
+            text="discount_price"
+            type="number"
+            register={register("discount_price", {
+              valueAsNumber: true,
+              min: { value: 0, message: "Discount must be >= 0" },
+            })}
+            errors={errors}
+          />
+
+          {/* Selling Price (Calculated Read-Only: Original - Discount) */}
+          <Input
+            label="Selling Price "
+            text="price"
+            type="number"
+            register={register("price", {
+              valueAsNumber: true,
+            })}
+            readOnly
+            errors={errors}
+          />
+
+          {/* Stock */}
+          <Input
+            label="Stock Quantity"
+            text="stock"
+            type="number"
+            register={register("stock", {
+              valueAsNumber: true,
+              min: { value: 0, message: "Stock must be >= 0" },
+            })}
+            errors={errors}
+          />
+
+          {/* Weight */}
+          <Input
+            label="Weight (kg)"
+            text="weight"
+            type="number"
+            register={register("weight", {
+              valueAsNumber: true,
+              min: { value: 0, message: "Weight must be >= 0" },
+            })}
+            errors={errors}
+          />
+
+          {/* Active Status Toggle */}
+          <div className="flex flex-col justify-center gap-1">
+            <label className="font-semibold text-sm text-gray-700">
+              Status
+            </label>
+            <div className="flex items-center gap-3 mt-1">
+              <input
+                type="checkbox"
+                id="is_active"
+                {...register("is_active")}
+                className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <label htmlFor="is_active" className="text-sm text-gray-700">
+                Is Active (Visible in store)
+              </label>
+            </div>
+          </div>
+
+          {/* Thumbnail Image Upload & Preview */}
+          <div className="col-span-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-emerald-500 transition">
+            <label className="block mb-2 font-semibold text-sm text-gray-700">
+              Product Thumbnail
+            </label>
+
+            {thumbnailPreview ? (
+              <div className="mb-4">
+                <Image
+                  src={thumbnailPreview}
+                  alt="Product Thumbnail"
+                  width={180}
+                  height={180}
+                  className="h-40 w-40 rounded-lg border object-cover"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="mb-4 flex h-40 w-40 items-center justify-center rounded-lg border bg-gray-100 text-gray-400">
+                No Image
+              </div>
+            )}
+
+            <input
+              type="file"
+              accept="image/*"
+              {...register("thumbnail")}
+              onChange={handleThumbnailChange}
+              className="block w-full text-sm text-gray-500
+              file:mr-4
+              file:py-2
+              file:px-4
+              file:rounded-full
+              file:border-0
+              file:font-semibold
+              file:bg-emerald-50
+              file:text-emerald-700
+              hover:file:bg-emerald-100"
+            />
+          </div>
+
+          {/* SEO Meta Title */}
+          <Input
+            label="Meta Title (Optional)"
+            text="meta_title"
+            register={register("meta_title")}
+            errors={errors}
+          />
+
+          {/* SEO Meta Keywords */}
+          <Input
+            label="Meta Keywords (Optional)"
+            text="meta_keywords"
+            register={register("meta_keywords")}
+            errors={errors}
+          />
+
+          {/* SEO Meta Description */}
+          <div className="col-span-full flex flex-col gap-1">
+            <label className="font-semibold text-sm text-gray-700">
+              Meta Description (Optional)
+            </label>
+            <textarea
+              rows={3}
+              {...register("meta_description")}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              placeholder="Enter SEO description for search engines..."
+            />
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-4 mt-6">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition"
+          >
+            Cancel
+          </button>
+
+          <GradientButton
+            type="submit"
+            text={isUpdating ? "Updating..." : "Update Product"}
+            icon={Save}
+            disabled={isUpdating}
+          />
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default EditProducts;

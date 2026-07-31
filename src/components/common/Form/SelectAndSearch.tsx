@@ -125,7 +125,7 @@ const SelectAndSearch = <TForm extends FieldValues>({
       )}
 
       <div
-        className={`flex items-center px-3 py-2.5 rounded-md border bg-gray-900/20 border-gray-700/50 transition-all ${
+        className={`flex items-center px-3 py-2.5 rounded-md border bg-gray-100 border-gray-300 transition-all ${
           disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
         } ${errors?.[name] ? "border-red-500" : ""}`}
         onClick={handleFocus}
@@ -165,18 +165,18 @@ const SelectAndSearch = <TForm extends FieldValues>({
 
       {open && !disabled && (
         <div
-          className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-md border shadow-xl bg-gray-950 border-[#26272F]"
+          className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-md border shadow-xl bg-gray-100 border-[#878aa0]"
           style={{ scrollbarWidth: "thin", scrollbarColor: "#4B5563 #1F2937" }}
         >
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((option) => (
+          {filteredOptions?.length > 0 ? (
+            filteredOptions?.map((option) => (
               <div
                 key={option.id}
                 onClick={() => handleSelect(option)}
-                className={`px-3 py-2 text-sm cursor-pointer hover:bg-linear-to-r from-blue-600 to-cyan-500 hover:text-white ${
+                className={`px-3 py-2 text-sm cursor-pointer hover:bg-linear-to-r from-blue-600 to-cyan-500  ${
                   option.id === value
-                    ? "bg-blue-500 text-white"
-                    : "text-gray-300"
+                    ? "bg-blue-500 hover:text-white"
+                    : "text-black"
                 }`}
               >
                 {option.name}

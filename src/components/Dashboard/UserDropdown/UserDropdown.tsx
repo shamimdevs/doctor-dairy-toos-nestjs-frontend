@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { ChevronDown } from "lucide-react"; // Import icon
 
 import {
   authApi,
@@ -50,7 +51,6 @@ export const UserDropdown: React.FC = () => {
   // Logout handler
   const handleLogout = async () => {
     try {
-      // Cast or let unwrap infer LogoutResponse
       const response = (await signOut().unwrap()) as LogoutResponse;
       if (response?.success) {
         dispatch(logout());
@@ -88,12 +88,21 @@ export const UserDropdown: React.FC = () => {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen((prev) => !prev)}
-          className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none"
+          className="cursor-pointer flex items-center gap-2 p-1 rounded-md hover:bg-gray-100 transition-colors focus:outline-none"
         >
-          <div className=" px-3 py-2 text-sm font-medium text-gray-800">
-            <h2> {displayName}</h2>
-            <h2>{currentUser?.role == "super_admin" ? "Super Admin" : ""}</h2>
+          <div className="px-3 py-2 text-left text-gray-800">
+            <h2 className="font-medium text-sm">{displayName}</h2>
+            <h2 className="text-xs text-gray-500">
+              {currentUser?.role === "super_admin" ? "Super Admin" : ""}
+            </h2>
           </div>
+
+          {/* Animated Chevron Icon */}
+          <ChevronDown
+            className={`w-4 h-4 text-gray-600 transition-transform duration-200 ease-in-out mr-2 ${
+              isOpen ? "rotate-180" : "rotate-0"
+            }`}
+          />
         </button>
 
         {isOpen && (
