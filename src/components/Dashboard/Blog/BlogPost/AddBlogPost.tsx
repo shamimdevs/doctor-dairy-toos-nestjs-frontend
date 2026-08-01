@@ -2,15 +2,15 @@
 
 /* eslint-disable react-hooks/incompatible-library */
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Swal from "sweetalert2";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 import { ApiError } from "@/src/types/authType";
-
 import PageHeader from "@/src/components/common/PageHeader/PageHeader";
 import GradientButton from "@/src/components/common/PageHeader/GradientButton";
 import Input from "@/src/components/common/Form/Input";
@@ -22,10 +22,10 @@ interface AddBlogPostFormValues {
   category_id: string;
   title: string;
   slug: string;
+  author_name?: string;
   content: string;
   excerpt?: string;
-  thumbnail?: FileList;
-  is_published: boolean;
+  image?: FileList;
   meta_title?: string;
   meta_keywords?: string;
   meta_description?: string;
@@ -44,12 +44,13 @@ const generateSlug = (text: string) => {
 
 const AddBlogPost = () => {
   const router = useRouter();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [createBlogPost, { isLoading }] = useCreateBlogMutation();
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllBlogCategoriesQuery({ limit: 200 });
 
-  // Map BlogCategory items to conform to the SelectOption[] type requirement ({ id, name })
+  // Map BlogCategory items to conform to the SelectOption[] requirements
   const categories =
     categoriesData?.data?.map((cat) => ({
       ...cat,
@@ -68,9 +69,9 @@ const AddBlogPost = () => {
       category_id: "",
       title: "",
       slug: "",
+      author_name: "",
       content: "",
       excerpt: "",
-      is_published: true,
       meta_title: "",
       meta_keywords: "",
       meta_description: "",
@@ -79,15 +80,29 @@ const AddBlogPost = () => {
 
   const titleValue = watch("title");
   const categoryIdValue = watch("category_id");
+  const imageFileList = watch("image");
 
   // Auto-generate slug from post title
   useEffect(() => {
     if (titleValue) {
-      setValue("slug", generateSlug(titleValue));
+      setValue("slug", generateSlug(titleValue), { shouldValidate: true });
     } else {
       setValue("slug", "");
     }
   }, [titleValue, setValue]);
+
+  // Dynamic Image Preview Handler
+  useEffect(() => {
+    if (imageFileList && imageFileList.length > 0) {
+      const file = imageFileList[0];
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
+
+      return () => URL.revokeObjectURL(objectUrl);
+    } else {
+      setImagePreview(null);
+    }
+  }, [imageFileList]);
 
   const onSubmit: SubmitHandler<AddBlogPostFormValues> = async (values) => {
     try {
@@ -97,8 +112,10 @@ const AddBlogPost = () => {
       formData.append("title", values.title);
       formData.append("slug", values.slug);
       formData.append("content", values.content);
-      formData.append("is_published", String(values.is_published));
 
+      if (values.author_name) {
+        formData.append("author_name", values.author_name);
+      }
       if (values.excerpt) {
         formData.append("excerpt", values.excerpt);
       }
@@ -112,14 +129,15 @@ const AddBlogPost = () => {
         formData.append("meta_description", values.meta_description);
       }
 
-      if (values.thumbnail?.[0]) {
-        formData.append("thumbnail", values.thumbnail[0]);
+      if (values.image?.[0]) {
+        formData.append("image", values.image[0]);
       }
 
       await createBlogPost(formData).unwrap();
       toast.success("Blog post created successfully!");
       reset();
-      router.push("/dashboard/blogs/all-posts");
+      setImagePreview(null);
+      router.push("/dashboard/blog/blog-posts/all-blog-posts");
     } catch (err) {
       const error = err as ApiError;
 
@@ -145,7 +163,7 @@ const AddBlogPost = () => {
           },
           {
             title: "Blogs",
-            link: "/dashboard/blogs/all-posts",
+            link: "/dashboard/blog/blog-posts/all-blog-posts",
           },
           {
             title: "Add Post",
@@ -155,7 +173,7 @@ const AddBlogPost = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Category Dropdown (Mapped to meet SelectOption interface) */}
+          {/* Category Dropdown */}
           <SelectAndSearch<AddBlogPostFormValues>
             label="Category"
             options={categories}
@@ -178,6 +196,14 @@ const AddBlogPost = () => {
             errors={errors}
           />
 
+          {/* Author Name */}
+          <Input
+            label="Author Name (Optional)"
+            text="author_name"
+            register={register("author_name")}
+            errors={errors}
+          />
+
           {/* Slug */}
           <Input
             label="Slug"
@@ -188,24 +214,6 @@ const AddBlogPost = () => {
             readOnly
             errors={errors}
           />
-
-          {/* Publication Status Toggle */}
-          <div className="flex flex-col justify-center gap-1">
-            <label className="font-semibold text-sm text-gray-700">
-              Publication Status
-            </label>
-            <div className="flex items-center gap-3 mt-1">
-              <input
-                type="checkbox"
-                id="is_published"
-                {...register("is_published")}
-                className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-              />
-              <label htmlFor="is_published" className="text-sm text-gray-700">
-                Publish immediately (Visible on site)
-              </label>
-            </div>
-          </div>
 
           {/* Blog Excerpt */}
           <div className="col-span-full flex flex-col gap-1">
@@ -240,15 +248,27 @@ const AddBlogPost = () => {
             )}
           </div>
 
-          {/* Thumbnail Upload */}
+          {/* Image Upload & Preview */}
           <div className="col-span-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-emerald-500 transition">
             <label className="block mb-2 font-semibold text-sm text-gray-700">
-              Featured Image / Cover Thumbnail
+              Featured Image / Cover Image
             </label>
+
+            {imagePreview && (
+              <div className="relative mb-4 h-44 w-72 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                <Image
+                  src={imagePreview}
+                  alt="Selected Cover Preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+
             <input
               type="file"
               accept="image/*"
-              {...register("thumbnail")}
+              {...register("image")}
               className="block w-full text-sm text-gray-500
               file:mr-4
               file:py-2
@@ -297,8 +317,9 @@ const AddBlogPost = () => {
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition"
+            className="flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition text-sm font-medium"
           >
+            <ArrowLeft className="h-4 w-4" />
             Cancel
           </button>
 

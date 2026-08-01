@@ -1,46 +1,42 @@
 "use client";
 
+/* eslint-disable react-hooks/incompatible-library */
+
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Swal from "sweetalert2";
-import { Save } from "lucide-react";
+import { Save, ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 import { ApiError } from "@/src/types/authType";
-import {
-  useGetSingleBlogQuery,
-  useUpdateBlogMutation,
-} from "@/src/redux/api/blogApi";
-import { useGetAllBlogCategoriesQuery } from "@/src/redux/api/blogCategoryApi";
-
 import PageHeader from "@/src/components/common/PageHeader/PageHeader";
 import GradientButton from "@/src/components/common/PageHeader/GradientButton";
 import Input from "@/src/components/common/Form/Input";
 import SelectAndSearch from "@/src/components/common/Form/SelectAndSearch";
-
-interface EditBlogPostProps {
-  id: string;
-}
+import { useGetAllBlogCategoriesQuery } from "@/src/redux/api/blogCategoryApi";
+import {
+  useGetSingleBlogQuery,
+  useUpdateBlogMutation,
+} from "@/src/redux/api/blogApi";
 
 interface EditBlogPostFormValues {
   category_id: string;
   title: string;
   slug: string;
+  author_name?: string;
   content: string;
   excerpt?: string;
-  author_name?: string;
-  read_time?: string;
   image?: FileList;
-  status: boolean;
-  is_featured: boolean;
   meta_title?: string;
   meta_keywords?: string;
   meta_description?: string;
+  status?: boolean;
+  is_featured?: boolean;
 }
 
-// Supports English + Bangla Unicode slug generation
+// Unicode-aware slug generation (Bangla & English support)
 const generateSlug = (text: string) => {
   return text
     .normalize("NFC")
@@ -51,18 +47,21 @@ const generateSlug = (text: string) => {
     .replace(/-+/g, "-");
 };
 
-const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
+const EditBlogPost = () => {
+  const params = useParams();
   const router = useRouter();
+  const blogId = params?.id as string;
 
-  const { data: blogData, isLoading: isFetchingBlog } =
-    useGetSingleBlogQuery(id);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Queries & Mutations
+  const { data: singleBlogData, isLoading: isBlogLoading } =
+    useGetSingleBlogQuery(blogId, { skip: !blogId });
 
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllBlogCategoriesQuery({ limit: 200 });
 
-  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
-
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [updateBlogPost, { isLoading: isUpdating }] = useUpdateBlogMutation();
 
   const categories =
     categoriesData?.data?.map((cat) => ({
@@ -76,65 +75,69 @@ const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<EditBlogPostFormValues>({
     defaultValues: {
       category_id: "",
       title: "",
       slug: "",
+      author_name: "",
       content: "",
       excerpt: "",
-      status: true,
-      is_featured: false,
       meta_title: "",
       meta_keywords: "",
       meta_description: "",
+      status: true,
+      is_featured: false,
     },
   });
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const titleValue = watch("title");
   const categoryIdValue = watch("category_id");
+  const imageFileList = watch("image");
 
-  // Populate existing data
+  // Populate form values when fetched blog data arrives
   useEffect(() => {
-    if (blogData?.data) {
-      const blog = blogData.data;
+    if (singleBlogData?.data) {
+      const blog = singleBlogData.data;
 
       reset({
-        category_id: blog.category_id || "",
+        category_id: blog.category_id || blog.category?.id || "",
         title: blog.title || "",
         slug: blog.slug || "",
+        author_name: blog.author_name || "",
         content: blog.content || "",
         excerpt: blog.excerpt || "",
-        status: blog.status ?? true,
-        is_featured: blog.is_featured ?? false,
-        author_name: blog.author_name || "",
-        read_time: blog.read_time || "",
         meta_title: blog.meta_title || "",
         meta_keywords: blog.meta_keywords || "",
         meta_description: blog.meta_description || "",
+        status: blog.status ?? true,
+        is_featured: blog.is_featured ?? false,
       });
 
       if (blog.image) {
-        setImagePreview(blog.image);
+        setPreviewImage(blog.image);
       }
     }
-  }, [blogData, reset]);
+  }, [singleBlogData, reset]);
 
-  // Sync Slug on Title Change
+  // Regenerate slug dynamically on title change (if manually edited/dirty)
   useEffect(() => {
-    if (titleValue) {
+    if (isDirty && titleValue) {
       setValue("slug", generateSlug(titleValue));
     }
-  }, [titleValue, setValue]);
+  }, [titleValue, setValue, isDirty]);
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
+  // Local preview update when user selects a new file
+  useEffect(() => {
+    if (imageFileList && imageFileList.length > 0) {
+      const file = imageFileList[0];
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewImage(objectUrl);
+
+      return () => URL.revokeObjectURL(objectUrl);
     }
-  };
+  }, [imageFileList]);
 
   const onSubmit: SubmitHandler<EditBlogPostFormValues> = async (values) => {
     try {
@@ -144,26 +147,32 @@ const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
       formData.append("title", values.title);
       formData.append("slug", values.slug);
       formData.append("content", values.content);
-      formData.append("status", String(values.status));
-      formData.append("is_featured", String(values.is_featured));
 
-      if (values.excerpt) formData.append("excerpt", values.excerpt);
-      if (values.author_name)
+      if (values.author_name) {
         formData.append("author_name", values.author_name);
-      if (values.read_time) formData.append("read_time", values.read_time);
+      }
+      if (values.excerpt) formData.append("excerpt", values.excerpt);
+      if (values.meta_title) formData.append("meta_title", values.meta_title);
+      if (values.meta_keywords)
+        formData.append("meta_keywords", values.meta_keywords);
+      if (values.meta_description)
+        formData.append("meta_description", values.meta_description);
 
-      // Match backend key ('image')
+      if (values.status !== undefined) {
+        formData.append("status", String(values.status));
+      }
+      if (values.is_featured !== undefined) {
+        formData.append("is_featured", String(values.is_featured));
+      }
+
+      // Only attach image if a new file was picked
       if (values.image?.[0]) {
         formData.append("image", values.image[0]);
       }
 
-      await updateBlog({
-        id,
-        data: formData,
-      }).unwrap();
-
+      await updateBlogPost({ id: blogId, data: formData }).unwrap();
       toast.success("Blog post updated successfully!");
-      router.push("/dashboard/blogs/all-posts");
+      router.push("/dashboard/blog/blog-posts/all-blog-posts");
     } catch (err) {
       const error = err as ApiError;
 
@@ -172,33 +181,34 @@ const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
         text:
           (Array.isArray(error.data?.message)
             ? error.data.message.join(", ")
-            : error.data?.message) || "Something went wrong.",
+            : error.data?.message) || "Something went wrong while updating.",
         icon: "error",
       });
     }
   };
 
-  if (isFetchingBlog) {
+  if (isBlogLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        Loading blog post details...
+      <div className="flex h-64 items-center justify-center rounded-lg border bg-white p-6">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border bg-white border-gray-200 overflow-hidden p-6">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 overflow-hidden">
       <PageHeader
         title="Edit Blog Post"
         breadcrumbs={[
           { title: "Dashboard", link: "/dashboard" },
-          { title: "Blogs", link: "/dashboard/blogs/all-posts" },
+          { title: "Blogs", link: "/dashboard/blog/blog-posts/all-blog-posts" },
           { title: "Edit Post" },
         ]}
       />
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Category Dropdown */}
           <SelectAndSearch<EditBlogPostFormValues>
             label="Category"
             options={categories}
@@ -211,54 +221,57 @@ const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
             disabled={isCategoriesLoading}
           />
 
+          {/* Post Title */}
           <Input
             label="Post Title"
             text="title"
-            register={register("title", { required: "Post title is required" })}
+            register={register("title", {
+              required: "Post title is required",
+            })}
             errors={errors}
           />
 
+          {/* Author Name */}
+          <Input
+            label="Author Name (Optional)"
+            text="author_name"
+            register={register("author_name")}
+            errors={errors}
+          />
+
+          {/* Slug */}
           <Input
             label="Slug"
             text="slug"
-            register={register("slug", { required: "Slug is required" })}
+            register={register("slug", {
+              required: "Slug is required",
+            })}
             readOnly
             errors={errors}
           />
 
-          {/* Status & Featured Flags */}
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
+          {/* Status & Featured Checkboxes */}
+          <div className="flex items-center gap-6 col-span-full md:col-span-1">
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
               <input
                 type="checkbox"
-                id="status"
                 {...register("status")}
                 className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
               />
-              <label
-                htmlFor="status"
-                className="text-sm font-semibold text-gray-700"
-              >
-                Active / Published
-              </label>
-            </div>
+              Active Status
+            </label>
 
-            <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
               <input
                 type="checkbox"
-                id="is_featured"
                 {...register("is_featured")}
                 className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
               />
-              <label
-                htmlFor="is_featured"
-                className="text-sm font-semibold text-gray-700"
-              >
-                Featured Post
-              </label>
-            </div>
+              Featured Post
+            </label>
           </div>
 
+          {/* Blog Excerpt */}
           <div className="col-span-full flex flex-col gap-1">
             <label className="font-semibold text-sm text-gray-700">
               Excerpt (Optional Summary)
@@ -267,10 +280,11 @@ const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
               rows={2}
               {...register("excerpt")}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-              placeholder="Brief summary..."
+              placeholder="Brief summary of the article..."
             />
           </div>
 
+          {/* Main Content Body */}
           <div className="col-span-full flex flex-col gap-1">
             <label className="font-semibold text-sm text-gray-700">
               Post Content
@@ -281,7 +295,7 @@ const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
                 required: "Post content cannot be empty",
               })}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-              placeholder="Write your content here..."
+              placeholder="Write your blog post content here..."
             />
             {errors.content && (
               <span className="text-xs text-red-500">
@@ -290,50 +304,84 @@ const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
             )}
           </div>
 
-          {/* Featured Image */}
+          {/* Image Upload & Preview */}
           <div className="col-span-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-emerald-500 transition">
             <label className="block mb-2 font-semibold text-sm text-gray-700">
-              Featured Image / Cover
+              Featured Image / Cover Image
             </label>
 
-            {imagePreview ? (
-              <div className="mb-4">
+            {previewImage && (
+              <div className="relative mb-4 h-44 w-72 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                 <Image
-                  src={imagePreview}
-                  alt="Blog Thumbnail"
-                  width={180}
-                  height={180}
-                  className="h-40 w-40 rounded-lg border object-cover"
-                  unoptimized
+                  src={previewImage}
+                  alt="Blog Preview"
+                  fill
+                  className="object-cover"
                 />
-              </div>
-            ) : (
-              <div className="mb-4 flex h-40 w-40 items-center justify-center rounded-lg border bg-gray-100 text-gray-400">
-                No Image
               </div>
             )}
 
             <input
               type="file"
               accept="image/*"
-              {...register("image", { onChange: handleThumbnailChange })}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+              {...register("image")}
+              className="block w-full text-sm text-gray-500
+              file:mr-4
+              file:py-2
+              file:px-4
+              file:rounded-full
+              file:border-0
+              file:font-semibold
+              file:bg-emerald-50
+              file:text-emerald-700
+              hover:file:bg-emerald-100"
+            />
+          </div>
+
+          {/* SEO Meta Title */}
+          <Input
+            label="Meta Title (Optional)"
+            text="meta_title"
+            register={register("meta_title")}
+            errors={errors}
+          />
+
+          {/* SEO Meta Keywords */}
+          <Input
+            label="Meta Keywords (Optional)"
+            text="meta_keywords"
+            register={register("meta_keywords")}
+            errors={errors}
+          />
+
+          {/* SEO Meta Description */}
+          <div className="col-span-full flex flex-col gap-1">
+            <label className="font-semibold text-sm text-gray-700">
+              Meta Description (Optional)
+            </label>
+            <textarea
+              rows={3}
+              {...register("meta_description")}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              placeholder="Enter SEO description for search engines..."
             />
           </div>
         </div>
 
+        {/* Action Buttons */}
         <div className="flex justify-end gap-4 mt-6">
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition"
+            className="flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition text-sm font-medium"
           >
+            <ArrowLeft className="h-4 w-4" />
             Cancel
           </button>
 
           <GradientButton
             type="submit"
-            text={isUpdating ? "Updating..." : "Update Post"}
+            text={isUpdating ? "Saving..." : "Update Post"}
             icon={Save}
             disabled={isUpdating}
           />

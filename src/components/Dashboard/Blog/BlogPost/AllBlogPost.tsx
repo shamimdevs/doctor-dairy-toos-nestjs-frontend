@@ -31,8 +31,10 @@ const AllBlogPost: React.FC = () => {
   const [deleteBlog] = useDeleteBlogMutation();
 
   const blogs: BlogItem[] = data?.data || [];
-  const totalPages = data?.meta?.total_pages ?? 1;
+  const totalPages = data?.meta?.totalPages ?? 1;
   const totalItems = data?.meta?.total ?? 0;
+
+  console.log(blogs, "blogs");
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -105,7 +107,7 @@ const AllBlogPost: React.FC = () => {
             className="w-full sm:w-72 rounded-lg border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-600"
           />
 
-          <Link href="/dashboard/blog/add-blog">
+          <Link href="/dashboard/blog/blog-posts/add-blog-posts">
             <button className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 transition">
               <Plus size={18} />
               Add Blog
@@ -211,7 +213,9 @@ const AllBlogPost: React.FC = () => {
 
                   <td className="px-5 py-3">
                     <div className="flex justify-center gap-2">
-                      <Link href={`/dashboard/blog/edit-blog/${blog.id}`}>
+                      <Link
+                        href={`/dashboard/blog/blog-posts/edit-blog-posts/${blog.id}`}
+                      >
                         <button
                           className="rounded-lg p-2 cursor-pointer text-emerald-600 hover:bg-emerald-100 transition"
                           title="Edit"
