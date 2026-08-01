@@ -1,7 +1,11 @@
-import React from "react";
+import AddTestimonials from "@/src/components/Dashboard/Testimonials/AddTestimonials";
 
 const page = () => {
-  return <div></div>;
+  return (
+    <>
+      <AddTestimonials />
+    </>
+  );
 };
 
 export default page;

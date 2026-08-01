@@ -1,7 +1,19 @@
-import React from "react";
+import EditTestimonials from "@/src/components/Dashboard/Testimonials/EditTestimonials";
 
-const page = () => {
-  return <div></div>;
+interface PageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+const Page = async ({ params }: PageProps) => {
+  const { id } = await params;
+
+  return (
+    <div>
+      <EditTestimonials id={id} />
+    </div>
+  );
 };
 
-export default page;
+export default Page;
