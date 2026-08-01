@@ -76,8 +76,12 @@ const menuItems: MenuItem[] = [
         href: "/dashboard/video-gallary-category/all-video-gallary-categories",
         icon: User,
       },
-      { label: "Team", href: "/settings/team", icon: Users },
-      { label: "Billing", href: "/settings/billing", icon: CreditCard },
+
+      {
+        label: "Video Gallaries",
+        href: "/dashboard/video-gallaries/all-video-gallaries",
+        icon: CreditCard,
+      },
     ],
   },
 ];

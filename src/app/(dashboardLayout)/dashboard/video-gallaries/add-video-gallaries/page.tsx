@@ -1,7 +1,11 @@
-import React from "react";
+import AddVideoGallaries from "@/src/components/Dashboard/VideoGallary/VideoGallaries/AddVideoGallaries";
 
 const page = () => {
-  return <div></div>;
+  return (
+    <>
+      <AddVideoGallaries />
+    </>
+  );
 };
 
 export default page;
