@@ -101,6 +101,11 @@ const menuItems: MenuItem[] = [
     href: "/dashboard/testimonials/all-testimonials",
     icon: BarChart3,
   },
+  {
+    label: "question-answers",
+    href: "/dashboard/question-answers/all-question-answers",
+    icon: BarChart3,
+  },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {

@@ -68,7 +68,7 @@ export const questionAnswerApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      invalidatesTags: [tagTypes.question_answer],
+      invalidatesTags: [tagTypes.question_answers],
     }),
 
     // ------------------------------------------------------------------
@@ -83,7 +83,7 @@ export const questionAnswerApi = baseApi.injectEndpoints({
         method: "GET",
         params,
       }),
-      providesTags: [tagTypes.question_answer],
+      providesTags: [tagTypes.question_answers],
     }),
 
     // ------------------------------------------------------------------
@@ -95,9 +95,7 @@ export const questionAnswerApi = baseApi.injectEndpoints({
           url: `${QUESTION_ANSWERS_PATH}/${id}`,
           method: "GET",
         }),
-        providesTags: (result, error, id) => [
-          { type: tagTypes.question_answer, id },
-        ],
+        providesTags: [tagTypes.question_answers],
       },
     ),
 
@@ -113,10 +111,7 @@ export const questionAnswerApi = baseApi.injectEndpoints({
         method: "PATCH",
         data,
       }),
-      invalidatesTags: (result, error, { id }) => [
-        tagTypes.question_answer,
-        { type: tagTypes.question_answer, id },
-      ],
+      invalidatesTags: [tagTypes.question_answers],
     }),
 
     // ------------------------------------------------------------------
@@ -127,7 +122,7 @@ export const questionAnswerApi = baseApi.injectEndpoints({
         url: `${QUESTION_ANSWERS_PATH}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [tagTypes.question_answer],
+      invalidatesTags: [tagTypes.question_answers],
     }),
   }),
 });

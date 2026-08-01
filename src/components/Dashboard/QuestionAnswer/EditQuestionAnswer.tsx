@@ -59,8 +59,8 @@ const EditQuestionAnswer: React.FC<EditQuestionAnswerProps> = ({ id }) => {
     try {
       // 1. Prepare the nested data body
       const payloadData: UpdateQuestionAnswerRequest["data"] = {
-        question: values.question,
-        answer: values.answer.trim() ? values.answer : undefined,
+        question: values.question.trim(),
+        answer: values.answer.trim(),
       };
 
       // 2. Pass { id, data } to the mutation
@@ -70,8 +70,7 @@ const EditQuestionAnswer: React.FC<EditQuestionAnswerProps> = ({ id }) => {
       }).unwrap();
 
       toast.success("Question & Answer updated successfully!");
-      router.push("/dashboard/question-answer/all-question-answer");
-      router.refresh();
+      router.push("/dashboard/question-answers/all-question-answers");
     } catch (err) {
       const error = err as ApiError;
 

@@ -14,7 +14,7 @@ import Input from "@/src/components/common/Form/Input";
 import {
   CreateQuestionAnswerRequest,
   useCreateQuestionAnswerMutation,
-} from "@/src/redux/api/questionAnswerApi"; // Adjust path as needed
+} from "@/src/redux/api/questionAnswerApi";
 
 const AddQuestionAnswer: React.FC = () => {
   const router = useRouter();
@@ -45,8 +45,7 @@ const AddQuestionAnswer: React.FC = () => {
       await createQuestionAnswer(payload).unwrap();
       toast.success("Question & Answer created successfully!");
       reset();
-      router.push("/dashboard/question-answer/all-question-answer");
-      router.refresh(); // Purge Next.js client route cache
+      router.push("/dashboard/question-answers/all-question-answers");
     } catch (err) {
       const error = err as ApiError;
 

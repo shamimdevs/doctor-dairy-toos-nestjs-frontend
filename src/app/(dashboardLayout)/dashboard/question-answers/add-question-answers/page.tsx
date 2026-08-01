@@ -1,7 +1,11 @@
-import React from "react";
+import AddQuestionAnswer from "@/src/components/Dashboard/QuestionAnswer/AddQuestionAnswer";
 
 const page = () => {
-  return <div></div>;
+  return (
+    <>
+      <AddQuestionAnswer />
+    </>
+  );
 };
 
 export default page;
