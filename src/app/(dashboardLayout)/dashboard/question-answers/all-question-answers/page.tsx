@@ -1,7 +1,11 @@
-import React from "react";
+import AllQuestionAnswer from "@/src/components/Dashboard/QuestionAnswer/AllQuestionAnswer";
 
 const page = () => {
-  return <div></div>;
+  return (
+    <>
+      <AllQuestionAnswer />
+    </>
+  );
 };
 
 export default page;

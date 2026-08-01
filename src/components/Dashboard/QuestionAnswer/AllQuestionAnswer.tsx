@@ -108,7 +108,7 @@ const AllQuestionAnswer: React.FC = () => {
             className="w-full sm:w-72 rounded-lg border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-600"
           />
 
-          <Link href="/dashboard/question-answer/add-question-answer">
+          <Link href="/dashboard/question-answers/add-question-answers">
             <button className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 transition w-full sm:w-auto">
               <Plus size={18} />
               Add Question
@@ -183,7 +183,7 @@ const AllQuestionAnswer: React.FC = () => {
                   <td className="px-5 py-3">
                     <div className="flex justify-center gap-2">
                       <Link
-                        href={`/dashboard/question-answer/edit-question-answer/${item.id}`}
+                        href={`/dashboard/question-answers/edit-question-answers/${item.id}`}
                       >
                         <button
                           className="rounded-lg p-2 cursor-pointer text-emerald-600 hover:bg-emerald-100 transition"
