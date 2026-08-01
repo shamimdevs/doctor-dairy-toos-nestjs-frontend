@@ -1,7 +1,19 @@
-import React from "react";
+import EditBlogCategory from "@/src/components/Blog/BlogCategory/EditBlogCategory";
 
-const page = () => {
-  return <div></div>;
+interface PageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+const Page = async ({ params }: PageProps) => {
+  const { id } = await params;
+
+  return (
+    <div>
+      <EditBlogCategory id={id} />
+    </div>
+  );
 };
 
-export default page;
+export default Page;
