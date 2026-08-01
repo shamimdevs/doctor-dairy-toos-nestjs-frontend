@@ -1,7 +1,19 @@
-import React from "react";
+import EditVideoGallaries from "@/src/components/Dashboard/VideoGallary/VideoGallaries/EditVideoGallaries";
 
-const page = () => {
-  return <div></div>;
+interface PageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+const Page = async ({ params }: PageProps) => {
+  const { id } = await params;
+
+  return (
+    <div>
+      <EditVideoGallaries id={id} />
+    </div>
+  );
 };
 
-export default page;
+export default Page;
