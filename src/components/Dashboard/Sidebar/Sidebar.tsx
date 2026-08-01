@@ -84,6 +84,23 @@ const menuItems: MenuItem[] = [
       },
     ],
   },
+  {
+    label: "Blog",
+    icon: Settings,
+    children: [
+      {
+        label: "Blog Category",
+        href: "/dashboard/blog/blog-category/all-blog-category",
+        icon: User,
+      },
+
+      {
+        label: "Blog Posts",
+        href: "/dashboard/blog/blog-posts/all-blog-posts",
+        icon: CreditCard,
+      },
+    ],
+  },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {

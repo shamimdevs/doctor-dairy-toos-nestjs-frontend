@@ -31,6 +31,8 @@ const EditBlogCategory: React.FC<EditBlogCategoryProps> = ({ id }) => {
 
   const [updateCategory, { isLoading }] = useUpdateBlogCategoryMutation();
 
+  console.log(data, ":blog data");
+
   const {
     register,
     handleSubmit,
@@ -68,7 +70,7 @@ const EditBlogCategory: React.FC<EditBlogCategoryProps> = ({ id }) => {
       }).unwrap();
 
       toast.success("Blog category updated successfully!");
-      router.push("/dashboard/blog-category/all-blog-categories");
+      router.push("/dashboard/blog/blog-category/all-blog-category");
     } catch (err) {
       const error = err as ApiError;
 

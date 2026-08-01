@@ -36,7 +36,7 @@ const AddBlogCategory = () => {
       await createBlogCategory(data).unwrap();
       toast.success("Blog category created successfully!");
       reset();
-      router.push("/dashboard/blog-category/all-blog-categories");
+      router.push("/dashboard/blog/blog-category/all-blog-category");
     } catch (err) {
       const error = err as ApiError;
 
