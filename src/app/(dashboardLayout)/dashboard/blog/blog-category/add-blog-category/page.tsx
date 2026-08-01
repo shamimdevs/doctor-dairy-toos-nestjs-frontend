@@ -1,7 +1,11 @@
-import React from "react";
+import AddBlogCategory from "@/src/components/Blog/BlogCategory/AddBlogCategory";
 
 const page = () => {
-  return <div></div>;
+  return (
+    <>
+      <AddBlogCategory />
+    </>
+  );
 };
 
 export default page;
