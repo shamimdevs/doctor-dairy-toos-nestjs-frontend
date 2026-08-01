@@ -15,6 +15,7 @@ export const tagTypes: Record<string, string> = {
   blog_category: "blog-category",
   blog: "blog",
   testimonials: "testimonials",
+  question_answers: "question-answers",
 };
 
 export const tagTypesList: string[] = [
@@ -34,4 +35,5 @@ export const tagTypesList: string[] = [
   tagTypes.blog_category,
   tagTypes.blog,
   tagTypes.testimonials,
+  tagTypes.question_answers,
 ];
