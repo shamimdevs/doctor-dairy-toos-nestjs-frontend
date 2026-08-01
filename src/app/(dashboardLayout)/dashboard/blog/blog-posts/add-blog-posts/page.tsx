@@ -1,7 +1,11 @@
-import React from "react";
+import AddBlogPost from "@/src/components/Dashboard/Blog/BlogPost/AddBlogPost";
 
 const page = () => {
-  return <div></div>;
+  return (
+    <>
+      <AddBlogPost />
+    </>
+  );
 };
 
 export default page;

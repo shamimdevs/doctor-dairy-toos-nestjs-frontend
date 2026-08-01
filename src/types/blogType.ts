@@ -1,6 +1,12 @@
 // ==========================================
 // 1. Core Entity Model
 // ==========================================
+export interface BlogCategory {
+  id: string;
+  category_name: string;
+  slug?: string;
+}
+
 export interface BlogItem {
   id: string;
   title: string;
@@ -15,6 +21,13 @@ export interface BlogItem {
   is_featured?: boolean;
   status?: boolean;
   category_id?: string;
+  category?: BlogCategory;
+
+  // SEO Metadata
+  meta_title?: string;
+  meta_keywords?: string;
+  meta_description?: string;
+
   created_at: string;
   updated_at: string;
 }
@@ -35,6 +48,11 @@ export interface CreateBlogRequest {
   status?: boolean;
   category_id?: string;
   image?: File | string;
+
+  // SEO Metadata
+  meta_title?: string;
+  meta_keywords?: string;
+  meta_description?: string;
 }
 
 export interface UpdateBlogRequest {
