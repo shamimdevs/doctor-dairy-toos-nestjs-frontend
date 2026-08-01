@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 /* eslint-disable react-hooks/incompatible-library */
@@ -53,6 +54,12 @@ const generateSlug = (text: string) => {
     .replace(/-+/g, "-");
 };
 
+// Helper function to safely convert any value to a valid number
+const safeNumber = (val: any, fallback = 0): number => {
+  const num = Number(val);
+  return Number.isNaN(num) ? fallback : num;
+};
+
 const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
   const router = useRouter();
 
@@ -103,10 +110,14 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
     if (productData?.data) {
       const product = productData.data;
 
-      const currentPrice = Number(product.price || 0);
-      const discountPrice = Number(product.discount_price || 0);
+      const currentPrice = safeNumber(product.price);
+      const discountPrice = safeNumber(product.discount_price);
+
+      // Always calculate correct original_price fallback
       const originalPrice =
-        product.original_price ?? currentPrice + discountPrice;
+        product.original_price !== undefined && product.original_price !== null
+          ? safeNumber(product.original_price)
+          : currentPrice + discountPrice;
 
       reset({
         category_id: product.category_id || product.category?.id || "",
@@ -115,8 +126,8 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
         price: currentPrice,
         discount_price: discountPrice,
         original_price: originalPrice,
-        stock: product.stock || 0,
-        weight: product.weight || 0,
+        stock: safeNumber(product.stock),
+        weight: safeNumber(product.weight),
         is_active: product.is_active ?? true,
         meta_title: product.meta_title || "",
         meta_keywords: product.meta_keywords || "",
@@ -140,8 +151,8 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
 
   // Automatically calculate selling price: Price = Original Price - Discount Price
   useEffect(() => {
-    const origPrice = Number(originalPriceValue || 0);
-    const discPrice = Number(discountPriceValue || 0);
+    const origPrice = safeNumber(originalPriceValue);
+    const discPrice = safeNumber(discountPriceValue);
     const calculatedSellingPrice = Math.max(0, origPrice - discPrice);
 
     setValue("price", calculatedSellingPrice);
@@ -160,39 +171,19 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
     try {
       const formData = new FormData();
 
+      const price = safeNumber(values.price);
+      const discountPrice = safeNumber(values.discount_price);
+      const stock = safeNumber(values.stock);
+      const weight = safeNumber(values.weight);
+
       formData.append("category_id", values.category_id);
       formData.append("name", values.name);
       formData.append("slug", values.slug);
-      formData.append("price", String(Number(values.price)));
+      formData.append("price", String(price));
+      formData.append("discount_price", String(discountPrice));
+      formData.append("stock", String(stock));
+      formData.append("weight", String(weight));
       formData.append("is_active", String(values.is_active));
-
-      // Note: original_price is omitted here as backend calculates it dynamically
-      if (
-        values.discount_price !== undefined &&
-        values.discount_price !== null &&
-        !isNaN(values.discount_price)
-      ) {
-        formData.append(
-          "discount_price",
-          String(Number(values.discount_price)),
-        );
-      }
-
-      if (
-        values.stock !== undefined &&
-        values.stock !== null &&
-        !isNaN(values.stock)
-      ) {
-        formData.append("stock", String(Number(values.stock)));
-      }
-
-      if (
-        values.weight !== undefined &&
-        values.weight !== null &&
-        !isNaN(values.weight)
-      ) {
-        formData.append("weight", String(Number(values.weight)));
-      }
 
       if (values.meta_title) {
         formData.append("meta_title", values.meta_title);
@@ -296,12 +287,12 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
 
           {/* Original Price (Editable) */}
           <Input
-            label="Original Price "
+            label="Original Price"
             text="original_price"
             type="number"
             register={register("original_price", {
               required: "Original price is required",
-              valueAsNumber: true,
+              setValueAs: (v) => safeNumber(v, 0),
               min: { value: 0, message: "Original price must be >= 0" },
             })}
             errors={errors}
@@ -309,11 +300,11 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
 
           {/* Discount Price (Editable) */}
           <Input
-            label="Discount Price "
+            label="Discount Price"
             text="discount_price"
             type="number"
             register={register("discount_price", {
-              valueAsNumber: true,
+              setValueAs: (v) => safeNumber(v, 0),
               min: { value: 0, message: "Discount must be >= 0" },
             })}
             errors={errors}
@@ -321,11 +312,11 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
 
           {/* Selling Price (Calculated Read-Only: Original - Discount) */}
           <Input
-            label="Selling Price "
+            label="Selling Price"
             text="price"
             type="number"
             register={register("price", {
-              valueAsNumber: true,
+              setValueAs: (v) => safeNumber(v, 0),
             })}
             readOnly
             errors={errors}
@@ -337,7 +328,7 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
             text="stock"
             type="number"
             register={register("stock", {
-              valueAsNumber: true,
+              setValueAs: (v) => safeNumber(v, 0),
               min: { value: 0, message: "Stock must be >= 0" },
             })}
             errors={errors}
@@ -349,7 +340,7 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
             text="weight"
             type="number"
             register={register("weight", {
-              valueAsNumber: true,
+              setValueAs: (v) => safeNumber(v, 0),
               min: { value: 0, message: "Weight must be >= 0" },
             })}
             errors={errors}

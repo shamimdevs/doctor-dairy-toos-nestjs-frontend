@@ -65,14 +65,17 @@ const menuItems: MenuItem[] = [
         href: "/dashboard/products/all-products",
         icon: Clock,
       },
-      { label: "Archived", href: "/projects/archived", icon: Archive },
     ],
   },
   {
-    label: "Settings",
+    label: "Video Gallary",
     icon: Settings,
     children: [
-      { label: "Profile", href: "/settings/profile", icon: User },
+      {
+        label: "Video Gallary Category",
+        href: "/dashboard/video-gallary-category/all-video-gallary-categories",
+        icon: User,
+      },
       { label: "Team", href: "/settings/team", icon: Users },
       { label: "Billing", href: "/settings/billing", icon: CreditCard },
     ],
