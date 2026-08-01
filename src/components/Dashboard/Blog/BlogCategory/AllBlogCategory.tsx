@@ -111,7 +111,7 @@ const AllBlogCategory: React.FC = () => {
             className="w-full sm:w-72 rounded-lg border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-600"
           />
 
-          <Link href="/dashboard/blog-category/add-blog-category">
+          <Link href="/dashboard/blog/blog-category/add-blog-category">
             <button className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 transition w-full sm:w-auto">
               <Plus size={18} />
               Add Category
@@ -186,7 +186,7 @@ const AllBlogCategory: React.FC = () => {
                   <td className="px-5 py-3">
                     <div className="flex justify-center gap-2">
                       <Link
-                        href={`/dashboard/blog-category/edit-blog-category/${category.id}`}
+                        href={`/dashboard/blog/blog-category/edit-blog-category/${category.id}`}
                       >
                         <button
                           className="rounded-lg p-2 cursor-pointer text-emerald-600 hover:bg-emerald-100 transition"

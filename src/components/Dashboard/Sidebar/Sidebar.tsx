@@ -10,7 +10,6 @@ import {
   Settings,
   ChevronDown,
   User,
-  Users,
   CreditCard,
   List,
   Clock,
@@ -37,11 +36,7 @@ const menuItems: MenuItem[] = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
-  {
-    label: "Analytics",
-    href: "/analytics",
-    icon: BarChart3,
-  },
+
   {
     label: "Projects",
     icon: FolderKanban,
@@ -83,6 +78,28 @@ const menuItems: MenuItem[] = [
         icon: CreditCard,
       },
     ],
+  },
+  {
+    label: "Blog",
+    icon: Settings,
+    children: [
+      {
+        label: "Blog Category",
+        href: "/dashboard/blog/blog-category/all-blog-category",
+        icon: User,
+      },
+
+      {
+        label: "Blog Posts",
+        href: "/dashboard/blog/blog-posts/all-blog-posts",
+        icon: CreditCard,
+      },
+    ],
+  },
+  {
+    label: "Testimonials",
+    href: "/dashboard/testimonials/all-testimonials",
+    icon: BarChart3,
   },
 ];
 

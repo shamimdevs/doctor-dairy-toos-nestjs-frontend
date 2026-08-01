@@ -1,4 +1,4 @@
-import EditBlogCategory from "@/src/components/Dashboard/Blog/BlogCategory/EditBlogCategory";
+import EditBlogPost from "@/src/components/Dashboard/Blog/BlogPost/EditBlogPost";
 
 interface PageProps {
   params: Promise<{
@@ -11,7 +11,7 @@ const Page = async ({ params }: PageProps) => {
 
   return (
     <div>
-      <EditBlogCategory id={id} />
+      <EditBlogPost id={id} />
     </div>
   );
 };
