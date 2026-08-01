@@ -27,7 +27,7 @@ export const videoGallaryApi = baseApi.injectEndpoints({
         data: formData,
         contentType: true, // Enables multipart/form-data for image file upload
       }),
-      invalidatesTags: [tagTypes.videoGallaries],
+      invalidatesTags: [tagTypes.video_gallaries],
     }),
 
     // 2. GET ALL VIDEO GALLERIES (Paginated & Filtered)
@@ -40,7 +40,7 @@ export const videoGallaryApi = baseApi.injectEndpoints({
         method: "GET",
         params: params || {},
       }),
-      providesTags: [tagTypes.videoGallaries],
+      providesTags: [tagTypes.video_gallaries],
     }),
 
     // 3. GET SINGLE VIDEO GALLERY BY ID
@@ -50,7 +50,7 @@ export const videoGallaryApi = baseApi.injectEndpoints({
           url: `${VIDEO_GALLARIES_URL}/${id}`,
           method: "GET",
         }),
-        providesTags: [tagTypes.videoGallaries],
+        providesTags: [tagTypes.video_gallaries],
       },
     ),
 
@@ -65,7 +65,7 @@ export const videoGallaryApi = baseApi.injectEndpoints({
         data,
         contentType: true, // Enables multipart/form-data for updating image file
       }),
-      invalidatesTags: [tagTypes.videoGallaries],
+      invalidatesTags: [tagTypes.video_gallaries],
     }),
 
     // 5. DELETE VIDEO GALLERY
@@ -74,7 +74,7 @@ export const videoGallaryApi = baseApi.injectEndpoints({
         url: `${VIDEO_GALLARIES_URL}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [tagTypes.videoGallaries],
+      invalidatesTags: [tagTypes.video_gallaries],
     }),
   }),
 });

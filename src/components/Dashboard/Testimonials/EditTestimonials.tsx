@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 /* eslint-disable react-hooks/incompatible-library */
@@ -15,10 +16,12 @@ import PageHeader from "@/src/components/common/PageHeader/PageHeader";
 import GradientButton from "@/src/components/common/PageHeader/GradientButton";
 import Input from "@/src/components/common/Form/Input";
 import Textarea from "@/src/components/common/Form/Textarea";
+import SelectAndSearch from "@/src/components/common/Form/SelectAndSearch";
 import {
   useGetSingleTestimonialQuery,
   useUpdateTestimonialMutation,
 } from "@/src/redux/api/testimonialApi";
+import { useGetAllProductsQuery } from "@/src/redux/api/productsApi";
 
 interface EditTestimonialsProps {
   id: string;
@@ -43,9 +46,20 @@ const EditTestimonials: React.FC<EditTestimonialsProps> = ({ id }) => {
 
   // RTK Query Hooks
   const { data: testimonialData, isLoading: isFetching } =
-    useGetSingleTestimonialQuery(id, { skip: !id });
+    useGetSingleTestimonialQuery(id);
+
+  const { data: productsData, isLoading: isProductsLoading } =
+    useGetAllProductsQuery({ limit: 200 });
+
   const [updateTestimonial, { isLoading: isUpdating }] =
     useUpdateTestimonialMutation();
+
+  // Map product options for SelectAndSearch
+  const productOptions =
+    productsData?.data?.map((product: any) => ({
+      id: product.id,
+      name: product.title || product.name || "Unnamed Product",
+    })) || [];
 
   const {
     register,
@@ -57,8 +71,9 @@ const EditTestimonials: React.FC<EditTestimonialsProps> = ({ id }) => {
   } = useForm<EditTestimonialFormValues>();
 
   const ratingValue = watch("rating", 5);
+  const productIdValue = watch("product_id");
 
-  // Populate form defaults when single testimonial data is loaded
+  // Populate form values when single testimonial data loads
   useEffect(() => {
     if (testimonialData?.data) {
       const item = testimonialData.data;
@@ -78,7 +93,7 @@ const EditTestimonials: React.FC<EditTestimonialsProps> = ({ id }) => {
     }
   }, [testimonialData, reset]);
 
-  // Combined change handler to update image preview & trigger React Hook Form update
+  // Image Preview Handler
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     rhfOnChange: React.ChangeEventHandler<HTMLInputElement>,
@@ -99,9 +114,11 @@ const EditTestimonials: React.FC<EditTestimonialsProps> = ({ id }) => {
       formData.append("description", values.description);
       formData.append("rating", String(values.rating));
 
-      if (values.product_id) {
+      // Append product_id ONLY if valid non-empty string selected
+      if (values.product_id && values.product_id.trim() !== "") {
         formData.append("product_id", values.product_id);
       }
+
       if (
         values.reviewGenerated !== undefined &&
         values.reviewGenerated !== null &&
@@ -109,6 +126,7 @@ const EditTestimonials: React.FC<EditTestimonialsProps> = ({ id }) => {
       ) {
         formData.append("reviewGenerated", String(values.reviewGenerated));
       }
+
       if (
         values.performance !== undefined &&
         values.performance !== null &&
@@ -123,7 +141,7 @@ const EditTestimonials: React.FC<EditTestimonialsProps> = ({ id }) => {
 
       await updateTestimonial({ id, data: formData }).unwrap();
       toast.success("Testimonial updated successfully!");
-      router.push("/dashboard/testimonials");
+      router.push("/dashboard/testimonials/all-testimonials");
     } catch (err) {
       const error = err as ApiError;
 
@@ -156,17 +174,12 @@ const EditTestimonials: React.FC<EditTestimonialsProps> = ({ id }) => {
       <PageHeader
         title="Edit Testimonial"
         breadcrumbs={[
-          {
-            title: "Dashboard",
-            link: "/dashboard",
-          },
+          { title: "Dashboard", link: "/dashboard" },
           {
             title: "Testimonials",
-            link: "/dashboard/testimonials",
+            link: "/dashboard/testimonials/all-testimonials",
           },
-          {
-            title: "Edit Testimonial",
-          },
+          { title: "Edit Testimonial" },
         ]}
       />
 
@@ -192,12 +205,17 @@ const EditTestimonials: React.FC<EditTestimonialsProps> = ({ id }) => {
             errors={errors}
           />
 
-          {/* Related Product/Service UUID */}
-          <Input
-            label="Related Service/Product ID (Optional UUID)"
-            text="product_id"
-            register={register("product_id")}
+          {/* Searchable Related Product Dropdown */}
+          <SelectAndSearch<EditTestimonialFormValues>
+            label="Related Product (Optional)"
+            options={productOptions}
+            name="product_id"
+            value={productIdValue}
+            setValue={setValue}
             errors={errors}
+            placeholder="Search and select product"
+            required={false}
+            disabled={isProductsLoading}
           />
 
           {/* Interactive Star Rating */}

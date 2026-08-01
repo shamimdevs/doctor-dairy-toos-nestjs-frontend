@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 /* eslint-disable react-hooks/incompatible-library */
@@ -14,7 +15,9 @@ import { ApiError } from "@/src/types/authType";
 import PageHeader from "@/src/components/common/PageHeader/PageHeader";
 import GradientButton from "@/src/components/common/PageHeader/GradientButton";
 import Input from "@/src/components/common/Form/Input";
+import SelectAndSearch from "@/src/components/common/Form/SelectAndSearch";
 import { useCreateTestimonialMutation } from "@/src/redux/api/testimonialApi";
+import { useGetAllProductsQuery } from "@/src/redux/api/productsApi";
 
 interface AddTestimonialFormValues {
   name: string;
@@ -34,6 +37,17 @@ const AddTestimonials = () => {
 
   const [createTestimonial, { isLoading }] = useCreateTestimonialMutation();
 
+  // Fetch products for searchable select
+  const { data: productsData, isLoading: isProductsLoading } =
+    useGetAllProductsQuery({ limit: 200 });
+
+  // Map products to conform to SelectOption interface
+  const productOptions =
+    productsData?.data?.map((product: any) => ({
+      id: product.id,
+      name: product.title || product.name || "Unnamed Product",
+    })) || [];
+
   const {
     register,
     handleSubmit,
@@ -52,6 +66,7 @@ const AddTestimonials = () => {
   });
 
   const ratingValue = watch("rating", 5);
+  const productIdValue = watch("product_id");
   const imageFileList = watch("image");
 
   // Dynamic Image Preview Handler
@@ -76,9 +91,11 @@ const AddTestimonials = () => {
       formData.append("description", values.description);
       formData.append("rating", String(values.rating));
 
-      if (values.product_id) {
+      // Append product_id ONLY if a non-empty UUID string is selected
+      if (values.product_id && values.product_id.trim() !== "") {
         formData.append("product_id", values.product_id);
       }
+
       if (
         values.reviewGenerated !== undefined &&
         values.reviewGenerated !== null &&
@@ -86,6 +103,7 @@ const AddTestimonials = () => {
       ) {
         formData.append("reviewGenerated", String(values.reviewGenerated));
       }
+
       if (
         values.performance !== undefined &&
         values.performance !== null &&
@@ -102,7 +120,7 @@ const AddTestimonials = () => {
       toast.success("Testimonial created successfully!");
       reset();
       setImagePreview(null);
-      router.push("/dashboard/testimonials");
+      router.push("/dashboard/testimonials/all-testimonials");
     } catch (err) {
       const error = err as ApiError;
 
@@ -122,17 +140,9 @@ const AddTestimonials = () => {
       <PageHeader
         title="Add Testimonial"
         breadcrumbs={[
-          {
-            title: "Dashboard",
-            link: "/dashboard",
-          },
-          {
-            title: "Testimonials",
-            link: "/dashboard/testimonials",
-          },
-          {
-            title: "Add Testimonial",
-          },
+          { title: "Dashboard", link: "/dashboard" },
+          { title: "Testimonials", link: "/dashboard/testimonials" },
+          { title: "Add Testimonial" },
         ]}
       />
 
@@ -158,12 +168,17 @@ const AddTestimonials = () => {
             errors={errors}
           />
 
-          {/* Related Product/Service UUID */}
-          <Input
-            label="Related Service/Product ID (Optional UUID)"
-            text="product_id"
-            register={register("product_id")}
+          {/* Related Product Searchable Dropdown */}
+          <SelectAndSearch<AddTestimonialFormValues>
+            label="Related Product (Optional)"
+            options={productOptions}
+            name="product_id"
+            value={productIdValue}
+            setValue={setValue}
             errors={errors}
+            placeholder="Search and select product"
+            required={false}
+            disabled={isProductsLoading}
           />
 
           {/* Star Rating Selection */}
@@ -217,7 +232,7 @@ const AddTestimonials = () => {
             errors={errors}
           />
 
-          {/* Testimonial Description */}
+          {/* Testimonial Message */}
           <div className="col-span-full flex flex-col gap-1">
             <label className="font-semibold text-sm text-gray-700">
               Testimonial Message

@@ -36,11 +36,7 @@ const menuItems: MenuItem[] = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
-  {
-    label: "Analytics",
-    href: "/analytics",
-    icon: BarChart3,
-  },
+
   {
     label: "Projects",
     icon: FolderKanban,
@@ -99,6 +95,11 @@ const menuItems: MenuItem[] = [
         icon: CreditCard,
       },
     ],
+  },
+  {
+    label: "Testimonials",
+    href: "/dashboard/testimonials/all-testimonials",
+    icon: BarChart3,
   },
 ];
 
