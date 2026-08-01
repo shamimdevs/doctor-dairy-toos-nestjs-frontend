@@ -10,7 +10,6 @@ import {
   Settings,
   ChevronDown,
   User,
-  Users,
   CreditCard,
   List,
   Clock,

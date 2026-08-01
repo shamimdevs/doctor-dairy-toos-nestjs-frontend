@@ -9,6 +9,10 @@ import { useDebounce } from "@/src/hooks/useDebounce";
 import { BlogItem } from "@/src/types/blogType";
 import { ApiError } from "@/src/types/authType";
 import Pagination from "@/src/utils/Pagination";
+import {
+  useDeleteBlogMutation,
+  useGetAllBlogsQuery,
+} from "@/src/redux/api/blogApi";
 
 const LIMIT = 10;
 
