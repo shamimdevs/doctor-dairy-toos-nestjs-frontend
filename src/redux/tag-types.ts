@@ -12,6 +12,7 @@ export const tagTypes: Record<string, string> = {
   product_categories: "product-categories",
   video_gallery_categories: "video_gallery_categories",
   blog_category: "blog-category",
+  blog: "blog",
 };
 
 export const tagTypesList: string[] = [
@@ -28,4 +29,5 @@ export const tagTypesList: string[] = [
   tagTypes.product_categories,
   tagTypes.video_gallery_categories,
   tagTypes.blog_category,
+  tagTypes.blog,
 ];

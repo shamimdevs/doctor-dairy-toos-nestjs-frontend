@@ -1,4 +1,4 @@
-import AllBlogCategory from "@/src/components/Blog/BlogCategory/AllBlogCategory";
+import AllBlogCategory from "@/src/components/Dashboard/Blog/BlogCategory/AllBlogCategory";
 import React from "react";
 
 const page = () => {
