@@ -14,6 +14,11 @@ type ProductProps = {
     name: string;
     slug: string;
     thumbnail: string;
+    images?: string[];
+    description?: string;
+    specifications?: { label: string; value: string }[];
+    rating_avg?: number | null;
+    reviews_count?: number;
     manufacturer: string;
     is_prescription_required: boolean;
     price: number;

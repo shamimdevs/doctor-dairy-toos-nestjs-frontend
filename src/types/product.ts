@@ -24,11 +24,21 @@ export interface ProductVariant {
   is_active: boolean;
 }
 
+export interface ProductSpecification {
+  label: string;
+  value: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   slug: string;
   thumbnail?: string;
+  images?: string[]; // Additional gallery images (up to 5)
+  description?: string;
+  specifications?: ProductSpecification[];
+  rating_avg?: number | null; // Average rating out of 5
+  reviews_count?: number;
   manufacturer?: string;
   is_prescription_required: boolean;
   is_active: boolean;

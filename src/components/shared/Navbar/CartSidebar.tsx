@@ -31,8 +31,8 @@ export default function CartSidebar() {
   // Calculate unique product count (different pack sizes count as different products)
   const uniqueProductCount = cartItems.length;
 
-  const handleRemoveFromCart = (id: string, packSizeId: string) => {
-    dispatch(REMOVE_FROM_CART({ id, packSizeId }));
+  const handleRemoveFromCart = (id: string) => {
+    dispatch(REMOVE_FROM_CART({ id }));
   };
 
   const handleAddToCart = (item: CartItem) => {
@@ -44,8 +44,8 @@ export default function CartSidebar() {
     );
   };
 
-  const handleDeleteItem = (id: string, packSizeId: string) => {
-    dispatch(DELETE_ITEM({ id, packSizeId }));
+  const handleDeleteItem = (id: string) => {
+    dispatch(DELETE_ITEM({ id }));
   };
 
   const handleClearCart = () => {
@@ -54,7 +54,7 @@ export default function CartSidebar() {
 
   return (
     <div
-      className={`fixed inset-0 z-50 transition-all duration-100 ${
+      className={`fixed  inset-0 z-50 transition-all duration-100 ${
         isCartOpen
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none"
@@ -73,9 +73,9 @@ export default function CartSidebar() {
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-100">
+        <div className="flex  items-center justify-between p-6 pb-4 border-b border-slate-100">
           <div>
-            <span className="text-xl font-black text-slate-900 flex items-center gap-2">
+            <span className="text-xl  font-black text-slate-900 flex items-center gap-2">
               <ShoppingBag className="text-emerald-600" />
               My Cart
             </span>
@@ -114,7 +114,7 @@ export default function CartSidebar() {
             <>
               {cartItems.map((item: CartItem, index: number) => (
                 <div
-                  key={`${item.id}-${item.packSizeId}-${index}`}
+                  key={`${item.id}-${index}`}
                   className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-emerald-200 transition-all"
                 >
                   {/* Product Image */}
@@ -146,9 +146,7 @@ export default function CartSidebar() {
                         {/* Quantity Box */}
                         <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
                           <button
-                            onClick={() =>
-                              handleRemoveFromCart(item.id, item.packSizeId)
-                            }
+                            onClick={() => handleRemoveFromCart(item.id)}
                             className="px-2.5 cursor-pointer py-1.5 hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-700 border-r border-slate-200"
                             aria-label="Decrease quantity"
                           >
@@ -168,9 +166,7 @@ export default function CartSidebar() {
 
                         {/* Remove Button */}
                         <button
-                          onClick={() =>
-                            handleDeleteItem(item.id, item.packSizeId)
-                          }
+                          onClick={() => handleDeleteItem(item.id)}
                           className="p-1.5 cursor-pointer rounded-lg hover:bg-red-100 transition-colors text-slate-400 hover:text-red-500"
                           aria-label="Remove item"
                         >

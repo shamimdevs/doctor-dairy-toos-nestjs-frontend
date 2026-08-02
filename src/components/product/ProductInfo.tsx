@@ -2,7 +2,7 @@
 // src/components/product/ProductInfo.tsx
 "use client";
 
-import { Star } from "lucide-react";
+import { RatingStars } from "./RatingStars";
 
 interface ProductInfoProps {
   product: any;
@@ -44,23 +44,16 @@ export function ProductInfo({ product, discountPercentage }: ProductInfoProps) {
         </p>
       )}
 
-      {/* Rating (placeholder) */}
-      <div className="flex items-center gap-2 mt-2">
-        <div className="flex items-center gap-0.5">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              size={16}
-              className={`${
-                star <= 4
-                  ? "fill-amber-400 text-amber-400"
-                  : "fill-gray-200 text-gray-200"
-              } stroke-none`}
-            />
-          ))}
+      {/* Rating */}
+      {!!product.rating_avg && (
+        <div className="mt-2">
+          <RatingStars
+            rating={product.rating_avg}
+            reviewsCount={product.reviews_count}
+            size={16}
+          />
         </div>
-        <span className="text-sm text-gray-500">(124 reviews)</span>
-      </div>
+      )}
 
       {/* Discount Badge inline */}
       {discountPercentage > 0 && (

@@ -11,11 +11,11 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Wrench,
 } from "lucide-react";
 import Link from "next/link";
 import { sidebarToggle } from "@/src/redux/features/sidebarSlice";
 import CartSidebar from "./CartSidebar";
+import ProductSearch from "./ProductSearch";
 import { useGetAllProductCategoriesQuery } from "@/src/redux/api/productCategoriesApi";
 import { slugify } from "@/src/utils/slugify";
 
@@ -30,7 +30,7 @@ export default function Navbar() {
   const uniqueProductCount = cartItems.length;
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const pathname = usePathname();
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLAnchorElement>(null);
@@ -59,32 +59,27 @@ export default function Navbar() {
               Doctor
               <span className="text-amber-500 flex items-center mx-1">
                 Dairy
-                <Wrench
-                  size={18}
-                  className="stroke-3 text-emerald-600 ml-1 transform rotate-45 animate-bounce"
-                  style={{ animationDuration: "3s" }}
-                />
               </span>
               Tools
             </span>
           </Link>
 
           {/* Search Bar (Desktop) */}
-          <div className="hidden md:flex flex-1 max-w-xl relative mx-4">
-            <input
-              type="text"
-              placeholder="Search cattle, milk records, or farm inventory..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-10 py-2 text-sm text-slate-800 focus:outline-none focus:border-emerald-500 transition-all"
-            />
-            <button className="absolute right-3 top-2.5 text-slate-400 hover:text-emerald-600">
-              <Search size={18} />
-            </button>
+          <div className="hidden md:flex flex-1 max-w-xl mx-4">
+            <ProductSearch placeholder="Search cattle, milk records, or farm inventory..." />
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-1 sm:gap-3">
+            {/* Mobile Search Trigger */}
+            <button
+              onClick={() => setIsMobileSearchOpen(true)}
+              className="p-2 md:hidden rounded-xl text-slate-600 hover:text-emerald-600 hover:bg-slate-100 transition-all"
+              aria-label="Open search"
+            >
+              <Search size={20} />
+            </button>
+
             {/* Navbar Cart Icon */}
             <button
               onClick={() => dispatch(sidebarToggle())}
@@ -159,7 +154,7 @@ export default function Navbar() {
       {/* ==================== FLOATING SIDE CART BUTTON ==================== */}
       <button
         onClick={() => dispatch(sidebarToggle())}
-        className="hidden md:flex fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-emerald-600 text-white flex-col items-center justify-center gap-1 p-3 rounded-l-2xl shadow-2xl hover:bg-emerald-700 transition-all group border border-emerald-500 border-r-0"
+        className="hidden cursor-pointer md:flex fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-emerald-600 text-white flex-col items-center justify-center gap-1 p-3 rounded-l-2xl shadow-2xl hover:bg-emerald-700 transition-all group border border-emerald-500 border-r-0"
       >
         <div className="relative">
           <ShoppingBag
@@ -206,19 +201,19 @@ export default function Navbar() {
             </button>
           </div>
 
-          <div className="relative mb-4">
-            <input
-              type="text"
-              placeholder="Search medicine..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-800"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              setIsMobileSearchOpen(true);
+            }}
+            className="relative mb-4 flex items-center gap-2 w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-400 hover:border-emerald-300 transition-colors"
+          >
+            Search products...
             <Search
               size={16}
-              className="absolute right-3 top-3.5 text-slate-400"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
-          </div>
+          </button>
 
           <nav className="flex flex-col gap-1.5 overflow-y-auto pr-1 no-scrollbar flex-1">
             <div className="h-px bg-slate-200 my-2" />
@@ -240,6 +235,42 @@ export default function Navbar() {
               );
             })}
           </nav>
+        </div>
+      </div>
+
+      {/* ==================== MOBILE SEARCH OVERLAY ==================== */}
+      <div
+        className={`fixed inset-0 z-50 md:hidden transition-opacity duration-200 ${
+          isMobileSearchOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          onClick={() => setIsMobileSearchOpen(false)}
+        />
+        <div
+          className={`absolute inset-x-0 top-0 bg-white border-b border-slate-200 p-4 shadow-lg transition-transform duration-200 ease-out ${
+            isMobileSearchOpen ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <ProductSearch
+                autoFocus={isMobileSearchOpen}
+                onResultClick={() => setIsMobileSearchOpen(false)}
+                placeholder="Search products..."
+              />
+            </div>
+            <button
+              onClick={() => setIsMobileSearchOpen(false)}
+              className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-all shrink-0"
+              aria-label="Close search"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
       </div>
 

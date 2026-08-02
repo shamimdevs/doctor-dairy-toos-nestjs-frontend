@@ -8,10 +8,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Swal from "sweetalert2";
-import { Save } from "lucide-react";
+import { Save, Plus, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 
 import { ApiError } from "@/src/types/authType";
+import { ProductSpecification } from "@/src/types/productsType";
 import {
   useGetSingleProductQuery,
   useUpdateProductMutation,
@@ -22,6 +23,8 @@ import PageHeader from "@/src/components/common/PageHeader/PageHeader";
 import GradientButton from "@/src/components/common/PageHeader/GradientButton";
 import Input from "@/src/components/common/Form/Input";
 import SelectAndSearch from "@/src/components/common/Form/SelectAndSearch";
+import WebEditor from "@/src/components/common/text-editor/WebEditor";
+import ProductGalleryUploader from "./ProductGalleryUploader";
 
 interface EditProductsProps {
   id: string;
@@ -73,6 +76,33 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
 
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+
+  const [description, setDescription] = useState("");
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+
+  const [specifications, setSpecifications] = useState<ProductSpecification[]>(
+    [],
+  );
+  const [specLabel, setSpecLabel] = useState("");
+  const [specValue, setSpecValue] = useState("");
+
+  const handleAddSpecification = () => {
+    if (!specLabel.trim() || !specValue.trim()) {
+      toast.error("Both specification label and value are required.");
+      return;
+    }
+    setSpecifications((prev) => [
+      ...prev,
+      { label: specLabel.trim(), value: specValue.trim() },
+    ]);
+    setSpecLabel("");
+    setSpecValue("");
+  };
+
+  const handleRemoveSpecification = (index: number) => {
+    setSpecifications((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const categories = categoriesData?.data || [];
 
@@ -137,6 +167,10 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
       if (product.thumbnail) {
         setThumbnailPreview(product.thumbnail);
       }
+
+      setDescription(product.description || "");
+      setSpecifications(product.specifications || []);
+      setExistingImages(product.images || []);
     }
   }, [productData, reset]);
 
@@ -196,10 +230,17 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
       if (values.meta_description) {
         formData.append("meta_description", values.meta_description);
       }
+      if (description) {
+        formData.append("description", description);
+      }
+      if (specifications.length > 0) {
+        formData.append("specifications", JSON.stringify(specifications));
+      }
 
       if (values.thumbnail?.[0]) {
         formData.append("thumbnail", values.thumbnail[0]);
       }
+      galleryFiles.forEach((file) => formData.append("images", file));
 
       await updateProduct({
         id,
@@ -403,6 +444,89 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
               file:text-emerald-700
               hover:file:bg-emerald-100"
             />
+          </div>
+
+          {/* Gallery Images */}
+          <ProductGalleryUploader
+            files={galleryFiles}
+            onFilesChange={setGalleryFiles}
+            existingImages={existingImages}
+          />
+
+          {/* Description */}
+          <div className="col-span-full">
+            <WebEditor
+              label="Description (Optional)"
+              content={description}
+              setContent={setDescription}
+              placeholder="Write the full product description..."
+            />
+          </div>
+
+          {/* Specifications */}
+          <div className="col-span-full flex flex-col gap-2">
+            <label className="font-semibold text-sm text-gray-700">
+              Specifications (Optional)
+            </label>
+
+            {specifications.length > 0 && (
+              <div className="space-y-2">
+                {specifications.map((spec, index) => (
+                  <div
+                    key={`${spec.label}-${index}`}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-gray-800">
+                        {spec.label}
+                      </span>
+                      <span className="text-sm text-gray-500 mx-2">:</span>
+                      <span className="text-sm text-gray-600">
+                        {spec.value}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSpecification(index)}
+                      className="text-red-500 hover:text-red-600 shrink-0"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-lg border border-gray-200 p-3">
+              <input
+                type="text"
+                value={specLabel}
+                onChange={(e) => setSpecLabel(e.target.value)}
+                placeholder="Label (e.g. Weight)"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              />
+              <input
+                type="text"
+                value={specValue}
+                onChange={(e) => setSpecValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddSpecification();
+                  }
+                }}
+                placeholder="Value (e.g. 500g)"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              />
+              <button
+                type="button"
+                onClick={handleAddSpecification}
+                className="sm:col-span-2 flex items-center justify-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+              >
+                <Plus size={16} />
+                Add Specification
+              </button>
+            </div>
           </div>
 
           {/* SEO Meta Title */}

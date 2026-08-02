@@ -1,3 +1,8 @@
+export interface ProductSpecification {
+  label: string;
+  value: string;
+}
+
 // Base Product Interface
 export interface Product {
   id: string;
@@ -10,6 +15,11 @@ export interface Product {
   weight?: number;
   slug: string;
   thumbnail?: string;
+  images?: string[];
+  description?: string;
+  specifications?: ProductSpecification[];
+  rating_avg?: number | null;
+  reviews_count?: number;
   is_active: boolean;
   meta_title?: string;
   meta_keywords?: string;
@@ -69,4 +79,21 @@ export interface AutocompleteQueryParams {
 export interface SimilarProductsQueryParams {
   id: string;
   limit?: number;
+}
+
+export interface QuickSearchCategory {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string;
+}
+
+export interface QuickSearchQueryParams {
+  search?: string;
+  limit?: number;
+}
+
+export interface QuickSearchResult {
+  categories: QuickSearchCategory[];
+  products: Product[];
 }

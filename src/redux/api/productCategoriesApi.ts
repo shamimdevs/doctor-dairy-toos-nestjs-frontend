@@ -29,12 +29,12 @@ export const productCategoriesApi = baseApi.injectEndpoints({
     // GET ALL
     getAllProductCategories: builder.query<
       ProductCategoriesPaginatedResponse,
-      PaginationQuery
+      PaginationQuery | void
     >({
       query: (params) => ({
         url: PRODUCT_CATEGORIES_URL,
         method: "GET",
-        params,
+        params: params || {},
       }),
       providesTags: [tagTypes.product_categories],
     }),

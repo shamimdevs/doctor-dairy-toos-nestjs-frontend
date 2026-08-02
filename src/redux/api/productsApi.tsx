@@ -6,6 +6,8 @@ import type {
   Product,
   ProductQueryParams,
   ProductsPaginatedResponse,
+  QuickSearchQueryParams,
+  QuickSearchResult,
   SimilarProductsQueryParams,
   UpdateProductRequest,
 } from "@/src/types/productsType";
@@ -120,7 +122,19 @@ export const productsApi = baseApi.injectEndpoints({
       }),
     }),
 
-    // 10. GET SIMILAR PRODUCTS
+    // 10. NAVBAR QUICK SEARCH (categories + popular/matching products)
+    quickSearchProducts: builder.query<
+      ApiResponse<QuickSearchResult>,
+      QuickSearchQueryParams | void
+    >({
+      query: (params) => ({
+        url: `${PRODUCTS_URL}/quick-search`,
+        method: "GET",
+        params: params || {},
+      }),
+    }),
+
+    // 11. GET SIMILAR PRODUCTS
     getSimilarProducts: builder.query<
       ApiResponse<Product[]>,
       SimilarProductsQueryParams
@@ -133,7 +147,7 @@ export const productsApi = baseApi.injectEndpoints({
       providesTags: [tagTypes.products],
     }),
 
-    // 11. DELETE PRODUCT
+    // 12. DELETE PRODUCT
     deleteProduct: builder.mutation<ApiResponse<void>, string>({
       query: (id) => ({
         url: `${PRODUCTS_URL}/${id}`,
@@ -156,5 +170,6 @@ export const {
   useSearchProductsQuery,
   useGetAutocompleteSuggestionsQuery,
   useGetSimilarProductsQuery,
+  useQuickSearchProductsQuery,
   useDeleteProductMutation,
 } = productsApi;
