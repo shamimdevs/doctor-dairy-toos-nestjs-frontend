@@ -11,8 +11,6 @@ import {
   Share2,
   ShoppingBag,
   Truck,
-  Shield,
-  RefreshCw,
   Check,
   Plus,
   Minus,
@@ -196,7 +194,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
   };
 
   const handleRemoveFromCart = () => {
-    dispatch(REMOVE_FROM_CART({ id: product.id, packSizeId: selectedPack.id }));
+    dispatch(REMOVE_FROM_CART({ id: product.id }));
 
     toast.info(
       <div className="flex items-center gap-3">
@@ -615,22 +613,6 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
               </div>
             </dl>
           )}
-        </div>
-      </div>
-
-      {/* Trust Badges */}
-      <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-200">
-        <div className="flex items-center gap-2 text-xs text-slate-600">
-          <Shield size={16} className="text-emerald-500" />
-          <span>Genuine Products</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-600">
-          <Truck size={16} className="text-emerald-500" />
-          <span>Free Delivery</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-600">
-          <RefreshCw size={16} className="text-emerald-500" />
-          <span>Easy Returns</span>
         </div>
       </div>
     </div>
