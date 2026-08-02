@@ -33,6 +33,10 @@ export function ProductActions({ product }: ProductActionsProps) {
   // ✅ Get weight from product
   const productWeight = product?.weight;
 
+  const stock = typeof product?.stock === "number" ? product.stock : 99;
+  const isOutOfStock = stock <= 0;
+  const maxQty = Math.max(0, Math.min(99, stock));
+
   const getCartItemQuantity = () => {
     const existingItem = cartItems.find((item: any) => item.id === product.id);
     return existingItem ? existingItem.quantity : 0;
@@ -46,7 +50,7 @@ export function ProductActions({ product }: ProductActionsProps) {
     if (cartQty > 0) {
       setQuantity(cartQty);
     } else {
-      setQuantity(1);
+      setQuantity(maxQty > 0 ? 1 : 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems]);
@@ -63,7 +67,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       packSizeId: product.id,
       packSizeLabel: "Default",
       image: product.thumbnail,
-      maxQuantity: 99,
+      maxQuantity: maxQty,
       weight: productWeight, // ✅ Use product weight
       discount: discountPercentage,
       originalPrice: originalPrice,
@@ -104,7 +108,6 @@ export function ProductActions({ product }: ProductActionsProps) {
     dispatch(
       REMOVE_FROM_CART({
         id: product.id,
-        packSizeId: product.id,
       }),
     );
 
@@ -151,7 +154,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   };
 
   const incrementQuantity = () => {
-    if (quantity < 99) {
+    if (quantity < maxQty) {
       setQuantity(quantity + 1);
     }
   };
@@ -186,7 +189,7 @@ export function ProductActions({ product }: ProductActionsProps) {
             </span>
             <button
               onClick={handleAddToCart}
-              disabled={isAdding}
+              disabled={isAdding || cartQuantity >= maxQty}
               className="p-1.5 rounded-lg hover:bg-emerald-100 transition-colors text-emerald-600 disabled:opacity-50"
               aria-label="Add one more"
             >
@@ -195,7 +198,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           </div>
           <span className="text-xs text-gray-500">Already in cart</span>
         </div>
-      ) : (
+      ) : !isOutOfStock ? (
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
             <button
@@ -211,17 +214,24 @@ export function ProductActions({ product }: ProductActionsProps) {
             <button
               onClick={incrementQuantity}
               className="p-1.5 hover:bg-white rounded-lg transition-all disabled:opacity-50"
-              disabled={quantity >= 99}
+              disabled={quantity >= maxQty}
             >
               <Plus size={16} />
             </button>
           </div>
-          <span className="text-xs text-gray-500">Max 99 per order</span>
         </div>
-      )}
+      ) : null}
 
       <div className="flex flex-wrap gap-3">
-        {isInCart ? (
+        {isOutOfStock ? (
+          <button
+            type="button"
+            disabled
+            className="flex-1 px-6 py-3 rounded-xl font-bold tracking-wide flex items-center justify-center gap-2 bg-gray-200 text-gray-500 cursor-not-allowed"
+          >
+            Out of Stock
+          </button>
+        ) : isInCart ? (
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
