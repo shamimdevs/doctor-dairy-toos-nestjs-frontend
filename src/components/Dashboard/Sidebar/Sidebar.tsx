@@ -5,14 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  BarChart3,
-  FolderKanban,
-  Settings,
+  Package,
+  Tags,
+  ShoppingBag,
+  Video,
+  PlayCircle,
+  Newspaper,
+  FileText,
+  Layers,
+  Quote,
+  HelpCircle,
   ChevronDown,
-  User,
-  CreditCard,
-  List,
-  Clock,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -38,68 +41,68 @@ const menuItems: MenuItem[] = [
 
   {
     label: "Product   Category",
-    icon: FolderKanban,
+    icon: Package,
     children: [
       {
         label: "Products  Category",
         href: "/dashboard/product-category/all-product-category",
-        icon: List,
+        icon: Tags,
       },
       {
         label: "Products",
         href: "/dashboard/products/all-products",
-        icon: Clock,
+        icon: ShoppingBag,
       },
     ],
   },
   {
     label: "Video Gallary",
-    icon: Settings,
+    icon: Video,
     children: [
       {
         label: "Video Gallary Category",
         href: "/dashboard/video-gallary-category/all-video-gallary-categories",
-        icon: User,
+        icon: Tags,
       },
 
       {
         label: "Video Gallaries",
         href: "/dashboard/video-gallaries/all-video-gallaries",
-        icon: CreditCard,
+        icon: PlayCircle,
       },
     ],
   },
   {
     label: "Blog",
-    icon: Settings,
+    icon: Newspaper,
     children: [
       {
         label: "Blog Category",
         href: "/dashboard/blog/blog-category/all-blog-category",
-        icon: User,
+        icon: Tags,
       },
 
       {
         label: "Blog Posts",
         href: "/dashboard/blog/blog-posts/all-blog-posts",
-        icon: CreditCard,
+        icon: FileText,
       },
       {
         label: "Blog Details",
         href: "/dashboard/blog/blog-details/all-blog-details",
-        icon: CreditCard,
+        icon: Layers,
       },
     ],
   },
   {
     label: "Testimonials",
     href: "/dashboard/testimonials/all-testimonials",
-    icon: BarChart3,
+    icon: Quote,
   },
   {
     label: "question-answers",
     href: "/dashboard/question-answers/all-question-answers",
-    icon: BarChart3,
+    icon: HelpCircle,
   },
 ];
 
