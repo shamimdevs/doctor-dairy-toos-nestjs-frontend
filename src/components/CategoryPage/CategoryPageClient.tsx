@@ -50,7 +50,9 @@ export default function CategoryPageClient({
 
   // Next.js reuses this component instance when navigating between
   // /category/[slug] pages (same tree position), so `filters` would
-  // otherwise stay stuck on whichever category was viewed first.
+  // otherwise stay stuck on whichever category was viewed first — and for
+  // the same reason, the browser doesn't auto-scroll to top on this kind
+  // of same-component navigation, so we do it ourselves.
   useEffect(() => {
     setFilters({
       price: null,
@@ -60,6 +62,7 @@ export default function CategoryPageClient({
         : [],
       sortBy: "newest",
     });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [initialCategory.slug]);
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);

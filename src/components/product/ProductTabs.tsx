@@ -3,6 +3,7 @@
 "use client";
 
 import { useState } from "react";
+import { RatingStars } from "./RatingStars";
 
 interface ProductTabsProps {
   product: any;
@@ -40,7 +41,11 @@ export function ProductTabs({ product }: ProductTabsProps) {
       <div className="prose prose-sm max-w-none text-gray-600">
         {activeTab === "description" && (
           <div>
-            <p>{product.meta_description || "No description available."}</p>
+            <p className="whitespace-pre-wrap">
+              {product.description ||
+                product.meta_description ||
+                "No description available."}
+            </p>
             {product.meta_keywords && (
               <div className="mt-3">
                 <h4 className="font-bold text-gray-800">Keywords:</h4>
@@ -57,43 +62,53 @@ export function ProductTabs({ product }: ProductTabsProps) {
 
         {activeTab === "specifications" && (
           <div className="grid grid-cols-1 gap-2">
-            {product.variants && product.variants.length > 0 && (
-              <>
-                <h4 className="font-bold text-gray-800">Available Variants:</h4>
-                {product.variants.map((v: any) => (
-                  <div key={v.id} className="bg-gray-50 p-3 rounded-lg">
-                    <div className="font-semibold">{v.pack_size}</div>
-                    <div className="text-sm text-gray-600">
-                      {v.strength} • SKU: {v.sku}
-                    </div>
-                    <div className="text-sm font-bold text-emerald-600">
-                      ৳{v.price}
-                      {v.discount_price && (
-                        <span className="text-xs text-gray-400 line-through ml-2">
-                          ৳{v.discount_price}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {v.weight && `Weight: ${v.weight}kg`}
-                    </div>
-                    {v.expiry_date && (
-                      <div className="text-xs text-amber-600">
-                        Expires: {new Date(v.expiry_date).toLocaleDateString()}
-                      </div>
-                    )}
+            {product.specifications && product.specifications.length > 0 ? (
+              product.specifications.map(
+                (spec: { label: string; value: string }, index: number) => (
+                  <div
+                    key={`${spec.label}-${index}`}
+                    className="flex justify-between gap-4 py-2 px-3 rounded-lg odd:bg-gray-50"
+                  >
+                    <span className="font-semibold text-gray-700">
+                      {spec.label}
+                    </span>
+                    <span className="text-gray-600 text-right">
+                      {spec.value}
+                    </span>
                   </div>
-                ))}
-              </>
+                ),
+              )
+            ) : (
+              <p className="text-gray-500">
+                No specifications available for this product.
+              </p>
             )}
           </div>
         )}
 
         {activeTab === "reviews" && (
           <div>
-            <p className="text-gray-500">
-              No reviews yet. Be the first to review this product!
-            </p>
+            {product.reviews_count > 0 ? (
+              <div className="flex items-center gap-3">
+                <span className="text-3xl font-black text-gray-900">
+                  {Number(product.rating_avg || 0).toFixed(1)}
+                </span>
+                <div>
+                  <RatingStars
+                    rating={product.rating_avg || 0}
+                    showCount={false}
+                  />
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Based on {product.reviews_count} review
+                    {product.reviews_count === 1 ? "" : "s"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500">
+                No reviews yet. Be the first to review this product!
+              </p>
+            )}
           </div>
         )}
       </div>
