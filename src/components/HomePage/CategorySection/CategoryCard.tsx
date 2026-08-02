@@ -53,10 +53,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { IProductCategory } from "@/src/types/productCategoriesType";
+import { ProductCategory } from "@/src/types/productCategoriesType";
 
 interface CategoryCardProps {
-  category: IProductCategory;
+  category: ProductCategory;
 }
 
 export default function CategoryCard({ category }: CategoryCardProps) {

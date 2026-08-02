@@ -1,65 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import BlogSection from "@/src/components/BlogSection/BlogSection";
+import HomeBlogSection from "@/src/components/BlogSection/HomeBlogSection";
 import FAQSection from "@/src/components/FAQSection/FAQSection";
 import CategorySection from "@/src/components/HomePage/CategorySection/CategorySection";
 import FeaturesSection from "@/src/components/HomePage/HeroSection/FeaturesSection";
 import HeroSection from "@/src/components/HomePage/HeroSection/HeroSection";
 import ProductShowcase from "@/src/components/HomePage/ProductShowcase/ProductShowcase";
 import TestimonialSection from "@/src/components/TestimonialSection/TestimonialSection";
-import VideoGallery from "@/src/components/VideoGallery/VideoGallery";
+import HomeVideoSection from "@/src/components/VideoGallery/HomeVideoSection";
+import { getVideos, IVideoGallary } from "@/src/components/services/videoService";
 import { ProductCategory } from "@/src/types/productCategoriesType";
-
-// Video API Response Types
-interface IVideoGallary {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail: string | null;
-  video_url: string;
-  added_by: string;
-  addedBy: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  video_gallary_category_id: string;
-  videoGallaryCategory: {
-    id: string;
-    title: string;
-  };
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-interface IVideoCategoriesResponse {
-  apiVersion: string;
-  success: boolean;
-  message: string;
-  status: number;
-  data: Array<{
-    id: string;
-    title: string;
-    is_active: boolean;
-    created_at: string;
-    updated_at: string;
-  }>;
-}
-
-interface IVideoGallaryResponse {
-  apiVersion: string;
-  success: boolean;
-  message: string;
-  status: number;
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-  data: IVideoGallary[];
-}
 
 interface ICategoriesApiResponse {
   apiVersion: string;
@@ -163,34 +112,6 @@ async function fetchProducts(baseUrl: string) {
   return result?.data || [];
 }
 
-// NEW: Fetch video categories
-async function fetchVideoCategories(baseUrl: string) {
-  const res = await fetch(`${baseUrl}/video-gallary-categories`, {
-    next: { revalidate: 30 },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch video categories");
-  }
-
-  const result: IVideoCategoriesResponse = await res.json();
-  return result.data || [];
-}
-
-// NEW: Fetch videos
-async function fetchVideos(baseUrl: string) {
-  const res = await fetch(`${baseUrl}/video-gallaries`, {
-    next: { revalidate: 30 },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch videos");
-  }
-
-  const result: IVideoGallaryResponse = await res.json();
-  return result.data || [];
-}
-
 // Fetch function
 async function fetchTestimonials(baseUrl: string) {
   const res = await fetch(`${baseUrl}/testimonials`, {
@@ -223,7 +144,6 @@ const Page = async () => {
   let categories: ProductCategory[] = [];
   let products: any[] = [];
   let videos: IVideoGallary[] = [];
-  let videoCategories: any[] = [];
 
   let testimonials: ITestimonial[] = [];
   let questionAnswers: IFAQItem[] = [];
@@ -253,16 +173,8 @@ const Page = async () => {
     products = [];
   }
 
-  // NEW: Fetch video data
   try {
-    videoCategories = await fetchVideoCategories(baseUrl);
-  } catch (error) {
-    console.error("Failed to fetch video categories:", error);
-    videoCategories = [];
-  }
-
-  try {
-    videos = await fetchVideos(baseUrl);
+    videos = await getVideos(4);
   } catch (error) {
     console.error("Failed to fetch videos:", error);
     videos = [];
@@ -288,8 +200,8 @@ const Page = async () => {
       <FeaturesSection />
       <CategorySection categories={categories} />
       <ProductShowcase products={products} />
-      <VideoGallery videos={videos} categories={videoCategories} />
-      <BlogSection />
+      <HomeVideoSection videos={videos} />
+      <HomeBlogSection />
       <TestimonialSection testimonials={testimonials} />
       <FAQSection faqs={questionAnswers} />
     </>

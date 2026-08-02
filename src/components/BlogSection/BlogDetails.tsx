@@ -158,13 +158,16 @@ export default function BlogDetails({
   return (
     <article className="max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-10">
       {/* Back Button */}
-      <button className="group flex items-center gap-2 text-slate-600 hover:text-emerald-600 mb-6 transition-colors">
+      <Link
+        href="/blog"
+        className="group flex items-center gap-2 text-slate-600 hover:text-emerald-600 mb-6 transition-colors"
+      >
         <ChevronLeft
           size={20}
           className="group-hover:-translate-x-1 transition-transform"
         />
         <span className="font-medium">Back to Blog</span>
-      </button>
+      </Link>
 
       {/* Category Badge */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
