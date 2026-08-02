@@ -103,12 +103,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   return (
-    <div className="shrink-0 w-52 sm:w-60 bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group/card relative">
-      <div className="absolute top-2.5 inset-x-2.5 z-10 flex justify-between items-start">
+    <div className="shrink-0 h-full w-40 sm:w-52 md:w-60 bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group/card relative">
+      <div className="absolute top-2 sm:top-2.5 inset-x-2 sm:inset-x-2.5 z-10 flex justify-between items-start">
         {/* Right side badges */}
         <div className="flex flex-col gap-1 items-end">
           {isInCart && (
-            <span className="bg-emerald-500 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
+            <span className="bg-emerald-500 text-white font-extrabold text-[9px] sm:text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm">
               {cartQuantity} in Cart
             </span>
           )}
@@ -126,15 +126,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           className="transition-transform duration-500 will-change-transform group-hover/card:scale-105"
           loading="lazy"
           fill
-          sizes="(max-width: 640px) 190px, 220px"
+          sizes="(max-width: 640px) 160px, (max-width: 768px) 208px, 240px"
         />
       </Link>
 
-      <div className="p-2.5 flex-1 flex flex-col justify-between">
+      <div className="p-2 sm:p-2.5 flex-1 flex flex-col justify-between">
         {/* Product Name */}
-        <div className="">
+        <div>
           <Link href={`/product/${product.slug}`}>
-            <h4 className="text-sm sm:text-base text-slate-800 tracking-tight line-clamp-2 min-h-8 hover:text-emerald-600 transition-colors">
+            <h4 className="text-xs sm:text-sm md:text-base text-slate-800 tracking-tight line-clamp-2 min-h-8 hover:text-emerald-600 transition-colors">
               {product?.name}
             </h4>
           </Link>
@@ -142,8 +142,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/*  Weight Display */}
         {productWeight != 0 && (
-          <div className="flex items-center gap-1 text-sm text-slate-500 mt-0.5">
-            <Weight size={14} className="text-emerald-500" />
+          <div className="flex items-center gap-1 text-xs sm:text-sm text-slate-500 mt-0.5">
+            <Weight size={14} className="text-emerald-500 shrink-0" />
             <span>{productWeight} Kg</span>
           </div>
         )}
@@ -151,33 +151,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Price and Add to Cart */}
         <div className="flex flex-col gap-2 mt-2">
           {/* Price Section */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center flex-wrap gap-2">
-              {/* Current Price */}
-              <span className="text-base sm:text-lg font-extrabold text-emerald-600">
-                ৳ {product?.price}
-              </span>
+          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
+            {/* Current Price */}
+            <span className="text-sm sm:text-base md:text-lg font-extrabold text-emerald-600">
+              ৳ {product?.price}
+            </span>
 
-              {/* Original Price (strikethrough) */}
-
-              <span className="text-xs sm:text-sm text-slate-400 line-through">
+            {/* Original Price (strikethrough) — only when it's actually discounted */}
+            {product?.original_price > product?.price && (
+              <span className="text-[11px] sm:text-xs md:text-sm text-slate-400 line-through">
                 ৳ {product?.original_price}
               </span>
+            )}
 
-              {/* Discount Badge */}
-              {product?.discount_price > 0 && (
-                <span className="bg-red-500 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap">
-                  ৳{product?.discount_price} OFF
-                </span>
-              )}
-            </div>
+            {/* Discount Badge */}
+            {product?.discount_price > 0 && (
+              <span className="bg-red-500 text-white font-bold text-[9px] sm:text-[10px] md:text-xs px-1.5 sm:px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap">
+                ৳{product?.discount_price} OFF
+              </span>
+            )}
           </div>
 
           {isInCart ? (
-            <div className="flex items-center justify-between gap-2 bg-emerald-50 rounded-xl border border-emerald-200 px-3 py-1.5 w-full">
+            <div className="flex items-center justify-between gap-2 bg-emerald-50 rounded-xl border border-emerald-200 px-2 sm:px-3 py-1 w-full">
               <button
                 onClick={handleRemoveFromCart}
-                className="p-1 rounded-lg cursor-pointer hover:bg-emerald-100 transition-colors text-emerald-600"
+                className="p-2 -m-1 rounded-lg cursor-pointer hover:bg-emerald-100 active:bg-emerald-200 transition-colors text-emerald-600"
                 aria-label="Remove one"
               >
                 <Minus size={16} className="stroke-3" />
@@ -187,7 +186,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </span>
               <button
                 onClick={handleAddToCart}
-                className="p-1 rounded-lg cursor-pointer hover:bg-emerald-100 transition-colors text-emerald-600"
+                className="p-2 -m-1 rounded-lg cursor-pointer hover:bg-emerald-100 active:bg-emerald-200 transition-colors text-emerald-600"
                 aria-label="Add one more"
               >
                 <Plus size={16} className="stroke-3" />
@@ -196,7 +195,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           ) : (
             <button
               onClick={handleAddToCart}
-              className={`font-black w-full cursor-pointer text-xs py-2 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 uppercase tracking-wider hover:shadow-md ${
+              aria-label={`Add ${product?.name} to cart`}
+              className={`font-black w-full cursor-pointer text-[11px] sm:text-xs py-2.5 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 uppercase tracking-wider hover:shadow-md ${
                 isAdded
                   ? "bg-emerald-600 text-white"
                   : "bg-emerald-500 hover:bg-emerald-600 text-white"

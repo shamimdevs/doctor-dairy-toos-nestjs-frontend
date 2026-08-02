@@ -64,6 +64,14 @@ export default function CategoryPageClient({
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  // Lock background scroll while the mobile filter drawer is open
+  useEffect(() => {
+    document.body.style.overflow = isMobileFilterOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileFilterOpen]);
+
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
 
@@ -221,9 +229,9 @@ export default function CategoryPageClient({
           <span className="font-semibold">Back</span>
         </button>
 
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-emerald-600">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-emerald-600">
               {initialCategory.name}
             </h1>
             {/* <p className="text-sm text-slate-500 mt-1">
@@ -233,12 +241,12 @@ export default function CategoryPageClient({
           </div>
 
           {/* Sort By Dropdown UI */}
-          <div className="flex items-center gap-2 self-end sm:self-auto">
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:self-auto">
             <div className="relative" ref={sortRef}>
               <button
                 type="button"
                 onClick={() => setIsSortOpen((prev) => !prev)}
-                className={`w-60 flex justify-between items-center gap-2 bg-white border text-sm font-semibold py-2 px-4 rounded-xl shadow-sm transition-all duration-200 cursor-pointer ${
+                className={`md:w-60 flex justify-between items-center gap-2 bg-white border text-xs sm:text-sm font-semibold py-2 px-3 sm:px-4 rounded-xl shadow-sm transition-all duration-200 cursor-pointer ${
                   isSortOpen
                     ? "border-emerald-400 text-emerald-600 ring-2 ring-emerald-100"
                     : "border-slate-200 text-slate-700 hover:border-emerald-300 hover:text-emerald-600"
@@ -254,7 +262,7 @@ export default function CategoryPageClient({
               </button>
 
               <div
-                className={`absolute right-0 z-20 mt-2 w-56 origin-top-right rounded-xl border border-slate-200 bg-white shadow-lg transition-all duration-150 ${
+                className={`absolute right-0 z-20 mt-2 w-56 max-w-[calc(100vw-2.5rem)] origin-top-right rounded-xl border border-slate-200 bg-white shadow-lg transition-all duration-150 ${
                   isSortOpen
                     ? "opacity-100 scale-100 translate-y-0"
                     : "pointer-events-none opacity-0 scale-95 -translate-y-1"
@@ -290,7 +298,7 @@ export default function CategoryPageClient({
 
             <button
               onClick={() => setIsMobileFilterOpen(true)}
-              className="lg:hidden bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-emerald-700 transition-colors"
+              className="lg:hidden bg-emerald-600 text-white px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-sm hover:bg-emerald-700 active:scale-95 transition-all"
             >
               Filters ({activeFilterCount})
             </button>
@@ -331,51 +339,70 @@ export default function CategoryPageClient({
           </aside>
 
           {/* Mobile Filter Drawer */}
-          {isMobileFilterOpen && (
-            <div className="fixed inset-0 z-50 lg:hidden">
-              <div
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                onClick={() => setIsMobileFilterOpen(false)}
-              />
-              <div className="absolute inset-y-0 left-0 w-4/5 max-w-xs bg-white p-5 overflow-y-auto z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-extrabold text-slate-900">
-                    Filters
-                  </h2>
-                  <button
-                    onClick={() => setIsMobileFilterOpen(false)}
-                    className="p-2 hover:bg-slate-100 rounded-xl"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-                <PriceFilter
-                  selectedRange={filters.price}
-                  onSelect={(val) => updateFilter("price", val)}
-                />
-                <DiscountFilter
-                  selectedDiscount={filters.discount}
-                  onSelect={(val) => updateFilter("discount", val)}
-                />
-                <CategoryFilter
-                  selectedCategories={filters.categories}
-                  onToggle={toggleCategory}
-                />
+          <div
+            className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
+              isMobileFilterOpen
+                ? "opacity-100 pointer-events-auto"
+                : "opacity-0 pointer-events-none"
+            }`}
+            aria-hidden={!isMobileFilterOpen}
+          >
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setIsMobileFilterOpen(false)}
+            />
+            <div
+              className={`absolute inset-y-0 left-0 h-full w-[85%] max-w-xs bg-white p-5 overflow-y-auto shadow-2xl transition-transform duration-300 ease-out ${
+                isMobileFilterOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-extrabold text-slate-900">
+                  Filters
+                </h2>
+                <button
+                  onClick={() => setIsMobileFilterOpen(false)}
+                  className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                  aria-label="Close filters"
+                >
+                  <X size={20} />
+                </button>
               </div>
+              <PriceFilter
+                selectedRange={filters.price}
+                onSelect={(val) => updateFilter("price", val)}
+              />
+              <DiscountFilter
+                selectedDiscount={filters.discount}
+                onSelect={(val) => updateFilter("discount", val)}
+              />
+              <CategoryFilter
+                selectedCategories={filters.categories}
+                onToggle={toggleCategory}
+              />
+
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={clearAllFilters}
+                  className="mt-6 w-full rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Clear All ({activeFilterCount})
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Product Grid Layout */}
           <main className="flex-1">
             {filteredProducts?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
                 {filteredProducts?.map((product: Product) => (
                   <CategoryProductCard key={product.id} product={product} />
                 ))}
               </div>
             ) : (
-              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
-                <p className="text-slate-400 font-medium">
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-12 text-center shadow-sm">
+                <p className="text-slate-400 font-medium text-sm sm:text-base">
                   No products match the selected criteria. Try adjusting your
                   filters.
                 </p>
