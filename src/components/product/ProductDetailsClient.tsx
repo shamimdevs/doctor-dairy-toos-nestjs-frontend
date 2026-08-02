@@ -6,7 +6,7 @@ import { ProductImageGallery } from "./ProductImageGallery";
 import { ProductInfo } from "./ProductInfo";
 import { ProductActions } from "./ProductActions";
 import { ProductTabs } from "./ProductTabs";
-import { ProductTrustBadges } from "./ProductTrustBadges";
+import RelatedProducts from "./RelatedProducts";
 
 type ProductProps = {
   product: {
@@ -51,7 +51,7 @@ export default function ProductDetailsClient({ product }: ProductProps) {
   const brandName = product?.brand?.name || "";
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
+    <div className="container  py-14 ">
       <ProductBreadcrumb
         categoryName={categoryName}
         categorySlug={categorySlug}
@@ -128,7 +128,8 @@ export default function ProductDetailsClient({ product }: ProductProps) {
       </div>
 
       <ProductTabs product={product} />
-      <ProductTrustBadges />
+
+      <RelatedProducts productId={product?.id} categorySlug={categorySlug} />
     </div>
   );
 }

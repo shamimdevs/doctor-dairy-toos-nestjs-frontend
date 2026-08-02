@@ -13,7 +13,6 @@ import {
   CreditCard,
   List,
   Clock,
-  Archive,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -37,15 +36,6 @@ const menuItems: MenuItem[] = [
     icon: LayoutDashboard,
   },
 
-  {
-    label: "Projects",
-    icon: FolderKanban,
-    children: [
-      { label: "All Projects", href: "/projects", icon: List },
-      { label: "Active", href: "/projects/active", icon: Clock },
-      { label: "Archived", href: "/projects/archived", icon: Archive },
-    ],
-  },
   {
     label: "Product   Category",
     icon: FolderKanban,
