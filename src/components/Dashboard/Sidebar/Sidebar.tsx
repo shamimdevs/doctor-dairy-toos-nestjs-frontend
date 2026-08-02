@@ -15,6 +15,7 @@ import {
   Layers,
   Quote,
   HelpCircle,
+  Receipt,
   ChevronDown,
   X,
   type LucideIcon,
@@ -37,6 +38,11 @@ const menuItems: MenuItem[] = [
     label: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    label: "Orders",
+    href: "/dashboard/orders/all-orders",
+    icon: Receipt,
   },
 
   {
