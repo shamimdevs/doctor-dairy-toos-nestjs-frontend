@@ -119,15 +119,15 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
           className="transition-transform duration-500 will-change-transform group-hover/card:scale-105"
           loading="lazy"
           fill
-          sizes="(max-width: 640px) 190px, 220px"
+          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 22vw"
         />
       </Link>
 
-      <div className="p-2.5 flex-1 flex flex-col justify-between">
+      <div className="p-2 sm:p-3 flex-1 flex flex-col justify-between">
         {/* Product Name */}
         <div>
           <Link href={`/product/${product.slug}`}>
-            <h4 className="text-sm sm:text-base text-slate-800 tracking-tight line-clamp-2 min-h-8 hover:text-emerald-600 transition-colors">
+            <h4 className="text-xs sm:text-sm md:text-base text-slate-800 tracking-tight line-clamp-2 min-h-8 hover:text-emerald-600 transition-colors">
               {product.name}
             </h4>
           </Link>
@@ -135,8 +135,8 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
 
         {/* Weight Display */}
         {!!productWeight && (
-          <div className="flex items-center gap-1 text-sm text-slate-500 mt-0.5">
-            <Weight size={14} className="text-emerald-500" />
+          <div className="flex items-center gap-1 text-xs sm:text-sm text-slate-500 mt-0.5">
+            <Weight size={14} className="text-emerald-500 shrink-0" />
             <span>{productWeight} Kg</span>
           </div>
         )}
@@ -144,32 +144,32 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
         {/* Price and Add to Cart */}
         <div className="flex flex-col gap-2 mt-2">
           {/* Price Section */}
-          <div className="flex items-center flex-wrap gap-2">
+          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
             {/* Current Price */}
-            <span className="text-base sm:text-lg font-extrabold text-emerald-600">
+            <span className="text-sm sm:text-base md:text-lg font-extrabold text-emerald-600">
               ৳ {currentPrice}
             </span>
 
             {/* Original Price (strikethrough) */}
             {originalPrice > currentPrice && (
-              <span className="text-xs sm:text-sm text-slate-400 line-through">
+              <span className="text-[11px] sm:text-xs md:text-sm text-slate-400 line-through">
                 ৳ {originalPrice}
               </span>
             )}
 
             {/* Discount Badge */}
             {!!product.discount_price && product.discount_price > 0 && (
-              <span className="bg-red-500 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap">
+              <span className="bg-red-500 text-white font-bold text-[9px] sm:text-[10px] md:text-xs px-1.5 sm:px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap">
                 ৳{product.discount_price} OFF
               </span>
             )}
           </div>
 
           {isInCart ? (
-            <div className="flex items-center justify-between gap-2 bg-emerald-50 rounded-xl border border-emerald-200 px-3 py-1.5 w-full">
+            <div className="flex items-center justify-between gap-2 bg-emerald-50 rounded-xl border border-emerald-200 px-2 sm:px-3 py-1 w-full">
               <button
                 onClick={handleRemoveFromCart}
-                className="p-1 rounded-lg cursor-pointer hover:bg-emerald-100 transition-colors text-emerald-600"
+                className="p-2 -m-1 rounded-lg cursor-pointer hover:bg-emerald-100 active:bg-emerald-200 transition-colors text-emerald-600"
                 aria-label="Remove one"
               >
                 <Minus size={16} className="stroke-3" />
@@ -179,7 +179,7 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
               </span>
               <button
                 onClick={handleAddToCart}
-                className="p-1 rounded-lg cursor-pointer hover:bg-emerald-100 transition-colors text-emerald-600"
+                className="p-2 -m-1 rounded-lg cursor-pointer hover:bg-emerald-100 active:bg-emerald-200 transition-colors text-emerald-600"
                 aria-label="Add one more"
               >
                 <Plus size={16} className="stroke-3" />
@@ -188,7 +188,8 @@ const CategoryProductCard: React.FC<CategoryProductCardProps> = ({
           ) : (
             <button
               onClick={handleAddToCart}
-              className={`font-black w-full cursor-pointer text-xs py-2 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 uppercase tracking-wider hover:shadow-md ${
+              aria-label={`Add ${product.name} to cart`}
+              className={`font-black w-full cursor-pointer text-[11px] sm:text-xs py-2.5 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 uppercase tracking-wider hover:shadow-md ${
                 isAdded
                   ? "bg-emerald-600 text-white"
                   : "bg-emerald-500 hover:bg-emerald-600 text-white"

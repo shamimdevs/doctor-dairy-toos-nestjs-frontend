@@ -62,16 +62,16 @@ interface CategoryCardProps {
 export default function CategoryCard({ category }: CategoryCardProps) {
   const [isImageLoading, setIsImageLoading] = useState(true);
 
-  // ✅ সরাসরি category.slug ব্যবহার করুন
   const targetPath = `/category/${category.slug}`;
 
   return (
     <Link
       href={targetPath}
-      className="shrink-0 w-36 sm:w-40 bg-white border border-slate-200 rounded-2xl p-2 flex flex-col items-center justify-center text-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:border-emerald-200 group"
+      className="shrink-0 h-full w-28 md:w-32 lg:w-36 bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center justify-start text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-emerald-200 group"
     >
-      {/* ইমেজ কন্টেইনার */}
-      <div className="relative w-16 h-16 md:w-24 md:h-24 mb-2 rounded-xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-105">
+      {/* ইমেজ কন্টেইনার — every breakpoint gets a fixed box, so the icon
+          never changes the card's overall height */}
+      <div className="relative  w-24 h-24 mb-2 rounded-xl flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300 group-hover:scale-105">
         {isImageLoading && (
           <div className="absolute inset-0 bg-slate-100 animate-pulse rounded-xl" />
         )}
@@ -79,8 +79,8 @@ export default function CategoryCard({ category }: CategoryCardProps) {
           src={category?.image || "/placeholder-category.png"}
           alt={category?.name || "Category"}
           fill
-          sizes="(max-width: 768px) 64px, 80px"
-          className={`object-contain p-2 transition-all duration-300 ${
+          sizes="(max-width: 640px) 56px, (max-width: 768px) 64px, (max-width: 1024px) 80px, 96px"
+          className={`object-contain p-1.5 sm:p-2 transition-all duration-300 ${
             isImageLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"
           }`}
           onLoad={() => setIsImageLoading(false)}
@@ -89,9 +89,10 @@ export default function CategoryCard({ category }: CategoryCardProps) {
         />
       </div>
 
-      {/* ক্যাটাগরি নাম */}
-      <div className="w-full">
-        <h3 className="text-xs font-bold text-slate-700 tracking-tight transition-colors group-hover:text-emerald-600 px-0.5">
+      {/* ক্যাটাগরি নাম — clamped to exactly 2 lines so short and long
+          names both reserve the same amount of vertical space */}
+      <div className="w-full flex items-center justify-center h-8">
+        <h3 className="text-xs font-bold text-slate-700 tracking-tight leading-4 line-clamp-2 transition-colors group-hover:text-emerald-600 px-0.5">
           {category?.name}
         </h3>
       </div>
