@@ -94,6 +94,11 @@ const menuItems: MenuItem[] = [
         href: "/dashboard/blog/blog-posts/all-blog-posts",
         icon: CreditCard,
       },
+      {
+        label: "Blog Details",
+        href: "/dashboard/blog/blog-details/all-blog-details",
+        icon: CreditCard,
+      },
     ],
   },
   {
