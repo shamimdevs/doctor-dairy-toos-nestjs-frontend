@@ -111,6 +111,11 @@ export default function BlogDetails({
     return "5 min read";
   };
 
+  // Rich text fields (from the dashboard's WebEditor) come through as HTML;
+  // older plain-text entries don't, so branch on whether it looks like HTML.
+  const looksLikeHtml = (text?: string | null) =>
+    typeof text === "string" && text.trim().startsWith("<");
+
   // Parse titles - handle string or array
   const parseTitles = (titles: any): string[] => {
     if (!titles) return [];
@@ -222,9 +227,16 @@ export default function BlogDetails({
 
       {/* Main Content */}
       <div className="prose prose-lg prose-emerald max-w-none">
-        <div className="text-slate-700 leading-relaxed whitespace-pre-wrap">
-          {post.content}
-        </div>
+        {looksLikeHtml(post.content) ? (
+          <div
+            className="text-slate-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+        ) : (
+          <div className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+            {post.content}
+          </div>
+        )}
       </div>
 
       {/* Blog Sections (from blog-details API) */}
@@ -262,11 +274,17 @@ export default function BlogDetails({
                     </div>
                   )}
 
-                  {section.body && (
-                    <div className="text-slate-600 leading-relaxed whitespace-pre-wrap mb-4">
-                      {section.body}
-                    </div>
-                  )}
+                  {section.body &&
+                    (looksLikeHtml(section.body) ? (
+                      <div
+                        className="text-slate-600 leading-relaxed mb-4 [&_a]:text-emerald-600 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-emerald-200 [&_blockquote]:pl-3 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                        dangerouslySetInnerHTML={{ __html: section.body }}
+                      />
+                    ) : (
+                      <div className="text-slate-600 leading-relaxed whitespace-pre-wrap mb-4">
+                        {section.body}
+                      </div>
+                    ))}
 
                   {/* Titles/Sub-sections */}
                   {titles.length > 0 && (

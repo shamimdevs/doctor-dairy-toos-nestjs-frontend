@@ -14,6 +14,7 @@ export const tagTypes: Record<string, string> = {
   video_gallaries: "video-gallaries",
   blog_category: "blog-category",
   blog: "blog",
+  blog_details: "blog-details",
   testimonials: "testimonials",
   question_answers: "question-answers",
 };
@@ -34,6 +35,7 @@ export const tagTypesList: string[] = [
   tagTypes.video_gallaries,
   tagTypes.blog_category,
   tagTypes.blog,
+  tagTypes.blog_details,
   tagTypes.testimonials,
   tagTypes.question_answers,
 ];
