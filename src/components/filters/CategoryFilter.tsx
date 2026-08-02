@@ -47,7 +47,8 @@ export default function CategoryFilter({
       </h4>
       <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
         {categories.map((category: any) => {
-          const isChecked = selectedCategories.includes(category.slug);
+          const categorySlug = (category.slug || "").toLowerCase();
+          const isChecked = selectedCategories.includes(categorySlug);
           return (
             <label
               key={category.id}
@@ -56,7 +57,7 @@ export default function CategoryFilter({
               <input
                 type="checkbox"
                 checked={isChecked}
-                onChange={() => onToggle(category.slug)} // ✅ Pass slug
+                onChange={() => onToggle(categorySlug)} // ✅ Pass slug
                 className="w-4 h-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 focus:ring-2 cursor-pointer transition-all"
               />
               <span className="text-sm text-slate-700 group-hover:text-emerald-600 transition-colors font-medium">

@@ -1,20 +1,21 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { X, ChevronLeft } from "lucide-react";
+import { X, ChevronLeft, ChevronDown, Check } from "lucide-react";
 import CategoryProductCard from "@/src/components/HomePage/ProductShowcase/CategoryProductCard";
 import { Product } from "@/src/types/product";
-import { IProductCategory } from "@/src/types/productCategoriesType";
+import { ProductCategory } from "@/src/types/productCategoriesType";
 import { DiscountFilter, PriceFilter } from "../filters";
 import CategoryFilter from "../filters/CategoryFilter";
 
 interface CategoryPageClientProps {
   slug: string;
-  initialCategory: IProductCategory;
+  initialCategory: ProductCategory;
   allProducts: Product[];
-  allCategories: IProductCategory[];
+  allCategories: ProductCategory[];
 }
 
 interface FilterState {
@@ -23,6 +24,14 @@ interface FilterState {
   categories: string[];
   sortBy: string;
 }
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest First" },
+  { value: "price-low", label: "Price: Low to High" },
+  { value: "price-high", label: "Price: High to Low" },
+  { value: "discount", label: "Biggest Discount" },
+  { value: "popular", label: "Popularity" },
+];
 
 export default function CategoryPageClient({
   initialCategory,
@@ -36,12 +45,44 @@ export default function CategoryPageClient({
     categories: initialCategory.slug
       ? [initialCategory.slug.toLowerCase()]
       : [],
-    sortBy: "default",
+    sortBy: "newest",
   });
+
+  // Next.js reuses this component instance when navigating between
+  // /category/[slug] pages (same tree position), so `filters` would
+  // otherwise stay stuck on whichever category was viewed first.
+  useEffect(() => {
+    setFilters({
+      price: null,
+      discount: null,
+      categories: initialCategory.slug
+        ? [initialCategory.slug.toLowerCase()]
+        : [],
+      sortBy: "newest",
+    });
+  }, [initialCategory.slug]);
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const currentSortLabel =
+    SORT_OPTIONS.find((option) => option.value === filters.sortBy)?.label ||
+    "Newest First";
+
   const getProductPrice = useCallback((product: Product): number => {
+    if (product.price) return product.price;
     if (product.variants && product.variants.length > 0) {
       return product.variants[0].price;
     }
@@ -49,6 +90,11 @@ export default function CategoryPageClient({
   }, []);
 
   const getProductDiscount = useCallback((product: Product): number => {
+    const price = product.price || 0;
+    const originalPrice = product.original_price || price;
+    if (originalPrice > price && originalPrice > 0) {
+      return Math.round(((originalPrice - price) / originalPrice) * 100);
+    }
     if (product.variants && product.variants.length > 0) {
       const variant = product.variants[0];
       if (variant.discount_price && variant.price > 0) {
@@ -96,6 +142,12 @@ export default function CategoryPageClient({
     }
 
     switch (filters.sortBy) {
+      case "newest":
+        filtered = [...filtered].sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+        break;
       case "price-low":
         filtered = [...filtered].sort(
           (a, b) => getProductPrice(a) - getProductPrice(b),
@@ -129,7 +181,7 @@ export default function CategoryPageClient({
       price: null,
       discount: null,
       categories: [],
-      sortBy: "default",
+      sortBy: "newest",
     });
   }, []);
 
@@ -182,23 +234,63 @@ export default function CategoryPageClient({
 
           {/* Sort By Dropdown UI */}
           <div className="flex items-center gap-2 self-end sm:self-auto">
-            <span className="text-xs font-bold text-slate-500 uppercase">
-              Sort By:
-            </span>
-            <select
-              value={filters.sortBy}
-              onChange={(e) => updateFilter("sortBy", e.target.value)}
-              className="bg-white border border-slate-200 text-sm font-semibold text-slate-700 py-1.5 px-3 rounded-xl focus:outline-none focus:border-emerald-500 shadow-sm"
-            >
-              <option value="default">Default</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="discount">Biggest Discount</option>
-              <option value="popular">Popularity</option>
-            </select>
+            <div className="relative" ref={sortRef}>
+              <button
+                type="button"
+                onClick={() => setIsSortOpen((prev) => !prev)}
+                className={`w-60 flex justify-between items-center gap-2 bg-white border text-sm font-semibold py-2 px-4 rounded-xl shadow-sm transition-all duration-200 cursor-pointer ${
+                  isSortOpen
+                    ? "border-emerald-400 text-emerald-600 ring-2 ring-emerald-100"
+                    : "border-slate-200 text-slate-700 hover:border-emerald-300 hover:text-emerald-600"
+                }`}
+              >
+                {currentSortLabel}
+                <ChevronDown
+                  size={16}
+                  className={`text-slate-400 transition-transform duration-200 ${
+                    isSortOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              <div
+                className={`absolute right-0 z-20 mt-2 w-56 origin-top-right rounded-xl border border-slate-200 bg-white shadow-lg transition-all duration-150 ${
+                  isSortOpen
+                    ? "opacity-100 scale-100 translate-y-0"
+                    : "pointer-events-none opacity-0 scale-95 -translate-y-1"
+                }`}
+              >
+                <div className="p-1.5">
+                  {SORT_OPTIONS.map((option) => {
+                    const isActive = filters.sortBy === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          updateFilter("sortBy", option.value);
+                          setIsSortOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors cursor-pointer ${
+                          isActive
+                            ? "bg-emerald-50 text-emerald-700 font-semibold"
+                            : "text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {option.label}
+                        {isActive && (
+                          <Check size={14} className="text-emerald-600" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             <button
               onClick={() => setIsMobileFilterOpen(true)}
-              className="lg:hidden bg-emerald-600 text-white px-4 py-1.5 rounded-xl text-sm font-bold"
+              className="lg:hidden bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-emerald-700 transition-colors"
             >
               Filters ({activeFilterCount})
             </button>

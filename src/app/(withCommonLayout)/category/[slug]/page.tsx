@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { notFound } from "next/navigation";
 import { slugify } from "@/src/utils/slugify";
-import { IProductCategory } from "@/src/types/productCategoriesType";
+import { ProductCategory } from "@/src/types/productCategoriesType";
+
 import CategoryPageClient from "@/src/components/CategoryPage/CategoryPageClient";
 
 interface PageProps {
@@ -12,7 +13,7 @@ interface PageProps {
 
 interface ICategoriesApiResponse {
   success: boolean;
-  data: IProductCategory[];
+  data: ProductCategory[];
 }
 
 interface IProductsApiResponse {
@@ -20,7 +21,7 @@ interface IProductsApiResponse {
   data: any;
 }
 
-async function getCategories(baseUrl: string): Promise<IProductCategory[]> {
+async function getCategories(baseUrl: string): Promise<ProductCategory[]> {
   try {
     const res = await fetch(`${baseUrl}/product-categories`, {
       next: { revalidate: 100 },
