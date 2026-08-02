@@ -41,20 +41,23 @@ export function ProductTabs({ product }: ProductTabsProps) {
       <div className="prose prose-sm max-w-none text-gray-600">
         {activeTab === "description" && (
           <div>
-            <p className="whitespace-pre-wrap">
-              {product.description ||
-                product.meta_description ||
-                "No description available."}
-            </p>
+            {product.description ? (
+              product.description.trimStart().startsWith("<") ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+              ) : (
+                <p className="whitespace-pre-wrap">{product.description}</p>
+              )
+            ) : (
+              <p className="whitespace-pre-wrap">
+                {product.meta_description || "No description available."}
+              </p>
+            )}
             {product.meta_keywords && (
               <div className="mt-3">
                 <h4 className="font-bold text-gray-800">Keywords:</h4>
                 <p className="text-sm">{product.meta_keywords}</p>
-              </div>
-            )}
-            {product.addedBy && (
-              <div className="mt-4 text-xs text-gray-400">
-                Added by: {product.addedBy.name}
               </div>
             )}
           </div>

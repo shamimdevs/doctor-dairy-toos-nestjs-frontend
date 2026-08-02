@@ -12,7 +12,7 @@ interface ProductInfoProps {
 export function ProductInfo({ product, discountPercentage }: ProductInfoProps) {
   return (
     <div className="space-y-2">
-      <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+      <h1 className="text-lg md:text-3xl font-extrabold text-gray-900 tracking-tight">
         {product.name}
       </h1>
 
@@ -55,14 +55,14 @@ export function ProductInfo({ product, discountPercentage }: ProductInfoProps) {
         </div>
       )}
 
-      {/* Discount Badge inline */}
-      {discountPercentage > 0 && (
-        <div className="mt-2">
+      {/* Discount Badge + Stock status */}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {discountPercentage > 0 && (
           <span className="inline-block bg-red-50 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full border border-red-200">
             {discountPercentage}% OFF
           </span>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
