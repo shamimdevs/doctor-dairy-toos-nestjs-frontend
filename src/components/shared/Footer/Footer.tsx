@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  Heart,
   Phone,
   Mail,
   MapPin,
@@ -10,7 +9,6 @@ import {
   ShieldCheck,
   RotateCcw,
   Clock,
-  Wrench,
 } from "lucide-react";
 import { useGetAllProductCategoriesQuery } from "@/src/redux/api/productCategoriesApi";
 
@@ -100,32 +98,66 @@ export default function MedicoFooter() {
               Doctor
               <span className="text-amber-500 flex items-center mx-1">
                 Dairy
-                <Wrench
-                  size={18}
-                  className="stroke-3 text-emerald-600 ml-1 transform rotate-45 animate-bounce"
-                  style={{ animationDuration: "3s" }}
-                />
               </span>
               Tools
             </span>
           </Link>
           <p className="text-sm text-slate-400 leading-relaxed">
-            Your trusted source for veterinary and farm products in Bangladesh.
-            Sourcing 100% genuine surgical instruments, AI supplies, dairy
-            equipment, poultry tools, and lab items delivered directly to your
-            doorstep.
+            ডক্টর ডেইরি টুলস ভেটেরিনারিয়ান দ্বারা পরিচালিত বাংলাদেশের বিশ্বস্থ
+            ভেটেরিনারি সার্জিক্যাল ও ডেইরি ফার্ম সরঞ্জামাদি সরবরাহকারি
+            প্রতিষ্ঠান।
           </p>
-          <div className="pt-2">
+          <div className="flex items-center gap-3">
             <a
-              href="tel:16263"
-              className="inline-flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold px-4 py-2.5 rounded-xl text-xs uppercase border border-emerald-500/20 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              href="https://www.facebook.com/share/191ytz3M7S/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#1877F2] hover:scale-110 transition-transform duration-200 p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              aria-label="Visit Doctor Dairy Tools on Facebook"
             >
-              <Heart
-                size={14}
-                className="animate-pulse text-red-400"
+              <svg
+                className="w-7 h-7 fill-current"
+                viewBox="0 0 24 24"
                 aria-hidden="true"
-              />
-              <span>Veterinary Support: 16263</span>
+              >
+                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+              </svg>
+            </a>
+
+            <a
+              href="https://www.linkedin.com/in/dr-sajeeb-rana-064045423/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#0A66C2] hover:scale-110 transition-transform duration-200 p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              aria-label="Visit Doctor Dairy Tools on LinkedIn"
+            >
+              <svg
+                className="w-7 h-7 fill-current"
+                viewBox="0 0 22 30"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </a>
+
+            <a
+              href="https://www.youtube.com/@vetcare2019"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#FF0000] hover:scale-110 transition-transform duration-200 p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              aria-label="Visit Doctor Dairy Tools on YouTube"
+            >
+              <svg
+                className="w-7 h-7 fill-current"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M21.543 6.498C22 8.28 22 12 22 12s0 3.72-.457 5.502c-.254.985-.997 1.76-1.938 2.022C17.896 20 12 20 12 20s-5.893 0-7.605-.476c-.945-.266-1.687-1.04-1.938-2.022C2 15.72 2 12 2 12s0-3.72.457-5.502c.254-.985.997-1.76 1.938-2.022C6.107 4 12 4 12 4s5.896 0 7.605.476c.945.266 1.687 1.04 1.938 2.022zM10 15.5l6-3.5-6-3.5v7z" />
+              </svg>
             </a>
           </div>
         </div>
@@ -155,15 +187,6 @@ export default function MedicoFooter() {
             Quick Links
           </p>
           <ul className="space-y-2.5 text-sm">
-            <li>
-              <Link
-                href="/products"
-                className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors focus:outline-none focus:underline"
-              >
-                All Products
-              </Link>
-            </li>
-
             <li>
               <Link
                 href="/blog"
@@ -257,99 +280,24 @@ export default function MedicoFooter() {
 
       {/* ৩. লিগ্যাল কপিরাইট ও পেমেন্ট পার্টনার সেকশন (Bottom Bar) */}
       <div className="border-t border-slate-700/50 bg-[#0a0f1a]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-400">
           <div className="space-y-1.5 text-center md:text-left">
             <p>&copy; {currentYear} Doctor Dairy Tools. All rights reserved.</p>
-            <nav
-              aria-label="Legal Links"
-              className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1"
-            >
-              <Link
-                href="/terms-and-conditions"
-                className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Terms &amp; Conditions
-              </Link>
-              <span className="text-slate-600" aria-hidden="true">
-                &bull;
-              </span>
-              <Link
-                href="/privacy-policy"
-                className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Privacy Policy
-              </Link>
-              <span className="text-slate-600" aria-hidden="true">
-                &bull;
-              </span>
-              <Link
-                href="/refund-policy"
-                className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Refund Policy
-              </Link>
-            </nav>
           </div>
 
           {/* সিকিউর পেমেন্ট মেথড এবং সোশ্যাল লিংক */}
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mr-2 hidden sm:inline">
-              Secure Payments: bKash / Cards
-            </span>
-
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <p className="text-sm ">
+              Designed and Developed by{" "}
               <a
-                href="https://www.facebook.com/share/191ytz3M7S/"
+                href="https://zamirul-kabir-portfolio.vercel.app/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                aria-label="Visit Doctor Dairy Tools on Facebook"
+                className="font-semibold text-base text-slate-300 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
               >
-                <svg
-                  className="w-4 h-4 fill-current"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
-                </svg>
+                Zamirul Kabir
               </a>
-
-              <a
-                href="https://www.linkedin.com/in/dr-sajeeb-rana-064045423/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                aria-label="Visit Doctor Dairy Tools on LinkedIn"
-              >
-                <svg
-                  className="w-4 h-4 fill-current"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </a>
-
-              <a
-                href="https://www.youtube.com/@vetcare2019"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                aria-label="Visit Doctor Dairy Tools on YouTube"
-              >
-                <svg
-                  className="w-4 h-4 fill-current"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M21.543 6.498C22 8.28 22 12 22 12s0 3.72-.457 5.502c-.254.985-.997 1.76-1.938 2.022C17.896 20 12 20 12 20s-5.893 0-7.605-.476c-.945-.266-1.687-1.04-1.938-2.022C2 15.72 2 12 2 12s0-3.72.457-5.502c.254-.985.997-1.76 1.938-2.022C6.107 4 12 4 12 4s5.896 0 7.605.476c.945.266 1.687 1.04 1.938 2.022zM10 15.5l6-3.5-6-3.5v7z" />
-                </svg>
-              </a>
-            </div>
+            </p>
           </div>
         </div>
       </div>

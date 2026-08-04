@@ -98,7 +98,7 @@ export default function LegalPageLayout({
               </ul>
             </nav>
 
-            <div className="a-card shadow-none! lg:shadow-xs! mt-4 p-4">
+            <div className="a-card shadow-none! lg:shadow-xs! mt-4 px-2.5 py-4">
               <p className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 border-l-2 border-emerald-500 pl-2">
                 Need help?
               </p>

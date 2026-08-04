@@ -306,7 +306,7 @@ export default function TermsAndConditions() {
             </a>
           </li>
           <li>
-            Phone: <a href="tel:+8809612362867">+880 9612-DOCTOR (362867)</a>
+            Phone: <a href="tel:+8809612362867">+880 1797-980777</a>
           </li>
           <li>
             Address: প্রজাবাহীনী প্রেস লেন (অন্নপূর্ণা হোটেলের গলি), সাতমাথা,
