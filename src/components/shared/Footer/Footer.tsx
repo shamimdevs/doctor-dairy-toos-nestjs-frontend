@@ -12,9 +12,12 @@ import {
   Clock,
   Wrench,
 } from "lucide-react";
+import { useGetAllProductCategoriesQuery } from "@/src/redux/api/productCategoriesApi";
 
 export default function MedicoFooter() {
   const currentYear = new Date().getFullYear();
+  const { data: catData } = useGetAllProductCategoriesQuery(undefined);
+  const categories = (catData?.data || []).slice(0, 6);
 
   return (
     <footer
@@ -133,54 +136,16 @@ export default function MedicoFooter() {
             Shop Categories
           </p>
           <ul className="space-y-2.5 text-sm">
-            <li>
-              <Link
-                href="/category/veterinary-surgical"
-                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Veterinary Surgical
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/category/ai-supplies"
-                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                AI Supplies
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/category/dairy-tools"
-                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Dairy Farm Tools
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/category/dairy-machinery"
-                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Dairy Machinery
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/category/poultry-tools"
-                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Poultry Equipment
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/category/veterinary-lab"
-                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Veterinary Lab Items
-              </Link>
-            </li>
+            {categories.map((category) => (
+              <li key={category.id}>
+                <Link
+                  href={`/category/${category.slug}`}
+                  className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
+                >
+                  {category.name}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
 
@@ -198,14 +163,7 @@ export default function MedicoFooter() {
                 All Products
               </Link>
             </li>
-            <li>
-              <Link
-                href="/orders/track"
-                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
-              >
-                Track Your Order
-              </Link>
-            </li>
+
             <li>
               <Link
                 href="/blog"
@@ -230,12 +188,21 @@ export default function MedicoFooter() {
                 About Us
               </Link>
             </li>
+
             <li>
               <Link
-                href="/faq"
+                href="/terms-and-conditions"
                 className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
               >
-                Frequently Asked Questions
+                Terms &amp; Conditions
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/privacy-policy"
+                className="text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
+              >
+                Privacy Policy
               </Link>
             </li>
           </ul>
@@ -253,7 +220,10 @@ export default function MedicoFooter() {
                 className="text-emerald-400 shrink-0 mt-0.5"
                 aria-hidden="true"
               />
-              <span>Gulshan, Dhaka, Bangladesh</span>
+              <span>
+                প্রজাবাহীনী প্রেস লেন (অন্নপূর্ণা হোটেলের গলি), সাতমাথা, বগুড়া
+                সদর, Puran Bogra, Bangladesh, 5800
+              </span>
             </li>
             <li className="flex items-center gap-2.5">
               <Mail
@@ -262,10 +232,10 @@ export default function MedicoFooter() {
                 aria-hidden="true"
               />
               <a
-                href="mailto:support@doctordairytools.com"
+                href="mailto:doctordairytoolsbd@gmail.com"
                 className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
               >
-                support@doctordairytools.com
+                doctordairytoolsbd@gmail.com
               </a>
             </li>
             <li className="flex items-center gap-2.5">
@@ -275,10 +245,10 @@ export default function MedicoFooter() {
                 aria-hidden="true"
               />
               <a
-                href="tel:+8809612DOCTOR"
+                href="tel:+8801797980777"
                 className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
               >
-                +880 9612-DOCTOR (362867)
+                +880 1797-980777
               </a>
             </li>
           </ul>
@@ -288,8 +258,37 @@ export default function MedicoFooter() {
       {/* ৩. লিগ্যাল কপিরাইট ও পেমেন্ট পার্টনার সেকশন (Bottom Bar) */}
       <div className="border-t border-slate-700/50 bg-[#0a0f1a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <div className="space-y-1 text-center md:text-left">
+          <div className="space-y-1.5 text-center md:text-left">
             <p>&copy; {currentYear} Doctor Dairy Tools. All rights reserved.</p>
+            <nav
+              aria-label="Legal Links"
+              className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1"
+            >
+              <Link
+                href="/terms-and-conditions"
+                className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
+              >
+                Terms &amp; Conditions
+              </Link>
+              <span className="text-slate-600" aria-hidden="true">
+                &bull;
+              </span>
+              <Link
+                href="/privacy-policy"
+                className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
+              >
+                Privacy Policy
+              </Link>
+              <span className="text-slate-600" aria-hidden="true">
+                &bull;
+              </span>
+              <Link
+                href="/refund-policy"
+                className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline"
+              >
+                Refund Policy
+              </Link>
+            </nav>
           </div>
 
           {/* সিকিউর পেমেন্ট মেথড এবং সোশ্যাল লিংক */}
@@ -300,7 +299,7 @@ export default function MedicoFooter() {
 
             <div className="flex items-center gap-3">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/share/191ytz3M7S/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -316,7 +315,7 @@ export default function MedicoFooter() {
               </a>
 
               <a
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/in/dr-sajeeb-rana-064045423/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -336,7 +335,7 @@ export default function MedicoFooter() {
               </a>
 
               <a
-                href="https://youtube.com"
+                href="https://www.youtube.com/@vetcare2019"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
