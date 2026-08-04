@@ -86,6 +86,27 @@ interface IFetchQuestionAnswerss {
   data: IFAQItem[];
 }
 
+export interface IBannerItem {
+  id: string;
+  title: string;
+  image_url: string;
+  redirect_url?: string;
+}
+
+interface IBannersApiResponse {
+  apiVersion: string;
+  success: boolean;
+  message: string;
+  status: number;
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  data: IBannerItem[];
+}
+
 async function fetchCategories(baseUrl: string) {
   const res = await fetch(`${baseUrl}/product-categories`, {
     next: { revalidate: 100 },
@@ -140,6 +161,38 @@ async function fetchQuestionAnswerss(baseUrl: string) {
   return result.data || [];
 }
 
+async function fetchSliderBanners(baseUrl: string) {
+  const res = await fetch(
+    `${baseUrl}/banners?type=hero_slider&is_active=true`,
+    {
+      next: { revalidate: 60 },
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch slider banners");
+  }
+
+  const result: IBannersApiResponse = await res.json();
+  return result.data || [];
+}
+
+async function fetchSideBanners(baseUrl: string) {
+  const res = await fetch(
+    `${baseUrl}/banners?type=hero_side&is_active=true&limit=2`,
+    {
+      next: { revalidate: 60 },
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch side banners");
+  }
+
+  const result: IBannersApiResponse = await res.json();
+  return result.data || [];
+}
+
 const Page = async () => {
   let categories: ProductCategory[] = [];
   let products: any[] = [];
@@ -147,6 +200,8 @@ const Page = async () => {
 
   let testimonials: ITestimonial[] = [];
   let questionAnswers: IFAQItem[] = [];
+  let sliderBanners: IBannerItem[] = [];
+  let sideBanners: IBannerItem[] = [];
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -194,9 +249,23 @@ const Page = async () => {
     questionAnswers = [];
   }
 
+  try {
+    sliderBanners = await fetchSliderBanners(baseUrl);
+  } catch (error) {
+    console.error("Failed to fetch slider banners:", error);
+    sliderBanners = [];
+  }
+
+  try {
+    sideBanners = await fetchSideBanners(baseUrl);
+  } catch (error) {
+    console.error("Failed to fetch side banners:", error);
+    sideBanners = [];
+  }
+
   return (
     <>
-      <HeroSection />
+      <HeroSection sliderBanners={sliderBanners} sideBanners={sideBanners} />
       <FeaturesSection />
       <CategorySection categories={categories} />
       <ProductShowcase products={products} />

@@ -16,6 +16,7 @@ import {
   Quote,
   HelpCircle,
   Receipt,
+  Images,
   ChevronDown,
   X,
   type LucideIcon,
@@ -99,6 +100,11 @@ const menuItems: MenuItem[] = [
         icon: Layers,
       },
     ],
+  },
+  {
+    label: "Banners",
+    href: "/dashboard/banners/all-banners",
+    icon: Images,
   },
   {
     label: "Testimonials",
