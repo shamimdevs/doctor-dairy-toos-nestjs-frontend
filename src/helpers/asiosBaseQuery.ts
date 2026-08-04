@@ -35,9 +35,11 @@ export const axiosBaseQuery =
         params,
         headers: {
           ...headers,
-          "Content-Type": contentType
-            ? "multipart/form-data"
-            : "application/json",
+          // For multipart/form-data (FormData bodies), let axios/the browser
+          // set the Content-Type itself — it must include a `boundary=...`
+          // parameter that we cannot generate here, and hard-coding the
+          // header without one corrupts multipart parsing on the backend.
+          ...(contentType ? {} : { "Content-Type": "application/json" }),
         },
         withCredentials: true,
       });
