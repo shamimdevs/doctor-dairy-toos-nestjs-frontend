@@ -17,6 +17,7 @@ import {
   HelpCircle,
   Receipt,
   Images,
+  Truck,
   ChevronDown,
   X,
   type LucideIcon,
@@ -44,6 +45,11 @@ const menuItems: MenuItem[] = [
     label: "Orders",
     href: "/dashboard/orders/all-orders",
     icon: Receipt,
+  },
+  {
+    label: "Purchases",
+    href: "/dashboard/purchases/all-purchases",
+    icon: Truck,
   },
 
   {
