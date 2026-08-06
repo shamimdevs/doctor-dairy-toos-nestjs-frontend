@@ -57,7 +57,7 @@ export function TestimonialCard({ item }: TestimonialCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
+    <div className="h-full bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
       {/* Card Body */}
       <div className="p-6">
         {/* Header info / Avatar */}
@@ -85,12 +85,12 @@ export function TestimonialCard({ item }: TestimonialCardProps) {
               </span>
             </div>
           </div>
+          <Quote className="w-6 h-6 text-emerald-100 mb-1" />
         </div>
 
         {/* Quote Content */}
         <div className="relative">
-          <Quote className="w-6 h-6 text-emerald-100 mb-1" />
-          <p className="text-slate-600 text-sm leading-relaxed line-clamp-4">
+          <p className="text-slate-600 text-sm leading-relaxed line-clamp-5">
             {item?.description}
           </p>
         </div>
