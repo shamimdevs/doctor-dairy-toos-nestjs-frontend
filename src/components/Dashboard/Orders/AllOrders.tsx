@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import {
@@ -8,6 +9,9 @@ import {
   ChevronRight,
   Download,
   FileDown,
+  MessageCircle,
+  Plus,
+  Printer,
   Search,
   Trash2,
 } from "lucide-react";
@@ -21,7 +25,13 @@ import {
 import { useDebounce } from "@/src/hooks/useDebounce";
 import { ApiError } from "@/src/types/authType";
 import Pagination from "@/src/utils/Pagination";
-import { downloadOrderInvoicePDF, downloadOrdersReportPDF } from "@/src/utils/orderPdf";
+import {
+  downloadOrderInvoicePDF,
+  downloadOrdersReportPDF,
+  getOrderWhatsAppShareUrl,
+  printOrderInvoice,
+  printOrdersReport,
+} from "@/src/utils/orderPdf";
 
 const LIMIT = 10;
 
@@ -196,6 +206,34 @@ const AllOrders: React.FC = () => {
     }
   };
 
+  const handlePrintInvoice = (order: IOrder) => {
+    try {
+      printOrderInvoice(order);
+    } catch {
+      toast.error("Could not open print dialog. Please allow pop-ups for this site.");
+    }
+  };
+
+  const handlePrintAll = () => {
+    if (filteredOrders.length === 0) {
+      toast.info("No orders to print.");
+      return;
+    }
+    try {
+      printOrdersReport(filteredOrders);
+    } catch {
+      toast.error("Could not open print dialog. Please allow pop-ups for this site.");
+    }
+  };
+
+  const handleShareWhatsApp = (order: IOrder) => {
+    if (!order.phone) {
+      toast.error("This order has no customer phone number to share with.");
+      return;
+    }
+    window.open(getOrderWhatsAppShareUrl(order), "_blank", "noopener,noreferrer");
+  };
+
   if (isLoading) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-3">
@@ -244,6 +282,14 @@ const AllOrders: React.FC = () => {
           </select>
 
           <button
+            onClick={handlePrintAll}
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-300 hover:bg-gray-50 px-4 py-2 text-gray-700 text-sm font-semibold transition"
+          >
+            <Printer size={16} />
+            Print All
+          </button>
+
+          <button
             onClick={handleExportAll}
             disabled={isExporting}
             className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-gray-900 hover:bg-gray-800 disabled:opacity-60 px-4 py-2 text-white text-sm font-semibold transition"
@@ -251,6 +297,14 @@ const AllOrders: React.FC = () => {
             <FileDown size={16} />
             {isExporting ? "Exporting..." : "Export PDF"}
           </button>
+
+          <Link
+            href="/dashboard/orders/create-order"
+            className="flex items-center justify-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-2 text-white text-sm font-semibold transition"
+          >
+            <Plus size={16} />
+            New Order
+          </Link>
         </div>
       </div>
 
@@ -339,12 +393,26 @@ const AllOrders: React.FC = () => {
                       <td className="px-5 py-3">
                         <div className="flex justify-center gap-2">
                           <button
+                            onClick={() => handlePrintInvoice(order)}
+                            className="cursor-pointer rounded-lg p-2 text-gray-600 transition hover:bg-gray-100"
+                            title="Print Invoice"
+                          >
+                            <Printer size={18} />
+                          </button>
+                          <button
                             onClick={() => handleDownloadInvoice(order)}
                             disabled={downloadingId === order.id}
                             className="cursor-pointer rounded-lg p-2 text-blue-600 transition hover:bg-blue-100 disabled:opacity-50"
                             title="Download Invoice PDF"
                           >
                             <Download size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleShareWhatsApp(order)}
+                            className="cursor-pointer rounded-lg p-2 text-emerald-600 transition hover:bg-emerald-100"
+                            title="Share via WhatsApp"
+                          >
+                            <MessageCircle size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(order)}
@@ -370,6 +438,11 @@ const AllOrders: React.FC = () => {
                                   <div key={idx} className="flex justify-between text-sm">
                                     <span className="text-gray-700">
                                       {item.product_name} &times; {item.quantity}
+                                      {item.weight != null && (
+                                        <span className="ml-1.5 text-xs text-gray-400">
+                                          ({Number(item.weight).toFixed(2)} kg)
+                                        </span>
+                                      )}
                                     </span>
                                     <span className="font-semibold text-gray-800">
                                       ৳{item.total_price}
@@ -381,6 +454,10 @@ const AllOrders: React.FC = () => {
                                 <div className="flex justify-between text-gray-500">
                                   <span>Subtotal</span>
                                   <span>৳{order.subtotal}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-500">
+                                  <span>Total Weight</span>
+                                  <span>{Number(order.total_weight || 0).toFixed(2)} kg</span>
                                 </div>
                                 <div className="flex justify-between text-gray-500">
                                   <span>Delivery</span>

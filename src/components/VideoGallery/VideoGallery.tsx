@@ -55,7 +55,7 @@ export default function VideoGallery({
     if (categories.length === 0) return [];
 
     return [
-      { id: "all", label: "All Videos" },
+      { id: "all", label: "সব ভিডিও" },
       ...categories.map((cat) => ({
         id: cat.id,
         label: cat.title,
@@ -82,9 +82,9 @@ export default function VideoGallery({
       <section className="container py-8 md:py-12">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-slate-800 mb-4">
-            Video Gallery
+            ভিডিও গ্যালারি
           </h2>
-          <p className="text-slate-500">No videos available at the moment.</p>
+          <p className="text-slate-500">এই মুহূর্তে কোনো ভিডিও নেই।</p>
         </div>
       </section>
     );
@@ -96,14 +96,14 @@ export default function VideoGallery({
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-full text-sm font-semibold mb-3">
           <Play className="w-4 h-4 fill-emerald-600" />
-          Video Gallery
+          ভিডিও গ্যালারি
         </div>
         <h2 className="text-2xl md:text-4xl font-bold text-slate-800 mb-2">
-          Watch Our Educational Videos
+          আমাদের শিক্ষামূলক ভিডিও দেখুন
         </h2>
         <p className="text-slate-500 text-sm md:text-base max-w-2xl mx-auto">
-          Learn from our expert veterinarians and farm specialists through
-          informative video content
+          আমাদের বিশেষজ্ঞ পশুচিকিৎসক ও খামার বিশেষজ্ঞদের কাছ থেকে তথ্যবহুল
+          ভিডিওর মাধ্যমে শিখুন
         </p>
       </div>
 
@@ -132,7 +132,9 @@ export default function VideoGallery({
       {/* Video Grid */}
       {filteredVideos.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-slate-500">No videos found in this category.</p>
+          <p className="text-slate-500">
+            এই ক্যাটাগরিতে কোনো ভিডিও পাওয়া যায়নি।
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

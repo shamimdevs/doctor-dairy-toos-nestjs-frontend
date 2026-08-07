@@ -52,7 +52,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
     return (
       <section className="bg-slate-50 py-10 font-sans">
         <div className="container text-center text-slate-400 font-semibold py-16 sm:py-20">
-          No products available right now.
+          এই মুহূর্তে কোনো পণ্য পাওয়া যাচ্ছে না।
         </div>
       </section>
     );
@@ -64,15 +64,12 @@ export default function ProductShowcase({ products }: { products: any[] }) {
         {/* Promotional Top Bar */}
         <div className="bg-linear-to-r from-emerald-600 to-emerald-700 text-white rounded-2xl p-4 sm:p-6 mb-8 sm:mb-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="p-2 bg-emerald-500/50 rounded-xl backdrop-blur-sm shrink-0">
-              <Sparkles className="text-amber-300 animate-pulse" size={24} />
-            </div>
             <div className="min-w-0">
               <h2 className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight">
-                🐄 Doctor Dairy Tools & Equipment
+                Doctor Dairy Tools & Equipment
               </h2>
               <p className="text-xs sm:text-sm text-emerald-100 font-semibold mt-0.5">
-                Premium quality dairy farm supplies & veterinary tools
+                প্রিমিয়াম মানের ডেইরি ফার্ম সরঞ্জাম ও ভেটেরিনারি টুলস
               </p>
             </div>
           </div>
@@ -80,7 +77,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-emerald-700/60 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-emerald-500/30 w-full md:w-auto justify-center">
             <ShoppingCart size={18} className="text-emerald-300 shrink-0" />
             <span className="text-[11px] sm:text-xs uppercase tracking-wider font-black">
-              Cart Items:
+              কার্টে পণ্য:
             </span>
             <span className="bg-red-500 text-white font-extrabold text-sm px-2.5 py-0.5 rounded-full animate-bounce">
               {cartCount ?? 0}
@@ -115,7 +112,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
                       href={`/category/${category?.slug}`}
                       className="group/link flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-wider underline underline-offset-2 decoration-emerald-300 hover:decoration-emerald-600 px-2 py-1.5 rounded whitespace-nowrap"
                     >
-                      View All
+                      সব দেখুন
                       <ArrowRight
                         size={14}
                         className="transition-transform font-bold group-hover/link:translate-x-0.5"
@@ -145,7 +142,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
                   <button
                     onClick={() => handleScroll(category?.slug, "left")}
                     className="hidden sm:flex items-center justify-center absolute left-0 sm:-left-3 top-1/2 -translate-y-1/2 z-10 h-9 w-9 sm:h-10 sm:w-10 rounded-full cursor-pointer border border-slate-200 bg-white text-slate-600 shadow-md hover:bg-emerald-600 hover:text-white hover:border-emerald-600 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                    aria-label={`Scroll Left in ${category.name}`}
+                    aria-label={`${category.name} বামে স্ক্রল করুন`}
                   >
                     <ChevronLeft size={20} className="stroke-[2.5]" />
                   </button>
@@ -153,7 +150,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
                   <button
                     onClick={() => handleScroll(category?.slug, "right")}
                     className="hidden sm:flex items-center justify-center absolute right-0 sm:-right-3 top-1/2 -translate-y-1/2 z-10 h-9 w-9 sm:h-10 sm:w-10 rounded-full cursor-pointer border border-slate-200 bg-white text-slate-600 shadow-md hover:bg-emerald-600 hover:text-white hover:border-emerald-600 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                    aria-label={`Scroll Right in ${category.name}`}
+                    aria-label={`${category.name} ডানে স্ক্রল করুন`}
                   >
                     <ChevronRight size={20} className="stroke-[2.5]" />
                   </button>

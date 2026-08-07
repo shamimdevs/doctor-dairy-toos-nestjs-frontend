@@ -57,7 +57,7 @@ export function TestimonialCard({ item }: TestimonialCardProps) {
   };
 
   return (
-    <div className="h-full bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
+    <div className="h-full bg-white rounded-2xl border border-slate-100 shadow-md  transition-all duration-300 flex flex-col justify-between overflow-hidden">
       {/* Card Body */}
       <div className="p-6">
         {/* Header info / Avatar */}

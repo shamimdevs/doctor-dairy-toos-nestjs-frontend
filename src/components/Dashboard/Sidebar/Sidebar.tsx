@@ -19,6 +19,8 @@ import {
   Images,
   Truck,
   ChevronDown,
+  Plus,
+  BarChart3,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -42,9 +44,25 @@ const menuItems: MenuItem[] = [
     icon: LayoutDashboard,
   },
   {
+    label: "Reports",
+    href: "/dashboard/reports",
+    icon: BarChart3,
+  },
+  {
     label: "Orders",
-    href: "/dashboard/orders/all-orders",
     icon: Receipt,
+    children: [
+      {
+        label: "All Orders",
+        href: "/dashboard/orders/all-orders",
+        icon: Receipt,
+      },
+      {
+        label: "Create Order",
+        href: "/dashboard/orders/create-order",
+        icon: Plus,
+      },
+    ],
   },
   {
     label: "Purchases",

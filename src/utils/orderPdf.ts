@@ -1,9 +1,10 @@
 // src/utils/orderPdf.ts
-// PDF export for orders — reuses the same html2canvas + jsPDF approach
-// already established in OrderConfirmation.tsx, so invoices generated from
-// the customer-facing and admin sides look and behave consistently.
+// PDF export, browser print, and WhatsApp sharing for orders — all three
+// reuse the same HTML templates so the invoice/report look identical no
+// matter which output the admin picks.
 
 import type { IOrder } from "@/src/redux/api/orderApi";
+import { printHtmlDocument } from "./printDocument";
 
 const formatCurrency = (n: number) => `৳${Number(n || 0).toLocaleString()}`;
 
@@ -13,6 +14,125 @@ const formatDate = (d: string) =>
     month: "long",
     day: "numeric",
   });
+
+function buildInvoiceHtml(order: IOrder): string {
+  const itemRows = (order.items || [])
+    .map(
+      (item) => `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;">${item.product_name}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:center;">${item.quantity}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:center;">${item.weight != null ? `${Number(item.weight).toFixed(2)} kg` : "-"}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:right;">${formatCurrency(item.price)}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:right;">${formatCurrency(item.total_price)}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  return `
+    <div style="font-family:Arial, sans-serif;color:#1a1a1a;">
+      <div style="text-align:center;border-bottom:2px solid #10b981;padding-bottom:16px;margin-bottom:20px;">
+        <p style="font-size:22px;font-weight:bold;color:#10b981;margin:0;">Doctor Dairy Tools</p>
+        <p style="font-size:12px;color:#6b7280;margin:4px 0 0;">Invoice</p>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <p style="font-size:11px;color:#6b7280;margin:0 0 4px;">Billed To</p>
+          <p style="font-weight:bold;margin:0;">${order.customer_name}</p>
+          <p style="font-size:12px;color:#4b5563;margin:2px 0;">${order.phone}</p>
+          <p style="font-size:12px;color:#4b5563;margin:2px 0;max-width:240px;">${order.address}</p>
+        </div>
+        <div style="text-align:right;">
+          <p style="font-size:11px;color:#6b7280;margin:0 0 4px;">Invoice</p>
+          <p style="font-weight:bold;margin:0;">${order.order_number}</p>
+          <p style="font-size:12px;color:#4b5563;margin:2px 0;">${formatDate(order.created_at)}</p>
+          <span style="display:inline-block;margin-top:4px;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;background:#fef3c7;color:#92400e;text-transform:capitalize;">${order.payment_status}</span>
+        </div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+        <thead>
+          <tr style="background:#f3f4f6;">
+            <th style="padding:8px;text-align:left;font-size:12px;">Item</th>
+            <th style="padding:8px;text-align:center;font-size:12px;">Qty</th>
+            <th style="padding:8px;text-align:center;font-size:12px;">Weight</th>
+            <th style="padding:8px;text-align:right;font-size:12px;">Price</th>
+            <th style="padding:8px;text-align:right;font-size:12px;">Total</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+
+      <div style="width:260px;margin-left:auto;">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
+          <span style="color:#6b7280;">Subtotal</span><span>${formatCurrency(order.subtotal)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
+          <span style="color:#6b7280;">Total Weight</span><span>${Number(order.total_weight || 0).toFixed(2)} kg</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
+          <span style="color:#6b7280;">Delivery Charge</span><span>${formatCurrency(order.delivery_charge)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;margin-top:4px;border-top:2px solid #10b981;font-size:16px;font-weight:bold;color:#10b981;">
+          <span>Total</span><span>${formatCurrency(order.total_amount)}</span>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center;">
+        <p style="margin:0;">Status: <strong style="text-transform:capitalize;">${order.order_status}</strong> &middot; Payment: <strong style="text-transform:capitalize;">${order.payment_method}</strong></p>
+        <p style="margin:4px 0 0;">Thank you for your business!</p>
+      </div>
+    </div>
+  `;
+}
+
+function buildReportHtml(orders: IOrder[]): string {
+  const rows = orders
+    .map(
+      (o) => `
+        <tr>
+          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;">${o.order_number}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;">${o.customer_name}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;">${o.phone}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;text-transform:capitalize;">${o.order_status}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;">${formatDate(o.created_at)}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;text-align:right;">${formatCurrency(o.total_amount)}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const totalRevenue = orders.reduce(
+    (sum, o) => sum + (Number(o.total_amount) || 0),
+    0,
+  );
+
+  return `
+    <div style="font-family:Arial, sans-serif;color:#1a1a1a;">
+      <div style="border-bottom:2px solid #10b981;padding-bottom:12px;margin-bottom:16px;">
+        <p style="font-size:20px;font-weight:bold;color:#10b981;margin:0;">Doctor Dairy Tools &mdash; Orders Report</p>
+        <p style="font-size:11px;color:#6b7280;margin:4px 0 0;">
+          Generated ${formatDate(new Date().toISOString())} &middot; ${orders.length} orders &middot; Total ${formatCurrency(totalRevenue)}
+        </p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f3f4f6;">
+            <th style="padding:6px 8px;text-align:left;font-size:11px;">Order</th>
+            <th style="padding:6px 8px;text-align:left;font-size:11px;">Customer</th>
+            <th style="padding:6px 8px;text-align:left;font-size:11px;">Phone</th>
+            <th style="padding:6px 8px;text-align:left;font-size:11px;">Status</th>
+            <th style="padding:6px 8px;text-align:left;font-size:11px;">Date</th>
+            <th style="padding:6px 8px;text-align:right;font-size:11px;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
 
 /**
  * Renders an HTML string off-screen, captures it with html2canvas, and
@@ -72,73 +192,7 @@ async function renderHtmlToPdf(html: string, filename: string) {
  * Downloads a single-order invoice PDF.
  */
 export async function downloadOrderInvoicePDF(order: IOrder) {
-  const itemRows = (order.items || [])
-    .map(
-      (item) => `
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;">${item.product_name}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:center;">${item.quantity}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:right;">${formatCurrency(item.price)}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:right;">${formatCurrency(item.total_price)}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const html = `
-    <div style="font-family:Arial, sans-serif;color:#1a1a1a;">
-      <div style="text-align:center;border-bottom:2px solid #10b981;padding-bottom:16px;margin-bottom:20px;">
-        <p style="font-size:22px;font-weight:bold;color:#10b981;margin:0;">Doctor Dairy Tools</p>
-        <p style="font-size:12px;color:#6b7280;margin:4px 0 0;">Invoice</p>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
-        <div>
-          <p style="font-size:11px;color:#6b7280;margin:0 0 4px;">Billed To</p>
-          <p style="font-weight:bold;margin:0;">${order.customer_name}</p>
-          <p style="font-size:12px;color:#4b5563;margin:2px 0;">${order.phone}</p>
-          <p style="font-size:12px;color:#4b5563;margin:2px 0;max-width:240px;">${order.address}</p>
-        </div>
-        <div style="text-align:right;">
-          <p style="font-size:11px;color:#6b7280;margin:0 0 4px;">Invoice</p>
-          <p style="font-weight:bold;margin:0;">${order.order_number}</p>
-          <p style="font-size:12px;color:#4b5563;margin:2px 0;">${formatDate(order.created_at)}</p>
-          <span style="display:inline-block;margin-top:4px;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;background:#fef3c7;color:#92400e;text-transform:capitalize;">${order.payment_status}</span>
-        </div>
-      </div>
-
-      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
-        <thead>
-          <tr style="background:#f3f4f6;">
-            <th style="padding:8px;text-align:left;font-size:12px;">Item</th>
-            <th style="padding:8px;text-align:center;font-size:12px;">Qty</th>
-            <th style="padding:8px;text-align:right;font-size:12px;">Price</th>
-            <th style="padding:8px;text-align:right;font-size:12px;">Total</th>
-          </tr>
-        </thead>
-        <tbody>${itemRows}</tbody>
-      </table>
-
-      <div style="width:260px;margin-left:auto;">
-        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
-          <span style="color:#6b7280;">Subtotal</span><span>${formatCurrency(order.subtotal)}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
-          <span style="color:#6b7280;">Delivery Charge</span><span>${formatCurrency(order.delivery_charge)}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;margin-top:4px;border-top:2px solid #10b981;font-size:16px;font-weight:bold;color:#10b981;">
-          <span>Total</span><span>${formatCurrency(order.total_amount)}</span>
-        </div>
-      </div>
-
-      <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center;">
-        <p style="margin:0;">Status: <strong style="text-transform:capitalize;">${order.order_status}</strong> &middot; Payment: <strong style="text-transform:capitalize;">${order.payment_method}</strong></p>
-        <p style="margin:4px 0 0;">Thank you for your business!</p>
-      </div>
-    </div>
-  `;
-
-  await renderHtmlToPdf(html, `Invoice-${order.order_number}.pdf`);
+  await renderHtmlToPdf(buildInvoiceHtml(order), `Invoice-${order.order_number}.pdf`);
 }
 
 /**
@@ -146,52 +200,63 @@ export async function downloadOrderInvoicePDF(order: IOrder) {
  * current filtered/visible set on the admin Orders page).
  */
 export async function downloadOrdersReportPDF(orders: IOrder[]) {
-  const rows = orders
-    .map(
-      (o) => `
-        <tr>
-          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;">${o.order_number}</td>
-          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;">${o.customer_name}</td>
-          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;">${o.phone}</td>
-          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;text-transform:capitalize;">${o.order_status}</td>
-          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;">${formatDate(o.created_at)}</td>
-          <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px;text-align:right;">${formatCurrency(o.total_amount)}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const totalRevenue = orders.reduce(
-    (sum, o) => sum + (Number(o.total_amount) || 0),
-    0,
-  );
-
-  const html = `
-    <div style="font-family:Arial, sans-serif;color:#1a1a1a;">
-      <div style="border-bottom:2px solid #10b981;padding-bottom:12px;margin-bottom:16px;">
-        <p style="font-size:20px;font-weight:bold;color:#10b981;margin:0;">Doctor Dairy Tools &mdash; Orders Report</p>
-        <p style="font-size:11px;color:#6b7280;margin:4px 0 0;">
-          Generated ${formatDate(new Date().toISOString())} &middot; ${orders.length} orders &middot; Total ${formatCurrency(totalRevenue)}
-        </p>
-      </div>
-      <table style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr style="background:#f3f4f6;">
-            <th style="padding:6px 8px;text-align:left;font-size:11px;">Order</th>
-            <th style="padding:6px 8px;text-align:left;font-size:11px;">Customer</th>
-            <th style="padding:6px 8px;text-align:left;font-size:11px;">Phone</th>
-            <th style="padding:6px 8px;text-align:left;font-size:11px;">Status</th>
-            <th style="padding:6px 8px;text-align:left;font-size:11px;">Date</th>
-            <th style="padding:6px 8px;text-align:right;font-size:11px;">Amount</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  `;
-
   await renderHtmlToPdf(
-    html,
+    buildReportHtml(orders),
     `Orders-Report-${new Date().toISOString().slice(0, 10)}.pdf`,
   );
+}
+
+/**
+ * Opens the browser print dialog for a single order's invoice.
+ */
+export function printOrderInvoice(order: IOrder) {
+  printHtmlDocument(buildInvoiceHtml(order), `Invoice ${order.order_number}`);
+}
+
+/**
+ * Opens the browser print dialog for a tabular report covering multiple
+ * orders (e.g. the current filtered/visible set on the admin Orders page).
+ */
+export function printOrdersReport(orders: IOrder[]) {
+  printHtmlDocument(
+    buildReportHtml(orders),
+    `Orders Report ${new Date().toISOString().slice(0, 10)}`,
+  );
+}
+
+/**
+ * Builds a wa.me deep link pre-filled with an order summary so an admin can
+ * share it with the customer over WhatsApp in one click.
+ */
+export function getOrderWhatsAppShareUrl(order: IOrder): string {
+  const itemLines = (order.items || [])
+    .map((item) => `• ${item.product_name} x${item.quantity} — ${formatCurrency(item.total_price)}`)
+    .join("\n");
+
+  const message = [
+    `*Doctor Dairy Tools* — Order ${order.order_number}`,
+    "",
+    `Hi ${order.customer_name}, here are your order details:`,
+    "",
+    itemLines,
+    "",
+    `Subtotal: ${formatCurrency(order.subtotal)}`,
+    `Delivery: ${formatCurrency(order.delivery_charge)}`,
+    `*Total: ${formatCurrency(order.total_amount)}*`,
+    "",
+    `Status: ${order.order_status}`,
+    `Payment: ${order.payment_status} (${order.payment_method})`,
+    order.notes ? `Note: ${order.notes}` : "",
+    "",
+    "Thank you for your order!",
+  ]
+    .filter((line) => line !== "")
+    .join("\n");
+
+  // wa.me needs digits only, with country code and no leading zero. Local
+  // Bangladeshi numbers (01XXXXXXXXX) are stored without the +880 prefix.
+  const digits = order.phone.replace(/\D/g, "");
+  const intlDigits = digits.startsWith("0") ? `880${digits.slice(1)}` : digits;
+
+  return `https://wa.me/${intlDigits}?text=${encodeURIComponent(message)}`;
 }

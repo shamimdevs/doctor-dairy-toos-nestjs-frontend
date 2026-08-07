@@ -27,11 +27,9 @@ export default function CategoryFilter({
         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
           Categories
         </h4>
-        <div className="space-y-2">
-          <div className="h-5 bg-slate-100 rounded animate-pulse"></div>
-          <div className="h-5 bg-slate-100 rounded animate-pulse"></div>
-          <div className="h-5 bg-slate-100 rounded animate-pulse"></div>
-        </div>
+        <span className="text-sm text-slate-400 px-2">
+          Loading categories...
+        </span>
       </div>
     );
   }

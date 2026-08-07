@@ -40,6 +40,41 @@ export const productsApi = baseApi.injectEndpoints({
       providesTags: [tagTypes.products],
     }),
 
+    // 2b. GET ALL PRODUCTS — INFINITE SCROLL VARIANT
+    // Same endpoint as getAllProducts, but pages accumulate into a single
+    // cache entry (keyed by every arg except `page`) instead of replacing
+    // it, so callers can just read `.data` as the full loaded-so-far list.
+    // Kept separate from getAllProducts so classic pagers (e.g. the admin
+    // products table) keep their per-page cache behavior untouched.
+    getProductsInfinite: builder.query<
+      ProductsPaginatedResponse,
+      ProductQueryParams | void
+    >({
+      query: (params) => ({
+        url: PRODUCTS_URL,
+        method: "GET",
+        params: params || {},
+      }),
+      serializeQueryArgs: ({ queryArgs }) => {
+        const rest: ProductQueryParams = { ...(queryArgs || {}) };
+        delete rest.page;
+        return rest;
+      },
+      merge: (currentCache, newResponse, { arg }) => {
+        const page = (arg as ProductQueryParams | undefined)?.page ?? 1;
+        if (page <= 1) {
+          currentCache.data = newResponse.data;
+        } else {
+          currentCache.data = [...currentCache.data, ...newResponse.data];
+        }
+        currentCache.meta = newResponse.meta;
+      },
+      forceRefetch: ({ currentArg, previousArg }) =>
+        (currentArg as ProductQueryParams | undefined)?.page !==
+        (previousArg as ProductQueryParams | undefined)?.page,
+      providesTags: [tagTypes.products],
+    }),
+
     // 3. GET PRODUCTS BY CATEGORY ID
     getProductsByCategory: builder.query<
       ProductsPaginatedResponse,
@@ -162,6 +197,7 @@ export const productsApi = baseApi.injectEndpoints({
 export const {
   useCreateProductMutation,
   useGetAllProductsQuery,
+  useGetProductsInfiniteQuery,
   useGetProductsByCategoryQuery,
   useGetProductsByCategoryNameQuery,
   useGetProductBySlugQuery,

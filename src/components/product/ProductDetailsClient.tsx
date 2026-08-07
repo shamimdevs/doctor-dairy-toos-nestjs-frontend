@@ -111,7 +111,7 @@ export default function ProductDetailsClient({ product }: ProductProps) {
                   {product?.slug || "N/A"}
                 </span>
               </div>
-              {!!product?.weight && (
+              {Number(product?.weight) > 0 && (
                 <div className="flex justify-between  gap-1 md:gap-3">
                   <span className="shrink-0">Weight:</span>
                   <span className="text-gray-900 font-medium text-right">

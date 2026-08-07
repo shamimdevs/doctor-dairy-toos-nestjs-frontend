@@ -4,19 +4,21 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { X, ChevronLeft, ChevronDown, Check } from "lucide-react";
+import { X, ChevronLeft, ChevronDown, Check, Loader2 } from "lucide-react";
 import CategoryProductCard from "@/src/components/HomePage/ProductShowcase/CategoryProductCard";
 import { Product } from "@/src/types/product";
 import { ProductCategory } from "@/src/types/productCategoriesType";
+import { useGetProductsInfiniteQuery } from "@/src/redux/api/productsApi";
 import { DiscountFilter, PriceFilter } from "../filters";
 import CategoryFilter from "../filters/CategoryFilter";
 
 interface CategoryPageClientProps {
   slug: string;
   initialCategory: ProductCategory;
-  allProducts: Product[];
   allCategories: ProductCategory[];
 }
+
+const PRODUCTS_LIMIT = 24;
 
 interface FilterState {
   price: string | null;
@@ -35,7 +37,7 @@ const SORT_OPTIONS = [
 
 export default function CategoryPageClient({
   initialCategory,
-  allProducts,
+  allCategories,
 }: CategoryPageClientProps) {
   const router = useRouter();
 
@@ -91,6 +93,68 @@ export default function CategoryPageClient({
   const currentSortLabel =
     SORT_OPTIONS.find((option) => option.value === filters.sortBy)?.label ||
     "Newest First";
+
+  // Only a single selected category can be pushed down to the backend as
+  // `category_id` (the API has no multi-id filter). With zero or several
+  // categories checked we fetch the unscoped feed instead and let the
+  // `filteredProducts` memo below narrow it down client-side, same as it
+  // already does for price/discount/sort.
+  const categoryIdForQuery = useMemo(() => {
+    if (filters.categories.length !== 1) return undefined;
+    const slug = filters.categories[0];
+    if (slug === initialCategory.slug?.toLowerCase()) return initialCategory.id;
+    return allCategories.find((c) => c.slug?.toLowerCase() === slug)?.id;
+  }, [filters.categories, allCategories, initialCategory]);
+
+  // Infinite-scroll product feed, following the same RTK Query
+  // accumulate-by-page + IntersectionObserver-sentinel pattern used in
+  // CreateOrder.tsx. `page` resets to 1 whenever the backend-side scope
+  // (category_id) changes, computed during render rather than in an effect
+  // to avoid an extra render pass.
+  const [page, setPage] = useState(1);
+  const scopeKey = categoryIdForQuery ?? "all";
+  const [lastScopeKey, setLastScopeKey] = useState(scopeKey);
+  if (scopeKey !== lastScopeKey) {
+    setLastScopeKey(scopeKey);
+    setPage(1);
+  }
+
+  const {
+    data: productsRes,
+    isLoading: isProductsLoading,
+    isFetching: isProductsFetching,
+  } = useGetProductsInfiniteQuery({
+    page,
+    limit: PRODUCTS_LIMIT,
+    is_active: true,
+    ...(categoryIdForQuery ? { category_id: categoryIdForQuery } : {}),
+  });
+
+  const allProducts = useMemo(
+    () => (productsRes?.data as unknown as Product[]) || [],
+    [productsRes],
+  );
+  const totalPages = productsRes?.meta?.totalPages || 1;
+  const hasMore = page < totalPages;
+
+  // Auto-load the next page once the sentinel at the bottom of the grid
+  // scrolls into view.
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isProductsFetching) {
+          setPage((p) => p + 1);
+        }
+      },
+      { rootMargin: "300px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, isProductsFetching]);
 
   const getProductPrice = useCallback((product: Product): number => {
     if (product.price) return product.price;
@@ -397,12 +461,37 @@ export default function CategoryPageClient({
 
           {/* Product Grid Layout */}
           <main className="flex-1">
-            {filteredProducts?.length > 0 ? (
+            {isProductsLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
-                {filteredProducts?.map((product: Product) => (
-                  <CategoryProductCard key={product.id} product={product} />
+                {[...Array(PRODUCTS_LIMIT)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-64 animate-pulse rounded-2xl bg-slate-100"
+                  />
                 ))}
               </div>
+            ) : filteredProducts?.length > 0 ? (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+                  {filteredProducts?.map((product: Product) => (
+                    <CategoryProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Infinite scroll sentinel + status */}
+                <div ref={sentinelRef} className="h-1" />
+                {isProductsFetching && (
+                  <div className="flex items-center justify-center gap-2 py-6 text-sm text-slate-400">
+                    <Loader2 size={16} className="animate-spin" />
+                    Loading more products...
+                  </div>
+                )}
+                {!hasMore && !isProductsFetching && (
+                  <p className="py-6 text-center text-xs text-slate-400">
+                    You&apos;ve reached the end of the list.
+                  </p>
+                )}
+              </>
             ) : (
               <div className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-12 text-center shadow-sm">
                 <p className="text-slate-400 font-medium text-sm sm:text-base">

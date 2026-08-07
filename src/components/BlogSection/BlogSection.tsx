@@ -175,14 +175,14 @@ export default function BlogPage() {
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <span className="inline-block px-3 py-1 text-xs font-semibold tracking-widest uppercase text-[#059669] bg-indigo-50 rounded-full mb-4">
-            Our Blog
+            আমাদের ব্লগ
           </span>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Insights for Modern Businesses
+            আধুনিক ব্যবসার জন্য দরকারি তথ্য
           </h1>
           <p className="text-gray-500 max-w-xl mx-auto text-base">
-            Practical guides, industry news, and ERP strategies to help your
-            business grow faster and operate smarter.
+            আপনার ব্যবসাকে দ্রুত বৃদ্ধি ও স্মার্টভাবে পরিচালনা করতে সহায়ক
+            ব্যবহারিক গাইড, শিল্প সংবাদ ও ইআরপি কৌশল।
           </p>
         </div>
       </div>
@@ -198,7 +198,7 @@ export default function BlogPage() {
                 : "bg-white text-gray-600 border-gray-200 hover:border-indigo-400 hover:text-[#059669]"
             }`}
           >
-            All
+            সকল
           </button>
 
           {catLoading
@@ -233,7 +233,7 @@ export default function BlogPage() {
         ) : blogs.length === 0 ? (
           <div className="text-center py-24">
             <p className="text-gray-400 text-base">
-              No articles in this category yet.
+              এই ক্যাটাগরিতে এখনো কোনো আর্টিকেল নেই।
             </p>
           </div>
         ) : (
@@ -261,7 +261,7 @@ export default function BlogPage() {
             {/* End of Feed */}
             {!hasMore && blogs.length > 0 && (
               <p className="text-center text-gray-400 text-sm mt-10">
-                — You&apos;ve read it all —
+                — আপনি সব পড়ে ফেলেছেন —
               </p>
             )}
           </>

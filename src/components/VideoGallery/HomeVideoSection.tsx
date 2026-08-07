@@ -28,14 +28,14 @@ const HomeVideoSection: React.FC<HomeVideoSectionProps> = ({ videos }) => {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-full text-sm font-semibold mb-3">
           <Play className="w-4 h-4 fill-emerald-600" />
-          Video Gallery
+          ভিডিও গ্যালারি
         </div>
         <h2 className="text-2xl md:text-4xl font-bold text-slate-800 mb-2">
-          Watch Our Educational Videos
+          আমাদের শিক্ষামূলক ভিডিও দেখুন
         </h2>
         <p className="text-slate-500 text-sm md:text-base max-w-2xl mx-auto">
-          Learn from our expert veterinarians and farm specialists through
-          informative video content
+          আমাদের বিশেষজ্ঞ পশুচিকিৎসক ও খামার বিশেষজ্ঞদের কাছ থেকে তথ্যবহুল
+          ভিডিওর মাধ্যমে শিখুন
         </p>
       </div>
 
@@ -58,7 +58,7 @@ const HomeVideoSection: React.FC<HomeVideoSectionProps> = ({ videos }) => {
           href="/videos"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 transition-colors shadow-sm"
         >
-          See More
+          আরও দেখুন
           <ArrowRight size={18} />
         </Link>
       </div>
