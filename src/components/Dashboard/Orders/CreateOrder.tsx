@@ -31,7 +31,8 @@ import type { Product } from "@/src/types/productsType";
 
 const PRODUCTS_LIMIT = 12;
 const DEFAULT_ITEM_WEIGHT = 0.15;
-const GRID_IMAGE_SIZES = "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw";
+const GRID_IMAGE_SIZES =
+  "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw";
 
 interface OrderCartItem {
   productId: string;
@@ -99,7 +100,7 @@ const CreateOrder = () => {
   const debouncedSearch = useDebounce(searchValue, 400) as string;
 
   const { data: categoriesRes, isLoading: isCategoriesLoading } =
-    useGetAllProductCategoriesQuery({ limit: 100 });
+    useGetAllProductCategoriesQuery({ limit: 200 });
   const categories = categoriesRes?.data || [];
 
   // Reset back to page 1 whenever the category or search filter changes, so
@@ -152,7 +153,10 @@ const CreateOrder = () => {
   // which sits below the product grid in the single-column mobile layout.
   const cartPanelRef = useRef<HTMLDivElement | null>(null);
   const scrollToCart = () => {
-    cartPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    cartPanelRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   // ---- Local order cart (kept separate from the storefront cart) ----
@@ -594,9 +598,7 @@ const CreateOrder = () => {
             <div className="space-y-1.5 border-t border-gray-100 pt-3 text-sm">
               <div className="flex justify-between text-gray-500">
                 <span>Subtotal</span>
-                <span className="font-semibold text-gray-700">
-                  ৳{subtotal}
-                </span>
+                <span className="font-semibold text-gray-700">৳{subtotal}</span>
               </div>
               <div className="flex justify-between text-gray-500">
                 <span>Est. Delivery</span>
@@ -715,7 +717,9 @@ const CreateOrder = () => {
         <button
           onClick={scrollToCart}
           className="lg:hidden fixed inset-x-3 bottom-3 z-30 flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-linear-to-r from-blue-500 to-blue-600 px-4 py-3 text-white shadow-lg shadow-blue-900/20 active:from-blue-600 active:to-blue-700"
-          style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+          style={{
+            paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+          }}
         >
           <span className="flex items-center gap-2 text-sm font-semibold">
             <ShoppingCart size={16} />

@@ -17,32 +17,32 @@ export default function FeaturesSection() {
   const features: Feature[] = [
     {
       id: 1,
-      title: "Quality Assured",
-      description: "Top-tier premium standard products",
+      title: "মানের নিশ্চয়তা",
+      description: "উন্নত মানের প্রিমিয়াম পণ্য",
       icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />,
     },
     {
       id: 2,
-      title: "Fast Home Delivery",
-      description: "Quick, reliable doorstep shipping",
+      title: "দ্রুত হোম ডেলিভারি",
+      description: "দ্রুত ও নির্ভরযোগ্য ডোরস্টেপ ডেলিভারি",
       icon: <Truck className="w-5 h-5 text-emerald-600" />,
     },
     {
       id: 3,
-      title: "Exchange Facility",
-      description: "Hassle-free dynamic returns",
+      title: "এক্সচেঞ্জ সুবিধা",
+      description: "সহজ ও ঝামেলাহীন রিটার্ন সুবিধা",
       icon: <RefreshCw className="w-5 h-5 text-emerald-600" />,
     },
     {
       id: 4,
-      title: "Best Price Deals",
-      description: "Competitive value for your farm",
+      title: "সেরা দামে পণ্য",
+      description: "আপনার খামারের জন্য সাশ্রয়ী মূল্য",
       icon: <HandCoins className="w-5 h-5 text-emerald-600" />,
     },
     {
       id: 5,
-      title: "Expert Farm Advice",
-      description: "Professional structural guidance",
+      title: "বিশেষজ্ঞ পরামর্শ",
+      description: "খামার বিষয়ে পেশাদার দিকনির্দেশনা",
       icon: <HeartHandshake className="w-5 h-5 text-emerald-600" />,
     },
   ];

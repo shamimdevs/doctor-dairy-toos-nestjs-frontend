@@ -50,14 +50,13 @@ const HomeBlogSection = async () => {
       <div className="container">
         <div className="text-center mb-10">
           <span className="inline-block px-3 py-1 text-xs font-semibold tracking-widest uppercase text-[#059669] bg-indigo-50 rounded-full mb-4">
-            Our Blog
+            আমাদের ব্লগ
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Latest Articles
+            সর্বশেষ আর্টিকেল
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto text-base">
-            Practical guides, industry news, and health tips to help you stay
-            informed.
+            আপনাকে আপডেট রাখতে ব্যবহারিক গাইড, শিল্প সংবাদ ও স্বাস্থ্য পরামর্শ।
           </p>
         </div>
 
@@ -78,7 +77,7 @@ const HomeBlogSection = async () => {
             href="/blog"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#059669] text-white font-semibold text-sm hover:bg-emerald-700 transition-colors shadow-sm"
           >
-            See More
+            আরও দেখুন
             <ArrowRight size={18} />
           </Link>
         </div>

@@ -81,7 +81,7 @@ export default function TestimonialSection({
       <section className="container py-8 md:py-12">
         <div className="text-center py-12">
           <p className="text-slate-500">
-            No testimonials available at the moment.
+            এই মুহূর্তে কোনো গ্রাহক মতামত নেই।
           </p>
         </div>
       </section>
@@ -94,13 +94,13 @@ export default function TestimonialSection({
       <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-full text-sm font-semibold mb-3">
           <Quote className="w-4 h-4" />
-          Testimonials
+          গ্রাহক মতামত
         </div>
         <h2 className="text-2xl md:text-4xl font-bold text-slate-800 mb-2">
-          What Our Clients Say
+          আমাদের গ্রাহকরা যা বলেন
         </h2>
         <p className="text-slate-500 text-sm md:text-base max-w-2xl mx-auto">
-          Real stories from partners and clients who trust our platform
+          যারা আমাদের প্ল্যাটফর্মে আস্থা রাখেন তাদের প্রকৃত অভিজ্ঞতা
         </p>
       </div>
 
