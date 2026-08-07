@@ -12,18 +12,41 @@ import {
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import ProductCard from "./ProductCard";
+import { ProductCategory } from "@/src/types/productCategoriesType";
 
-export default function ProductShowcase({ products }: { products: any[] }) {
+export default function ProductShowcase({
+  products,
+  categories,
+}: {
+  products: any[];
+  categories?: ProductCategory[];
+}) {
   const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const cartCount = useSelector((state: any) => state?.cart?.totalQuantity);
 
+  // Section order follows each category's configured `position` (already
+  // sorted ASC by the API) rather than the order products happen to appear
+  // in — only categories that actually have products get a carousel.
   const categoriesList = useMemo(() => {
     if (!products || products.length === 0) return [];
 
+    if (categories && categories.length > 0) {
+      const slugsWithProducts = new Set(
+        products
+          .map((p) => p.category?.slug)
+          .filter((slug): slug is string => Boolean(slug)),
+      );
+
+      return categories
+        .filter((cat) => slugsWithProducts.has(cat.slug))
+        .map((cat) => ({ name: cat.name, slug: cat.slug }));
+    }
+
+    // Fallback (no categories prop supplied): derive from first-appearance
+    // order in the products list.
     const categoryMap = new Map();
     products.forEach((p) => {
       if (p.category?.name && p.category?.slug) {
-        // Use the slug as the key to avoid duplicates
         if (!categoryMap.has(p.category.slug)) {
           categoryMap.set(p.category.slug, {
             name: p.category.name,
@@ -34,7 +57,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
     });
 
     return Array.from(categoryMap.values());
-  }, [products]);
+  }, [products, categories]);
 
   const handleScroll = (categorySlug: string, direction: "left" | "right") => {
     const container = scrollRefs.current[categorySlug];
@@ -112,7 +135,7 @@ export default function ProductShowcase({ products }: { products: any[] }) {
                       href={`/category/${category?.slug}`}
                       className="group/link flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-wider underline underline-offset-2 decoration-emerald-300 hover:decoration-emerald-600 px-2 py-1.5 rounded whitespace-nowrap"
                     >
-                      সব দেখুন
+                      সব পণ্য দেখুন
                       <ArrowRight
                         size={14}
                         className="transition-transform font-bold group-hover/link:translate-x-0.5"

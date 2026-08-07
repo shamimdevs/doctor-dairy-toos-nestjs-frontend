@@ -3,6 +3,7 @@ export interface ProductCategory {
   name: string;
   slug: string;
   image?: string;
+  position: number;
   addedBy?: {
     id: string;
     name?: string;
@@ -11,6 +12,15 @@ export interface ProductCategory {
   };
   created_at: string;
   updated_at: string;
+}
+
+export interface ReorderProductCategoryItem {
+  id: string;
+  position: number;
+}
+
+export interface ReorderProductCategoryRequest {
+  items: ReorderProductCategoryItem[];
 }
 
 export interface PaginationMeta {

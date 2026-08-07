@@ -5,6 +5,7 @@ import type {
   PaginationQuery,
   ProductCategoriesPaginatedResponse,
   ProductCategory,
+  ReorderProductCategoryRequest,
   UpdateProductCategoryRequest,
 } from "@/src/types/productCategoriesType";
 
@@ -73,6 +74,19 @@ export const productCategoriesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.product_categories],
     }),
+
+    // REORDER
+    reorderProductCategories: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      ReorderProductCategoryRequest
+    >({
+      query: (data) => ({
+        url: `${PRODUCT_CATEGORIES_URL}/reorder`,
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: [tagTypes.product_categories],
+    }),
   }),
 });
 
@@ -82,4 +96,5 @@ export const {
   useGetSingleProductCategoryQuery,
   useUpdateProductCategoryMutation,
   useDeleteProductCategoryMutation,
+  useReorderProductCategoriesMutation,
 } = productCategoriesApi;
