@@ -31,6 +31,7 @@ interface AddProductFormValues {
   weight?: number;
   thumbnail?: FileList;
   is_active: boolean;
+  position?: number;
   meta_title?: string;
   meta_keywords?: string;
   meta_description?: string;
@@ -162,6 +163,9 @@ const AddProducts = () => {
         !isNaN(values.weight)
       ) {
         formData.append("weight", String(Number(values.weight)));
+      }
+      if (values.position !== undefined && !isNaN(values.position)) {
+        formData.append("position", String(values.position));
       }
       if (values.meta_title) {
         formData.append("meta_title", values.meta_title);
@@ -317,6 +321,17 @@ const AddProducts = () => {
               min: { value: 0, message: "Weight must be >= 0" },
             })}
             errors={errors}
+          />
+
+          {/* Display Position */}
+          <Input
+            label="Display Position"
+            text="position"
+            type="number"
+            placeholder="Defaults to last position"
+            register={register("position", { valueAsNumber: true })}
+            errors={errors}
+            required={false}
           />
 
           {/* Active Status Toggle */}
