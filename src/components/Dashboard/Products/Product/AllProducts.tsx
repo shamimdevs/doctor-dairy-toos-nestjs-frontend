@@ -4,13 +4,16 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Swal from "sweetalert2";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
+import { Plus, Edit, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 
 import { useDebounce } from "@/src/hooks/useDebounce";
 import {
   useDeleteProductMutation,
   useGetAllProductsQuery,
+  useReorderProductsMutation,
 } from "@/src/redux/api/productsApi";
+import { useGetAllProductCategoriesQuery } from "@/src/redux/api/productCategoriesApi";
 import { Product } from "@/src/types/productsType";
 import { ApiError } from "@/src/types/authType";
 import Pagination from "@/src/utils/Pagination";
@@ -19,17 +22,26 @@ const LIMIT = 10;
 
 const AllProducts: React.FC = () => {
   const [searchValue, setSearchValue] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   const debouncedSearch = useDebounce(searchValue, 500);
 
   const { data, isLoading, isFetching, refetch } = useGetAllProductsQuery({
     search: (debouncedSearch as string) || undefined,
+    category_id: categoryId || undefined,
     page: currentPage,
     limit: LIMIT,
   });
 
+  const { data: categoriesData } = useGetAllProductCategoriesQuery({
+    limit: 200,
+  });
+  const categories = categoriesData?.data || [];
+
   const [deleteProduct] = useDeleteProductMutation();
+  const [reorderProducts, { isLoading: isReordering }] =
+    useReorderProductsMutation();
 
   const products: Product[] = data?.data || [];
 
@@ -40,6 +52,44 @@ const AllProducts: React.FC = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
     setCurrentPage(1); // Reset to page 1 on search input
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCategoryId(e.target.value);
+    setCurrentPage(1); // Reset to page 1 on category change
+  };
+
+  // Swap with the adjacent row (within the current page) and renumber by
+  // rank — a plain value swap would no-op whenever both rows still share the
+  // default position (e.g. legacy products that predate this feature).
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= products.length) return;
+
+    const reordered = [...products];
+    [reordered[index], reordered[targetIndex]] = [
+      reordered[targetIndex],
+      reordered[index],
+    ];
+
+    const basePosition = (currentPage - 1) * LIMIT;
+    const items = reordered.map((product, i) => ({
+      id: product.id,
+      position: basePosition + i + 1,
+    }));
+
+    try {
+      await reorderProducts({ items }).unwrap();
+
+      refetch();
+    } catch (err) {
+      const apiError = err as ApiError;
+
+      toast.error(
+        apiError.data?.message || apiError.message || "Failed to reorder",
+      );
+    }
   };
 
   const handleDeleteProduct = async (product: Product) => {
@@ -110,6 +160,19 @@ const AllProducts: React.FC = () => {
             className="w-full sm:w-72 rounded-lg border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-600"
           />
 
+          <select
+            value={categoryId}
+            onChange={handleCategoryChange}
+            className="w-full sm:w-56 rounded-lg border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-600"
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+
           <Link href="/dashboard/products/add-products">
             <button className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 transition w-full sm:w-auto">
               <Plus size={18} />
@@ -129,6 +192,9 @@ const AllProducts: React.FC = () => {
               </th>
               <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">
                 Thumbnail
+              </th>
+              <th className="px-5 py-3 text-center text-sm font-semibold text-gray-700">
+                Position
               </th>
               <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">
                 Name
@@ -179,6 +245,32 @@ const AllProducts: React.FC = () => {
                         No Image
                       </div>
                     )}
+                  </td>
+
+                  <td className="px-5 py-2">
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-sm text-gray-600 w-6 text-center">
+                        {product.position}
+                      </span>
+                      <div className="flex flex-col">
+                        <button
+                          onClick={() => handleMove(index, "up")}
+                          disabled={isReordering || index === 0}
+                          className="rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                          title="Move up"
+                        >
+                          <ArrowUp size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleMove(index, "down")}
+                          disabled={isReordering || index === products.length - 1}
+                          className="rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                          title="Move down"
+                        >
+                          <ArrowDown size={14} />
+                        </button>
+                      </div>
+                    </div>
                   </td>
 
                   <td className="px-5 py-2 text-sm font-medium text-gray-800">
@@ -243,7 +335,7 @@ const AllProducts: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-gray-500">
+                <td colSpan={9} className="py-10 text-center text-gray-500">
                   No products found.
                 </td>
               </tr>

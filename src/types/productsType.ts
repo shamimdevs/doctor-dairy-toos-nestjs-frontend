@@ -21,6 +21,7 @@ export interface Product {
   rating_avg?: number | null;
   reviews_count?: number;
   is_active: boolean;
+  position: number;
   meta_title?: string;
   meta_keywords?: string;
   meta_description?: string;
@@ -69,6 +70,15 @@ export interface ProductsPaginatedResponse {
 export interface UpdateProductRequest {
   id: string;
   data: FormData; // Using FormData to handle multipart optional thumbnail upload
+}
+
+export interface ReorderProductItem {
+  id: string;
+  position: number;
+}
+
+export interface ReorderProductRequest {
+  items: ReorderProductItem[];
 }
 
 export interface AutocompleteQueryParams {

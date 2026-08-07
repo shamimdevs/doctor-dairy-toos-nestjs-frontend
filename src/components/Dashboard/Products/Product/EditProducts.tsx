@@ -41,6 +41,7 @@ interface EditProductFormValues {
   weight?: number;
   thumbnail?: FileList;
   is_active: boolean;
+  position?: number;
   meta_title?: string;
   meta_keywords?: string;
   meta_description?: string;
@@ -159,6 +160,7 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
         stock: safeNumber(product.stock),
         weight: safeNumber(product.weight),
         is_active: product.is_active ?? true,
+        position: product.position ?? undefined,
         meta_title: product.meta_title || "",
         meta_keywords: product.meta_keywords || "",
         meta_description: product.meta_description || "",
@@ -218,6 +220,10 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
       formData.append("stock", String(stock));
       formData.append("weight", String(weight));
       formData.append("is_active", String(values.is_active));
+
+      if (values.position !== undefined && !isNaN(values.position)) {
+        formData.append("position", String(values.position));
+      }
 
       if (values.meta_title) {
         formData.append("meta_title", values.meta_title);
@@ -385,6 +391,17 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
               min: { value: 0, message: "Weight must be >= 0" },
             })}
             errors={errors}
+          />
+
+          {/* Display Position */}
+          <Input
+            label="Display Position"
+            text="position"
+            type="number"
+            placeholder="Defaults to last position"
+            register={register("position", { valueAsNumber: true })}
+            errors={errors}
+            required={false}
           />
 
           {/* Active Status Toggle */}

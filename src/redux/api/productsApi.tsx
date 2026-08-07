@@ -8,6 +8,7 @@ import type {
   ProductsPaginatedResponse,
   QuickSearchQueryParams,
   QuickSearchResult,
+  ReorderProductRequest,
   SimilarProductsQueryParams,
   UpdateProductRequest,
 } from "@/src/types/productsType";
@@ -190,6 +191,19 @@ export const productsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.products],
     }),
+
+    // 13. REORDER PRODUCTS
+    reorderProducts: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      ReorderProductRequest
+    >({
+      query: (data) => ({
+        url: `${PRODUCTS_URL}/reorder`,
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: [tagTypes.products],
+    }),
   }),
 });
 
@@ -208,4 +222,5 @@ export const {
   useGetSimilarProductsQuery,
   useQuickSearchProductsQuery,
   useDeleteProductMutation,
+  useReorderProductsMutation,
 } = productsApi;
