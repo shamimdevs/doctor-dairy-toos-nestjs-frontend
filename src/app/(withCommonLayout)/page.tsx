@@ -108,7 +108,9 @@ interface IBannersApiResponse {
 }
 
 async function fetchCategories(baseUrl: string) {
-  const res = await fetch(`${baseUrl}/product-categories`, {
+  // limit=100 so every category (ordered by its configured position) is
+  // available to ProductShowcase, not just the paginated default of 10.
+  const res = await fetch(`${baseUrl}/product-categories?limit=100`, {
     next: { revalidate: 100 },
   });
 
@@ -268,7 +270,7 @@ const Page = async () => {
       <HeroSection sliderBanners={sliderBanners} sideBanners={sideBanners} />
       <FeaturesSection />
       <CategorySection categories={categories} />
-      <ProductShowcase products={products} />
+      <ProductShowcase products={products} categories={categories} />
       <HomeVideoSection videos={videos} />
       <HomeBlogSection />
       <TestimonialSection testimonials={testimonials} />

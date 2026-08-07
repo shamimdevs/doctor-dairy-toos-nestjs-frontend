@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 interface AddProductCategoryFormValues {
   name: string;
   slug: string;
+  position?: number;
   image?: FileList;
 }
 
@@ -69,6 +70,10 @@ const AddProductCategory = () => {
 
       formData.append("name", values.name);
       formData.append("slug", values.slug);
+
+      if (values.position !== undefined && !isNaN(values.position)) {
+        formData.append("position", String(values.position));
+      }
 
       if (values.image?.[0]) {
         formData.append("image", values.image[0]);
@@ -130,6 +135,16 @@ const AddProductCategory = () => {
             })}
             readOnly
             errors={errors}
+          />
+
+          <Input
+            label="Display Position"
+            text="position"
+            type="number"
+            placeholder="Defaults to last position"
+            register={register("position", { valueAsNumber: true })}
+            errors={errors}
+            required={false}
           />
 
           <div className="col-span-full border-2 border-dashed rounded-lg p-4 hover:border-blue-400">

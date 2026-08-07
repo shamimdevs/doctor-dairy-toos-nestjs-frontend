@@ -27,6 +27,7 @@ interface EditProductCategoryProps {
 interface EditProductCategoryFormValues {
   name: string;
   slug: string;
+  position?: number;
   image?: FileList;
 }
 
@@ -72,6 +73,7 @@ const EditProductCategory: React.FC<EditProductCategoryProps> = ({ id }) => {
       reset({
         name: data.data.name,
         slug: data.data.slug,
+        position: data.data.position,
       });
       setImagePreview(data?.data?.image || "");
     }
@@ -112,6 +114,10 @@ const EditProductCategory: React.FC<EditProductCategoryProps> = ({ id }) => {
 
       formData.append("name", values.name);
       formData.append("slug", values.slug);
+
+      if (values.position !== undefined && !isNaN(values.position)) {
+        formData.append("position", String(values.position));
+      }
 
       if (values.image?.[0]) {
         formData.append("image", values.image[0]);
@@ -183,6 +189,15 @@ const EditProductCategory: React.FC<EditProductCategoryProps> = ({ id }) => {
             })}
             readOnly
             errors={errors}
+          />
+
+          <Input
+            label="Display Position"
+            text="position"
+            type="number"
+            register={register("position", { valueAsNumber: true })}
+            errors={errors}
+            required={false}
           />
 
           {/* Image */}

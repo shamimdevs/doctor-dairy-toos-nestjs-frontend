@@ -3,12 +3,14 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Swal from "sweetalert2";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
+import { Plus, Edit, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 
 import { useDebounce } from "@/src/hooks/useDebounce";
 import {
   useDeleteProductCategoryMutation,
   useGetAllProductCategoriesQuery,
+  useReorderProductCategoriesMutation,
 } from "@/src/redux/api/productCategoriesApi";
 import { ProductCategory } from "@/src/types/productCategoriesType";
 import { ApiError } from "@/src/types/authType";
@@ -30,10 +32,45 @@ const AllProductCategory: React.FC = () => {
     });
 
   const [deleteCategory] = useDeleteProductCategoryMutation();
+  const [reorderCategories, { isLoading: isReordering }] =
+    useReorderProductCategoriesMutation();
 
   const categories: ProductCategory[] = data?.data || [];
   const totalPages = data?.meta?.totalPages ?? 1;
   const totalItems = data?.meta?.total ?? 0;
+
+  // Swap with the adjacent row (within the current page) and renumber by
+  // rank — a plain value swap would no-op whenever both rows still share the
+  // default position (e.g. legacy categories that predate this feature).
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= categories.length) return;
+
+    const reordered = [...categories];
+    [reordered[index], reordered[targetIndex]] = [
+      reordered[targetIndex],
+      reordered[index],
+    ];
+
+    const basePosition = (currentPage - 1) * LIMIT;
+    const items = reordered.map((cat, i) => ({
+      id: cat.id,
+      position: basePosition + i + 1,
+    }));
+
+    try {
+      await reorderCategories({ items }).unwrap();
+
+      refetch();
+    } catch (err) {
+      const apiError = err as ApiError;
+
+      toast.error(
+        apiError.data?.message || apiError.message || "Failed to reorder",
+      );
+    }
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -126,6 +163,9 @@ const AllProductCategory: React.FC = () => {
               <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">
                 Image
               </th>
+              <th className="px-5 py-3 text-center text-sm font-semibold text-gray-700">
+                Position
+              </th>
               <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">
                 Name
               </th>
@@ -168,6 +208,32 @@ const AllProductCategory: React.FC = () => {
                     )}
                   </td>
 
+                  <td className="px-5 py-1">
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-sm text-gray-600 w-6 text-center">
+                        {category.position}
+                      </span>
+                      <div className="flex flex-col">
+                        <button
+                          onClick={() => handleMove(index, "up")}
+                          disabled={isReordering || index === 0}
+                          className="rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                          title="Move up"
+                        >
+                          <ArrowUp size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleMove(index, "down")}
+                          disabled={isReordering || index === categories.length - 1}
+                          className="rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                          title="Move down"
+                        >
+                          <ArrowDown size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+
                   <td className="px-5 py-1 text-sm font-medium text-gray-800">
                     {category.name}
                   </td>
@@ -206,7 +272,7 @@ const AllProductCategory: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-gray-500">
+                <td colSpan={7} className="py-10 text-center text-gray-500">
                   No product categories found.
                 </td>
               </tr>
