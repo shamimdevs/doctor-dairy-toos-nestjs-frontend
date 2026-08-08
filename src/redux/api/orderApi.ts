@@ -24,6 +24,8 @@ export interface IOrder {
   customer_name: string;
   phone: string;
   address: string;
+  district?: string;
+  upazila?: string;
   notes?: string;
   subtotal: number;
   delivery_charge: number;
@@ -50,6 +52,8 @@ export interface ICreateOrderDto {
   fullName: string;
   phone: string;
   address: string;
+  district?: string;
+  upazila?: string;
   notes?: string;
   items: IOrderItemDto[];
 }

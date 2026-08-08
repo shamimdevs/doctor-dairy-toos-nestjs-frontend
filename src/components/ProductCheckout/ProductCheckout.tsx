@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   ChevronLeft,
   Truck,
-  RefreshCw,
   Lock,
   MapPin,
   User,
@@ -23,6 +22,7 @@ import {
   AlertCircle,
   Building2,
   Weight,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -32,6 +32,10 @@ import {
   UPDATE_QUANTITY,
 } from "@/src/redux/features/cartSlice";
 import { useCreateOrderMutation } from "@/src/redux/api/orderApi";
+import {
+  BD_DISTRICTS,
+  BD_DISTRICTS_UPAZILAS,
+} from "@/src/data/bangladeshDistricts";
 
 // Types
 interface CartItem {
@@ -51,6 +55,8 @@ interface CheckoutFormData {
   fullName: string;
   mobileNumber: string;
   emailAddress: string;
+  district: string;
+  upazila: string;
   fullAddress: string;
   optionalNote: string;
 }
@@ -107,6 +113,8 @@ export default function ProductCheckout() {
     fullName: "",
     mobileNumber: "",
     emailAddress: "",
+    district: "",
+    upazila: "",
     fullAddress: "",
     optionalNote: "",
   });
@@ -157,6 +165,51 @@ export default function ProductCheckout() {
     setApiError(null);
   };
 
+  // Custom District / Upazila Dropdown State
+  const [isDistrictOpen, setIsDistrictOpen] = useState(false);
+  const [isUpazilaOpen, setIsUpazilaOpen] = useState(false);
+  const districtRef = useRef<HTMLDivElement>(null);
+  const upazilaRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside of them
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        districtRef.current &&
+        !districtRef.current.contains(e.target as Node)
+      ) {
+        setIsDistrictOpen(false);
+      }
+      if (
+        upazilaRef.current &&
+        !upazilaRef.current.contains(e.target as Node)
+      ) {
+        setIsUpazilaOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // District Selection Handler (also resets the dependent Upazila field)
+  const handleSelectDistrict = (district: string) => {
+    setFormData((prev) => ({ ...prev, district, upazila: "" }));
+    setApiError(null);
+    setIsDistrictOpen(false);
+  };
+
+  // Upazila Selection Handler
+  const handleSelectUpazila = (upazila: string) => {
+    setFormData((prev) => ({ ...prev, upazila }));
+    setApiError(null);
+    setIsUpazilaOpen(false);
+  };
+
+  // Upazila options for the currently selected district
+  const upazilaOptions = useMemo(() => {
+    return BD_DISTRICTS_UPAZILAS[formData.district] || [];
+  }, [formData.district]);
+
   // Quantity Update Handler
   const handleUpdateQuantity = (item: CartItem, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -190,6 +243,8 @@ export default function ProductCheckout() {
     if (
       !formData.fullName.trim() ||
       !formData.mobileNumber.trim() ||
+      !formData.district.trim() ||
+      !formData.upazila.trim() ||
       !formData.fullAddress.trim()
     ) {
       toast.error("দয়া করে সকল প্রয়োজনীয় তথ্য পূরণ করুন!", {
@@ -216,6 +271,8 @@ export default function ProductCheckout() {
         fullName: formData.fullName.trim(),
         phone: formData.mobileNumber.trim(),
         address: formData.fullAddress.trim(),
+        district: formData.district.trim(),
+        upazila: formData.upazila.trim(),
         notes: formData.optionalNote.trim() || "",
         items: cartItems.map((item: CartItem) => ({
           product_id: item.productId || item.id,
@@ -241,6 +298,8 @@ export default function ProductCheckout() {
         customerName: formData.fullName,
         customerEmail: formData.emailAddress || "N/A",
         customerPhone: formData.mobileNumber,
+        district: formData.district,
+        upazila: formData.upazila,
         shippingAddress: formData.fullAddress,
         orderDate: new Date().toISOString(),
         items: cartItems.map((item: CartItem) => ({
@@ -404,6 +463,121 @@ export default function ProductCheckout() {
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-slate-800"
                       required
                     />
+                  </div>
+                </div>
+
+                {/* District & Upazila */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* District Dropdown */}
+                  <div ref={districtRef}>
+                    <label className="block text-sm font-bold text-slate-700 mb-1">
+                      জেলা <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <MapPin
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsDistrictOpen((prev) => !prev)}
+                        className="w-full flex items-center justify-between pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-left"
+                      >
+                        <span
+                          className={
+                            formData.district
+                              ? "text-slate-800"
+                              : "text-slate-400"
+                          }
+                        >
+                          {formData.district || "জেলা নির্বাচন করুন"}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform shrink-0 ${
+                            isDistrictOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isDistrictOpen && (
+                        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-52 overflow-y-auto">
+                          {BD_DISTRICTS.map((district) => (
+                            <button
+                              type="button"
+                              key={district}
+                              onClick={() => handleSelectDistrict(district)}
+                              className={`w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 transition-colors ${
+                                formData.district === district
+                                  ? "bg-emerald-50 text-emerald-700 font-semibold"
+                                  : "text-slate-700"
+                              }`}
+                            >
+                              {district}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Upazila Dropdown */}
+                  <div ref={upazilaRef}>
+                    <label className="block text-sm font-bold text-slate-700 mb-1">
+                      উপজেলা <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <MapPin
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          formData.district && setIsUpazilaOpen((prev) => !prev)
+                        }
+                        disabled={!formData.district}
+                        className="w-full flex items-center justify-between pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-left disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        <span
+                          className={
+                            formData.upazila
+                              ? "text-slate-800"
+                              : "text-slate-400"
+                          }
+                        >
+                          {formData.upazila ||
+                            (formData.district
+                              ? "উপজেলা নির্বাচন করুন"
+                              : "আগে জেলা নির্বাচন করুন")}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400 transition-transform shrink-0 ${
+                            isUpazilaOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isUpazilaOpen && (
+                        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-52 overflow-y-auto">
+                          {upazilaOptions.map((upazila) => (
+                            <button
+                              type="button"
+                              key={upazila}
+                              onClick={() => handleSelectUpazila(upazila)}
+                              className={`w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 transition-colors ${
+                                formData.upazila === upazila
+                                  ? "bg-emerald-50 text-emerald-700 font-semibold"
+                                  : "text-slate-700"
+                              }`}
+                            >
+                              {upazila}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -639,7 +813,7 @@ export default function ProductCheckout() {
               <div className="pt-3 border-t border-slate-200">
                 <div className="flex justify-between items-center">
                   <span className="text-base font-extrabold text-slate-900">
-                    মোট প্রদেয়
+                    মোট
                   </span>
                   <span className="text-2xl font-extrabold text-emerald-600">
                     ৳{totalPayable}
@@ -653,7 +827,7 @@ export default function ProductCheckout() {
                   type="button"
                   onClick={handlePlaceOrder}
                   disabled={isOrderPlacing}
-                  className="w-full py-3.5 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-extrabold rounded-xl transition-all shadow-lg shadow-emerald-200 hover:shadow-emerald-300 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full cursor-pointer py-3.5 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-extrabold rounded-xl transition-all shadow-lg shadow-emerald-200 hover:shadow-emerald-300 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isOrderPlacing ? (
                     <>
@@ -682,10 +856,6 @@ export default function ProductCheckout() {
                 <div className="flex items-center gap-1 text-xs">
                   <Truck size={13} className="text-emerald-500" />
                   <span>দ্রুত ডেলিভারি</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs">
-                  <RefreshCw size={13} className="text-emerald-500" />
-                  <span>সহজ রিটার্ন</span>
                 </div>
               </div>
             </div>

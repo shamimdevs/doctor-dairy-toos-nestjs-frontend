@@ -17,7 +17,6 @@ import {
   User,
   Download,
   ShoppingBag,
-  ArrowRight,
   HelpCircle,
   RefreshCw,
   Headphones,
@@ -25,8 +24,6 @@ import {
   Wallet,
   Store,
   CreditCard,
-  FileText,
-  Printer,
 } from "lucide-react";
 import { format, differenceInDays, isToday, isTomorrow } from "date-fns";
 import { bn } from "date-fns/locale";
@@ -46,6 +43,8 @@ interface OrderData {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  district?: string;
+  upazila?: string;
   shippingAddress: string;
   orderDate: Date;
   items: OrderItem[];
@@ -56,6 +55,7 @@ interface OrderData {
   paymentMethod: string;
   deliveryMethod: string;
   optionalNote?: string;
+  estimatedDelivery?: string;
 }
 
 export default function OrderConfirmationPage() {
@@ -85,15 +85,48 @@ export default function OrderConfirmationPage() {
     }
   }, [router]);
 
-  // Calculate estimated delivery (7 days from order date)
+  // Estimated delivery: use the date stored at checkout (typically 2-3 days
+  // from order placement); fall back to order date + 3 days if missing.
   const estimatedDelivery = useMemo(() => {
+    if (orderData?.estimatedDelivery) {
+      return new Date(orderData.estimatedDelivery);
+    }
+
     const date = orderData?.orderDate
       ? new Date(orderData.orderDate)
       : new Date();
 
-    date.setDate(date.getDate() + 7);
+    date.setDate(date.getDate() + 3);
     return date;
   }, [orderData]);
+
+  // Delivery window: 2 to 3 days from the order date
+  const deliveryWindow = useMemo(() => {
+    const base = orderData?.orderDate
+      ? new Date(orderData.orderDate)
+      : new Date();
+
+    const minDate = new Date(base);
+    minDate.setDate(minDate.getDate() + 2);
+
+    const maxDate = new Date(base);
+    maxDate.setDate(maxDate.getDate() + 3);
+
+    return { minDate, maxDate };
+  }, [orderData]);
+
+  // Format the delivery window as a friendly Bengali date range
+  const formatDeliveryRange = (minDate: Date, maxDate: Date): string => {
+    const sameMonth =
+      format(minDate, "MMMM yyyy", { locale: bn }) ===
+      format(maxDate, "MMMM yyyy", { locale: bn });
+
+    if (sameMonth) {
+      return `${format(minDate, "d", { locale: bn })} - ${format(maxDate, "d MMMM", { locale: bn })}`;
+    }
+
+    return `${format(minDate, "d MMMM", { locale: bn })} - ${format(maxDate, "d MMMM", { locale: bn })}`;
+  };
 
   // Get delivery message in Bengali
   const getDeliveryMessage = (
@@ -110,12 +143,10 @@ export default function OrderConfirmationPage() {
       return { message: "আগামীকাল", emoji: "⏰" };
     }
 
-    if (daysDiff === 2) {
-      return { message: "পরশু", emoji: "📦" };
-    }
-
-    if (daysDiff <= 3) {
-      return { message: `${daysDiff} দিনের মধ্যে`, emoji: "🚚" };
+    // Within the standard 2-3 day delivery window: show the actual day & date
+    if (daysDiff >= 2 && daysDiff <= 3) {
+      const dayAndDate = format(date, "EEEE, d MMMM", { locale: bn });
+      return { message: dayAndDate, emoji: daysDiff === 2 ? "📦" : "🚚" };
     }
 
     if (daysDiff <= 7) {
@@ -171,7 +202,7 @@ export default function OrderConfirmationPage() {
       invoiceElement.style.top = "0";
       invoiceElement.style.width = "800px";
       invoiceElement.style.backgroundColor = "white";
-      invoiceElement.style.padding = "40px";
+      invoiceElement.style.padding = "20px";
       document.body.appendChild(invoiceElement);
 
       // Render the invoice to canvas
@@ -187,15 +218,38 @@ export default function OrderConfirmationPage() {
       // Remove the temporary element
       document.body.removeChild(invoiceElement);
 
-      // Create PDF
+      // Create a standard A4 PDF and fit the invoice image to it (with
+      // margins), splitting across multiple pages if the content is taller
+      // than one page. Using the raw canvas pixel size as the page format
+      // (previous approach) produced a non-standard, stretched page.
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
-        unit: "px",
-        format: [canvas.width, canvas.height],
+        unit: "mm",
+        format: "a4",
         orientation: "portrait",
       });
 
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+      const margin = 5; // mm
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const contentWidth = pageWidth - margin * 2;
+      const contentHeight = pageHeight - margin * 2;
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+      heightLeft -= contentHeight;
+
+      while (heightLeft > 0) {
+        position = margin - (imgHeight - heightLeft);
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+        heightLeft -= contentHeight;
+      }
+
       pdf.save(`Invoice-${orderData.orderId}.pdf`);
     } catch (error) {
       console.error("Error downloading invoice:", error);
@@ -205,141 +259,6 @@ export default function OrderConfirmationPage() {
     } finally {
       setDownloading(false);
     }
-  };
-
-  // Print Invoice Function
-  // Print Invoice Function
-  const printInvoice = () => {
-    if (!orderData || !invoiceRef.current) return;
-
-    const printContent = invoiceRef.current.cloneNode(true) as HTMLElement;
-
-    // Create a new window for printing
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("পপ-আপ ব্লকার বন্ধ করে আবার চেষ্টা করুন।");
-      return;
-    }
-
-    printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Invoice - ${orderData.orderId}</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            color: #1a1a1a;
-            max-width: 800px;
-            margin: 0 auto;
-          }
-          .invoice-header {
-            text-align: center;
-            border-bottom: 2px solid #10b981;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-          }
-          .invoice-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #10b981;
-          }
-          .invoice-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-          }
-          .invoice-details .label {
-            font-weight: 600;
-            color: #6b7280;
-          }
-          .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-          }
-          .items-table th {
-            background-color: #f3f4f6;
-            padding: 10px;
-            text-align: left;
-            font-weight: 600;
-          }
-          .items-table td {
-            padding: 10px;
-            border-bottom: 1px solid #e5e7eb;
-          }
-          .items-table .total-row {
-            font-weight: bold;
-            border-top: 2px solid #1a1a1a;
-          }
-          .summary {
-            float: right;
-            width: 300px;
-          }
-          .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-          }
-          .summary-total {
-            font-size: 20px;
-            font-weight: bold;
-            color: #10b981;
-            border-top: 2px solid #10b981;
-            padding-top: 10px;
-            margin-top: 10px;
-          }
-          .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            color: #6b7280;
-            font-size: 12px;
-          }
-          .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background-color: #fef3c7;
-            color: #92400e;
-          }
-          .payment-method {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background-color: #dbeafe;
-            color: #1e40af;
-          }
-          @media print {
-            body { padding: 20px; }
-            .no-print { display: none; }
-          }
-        </style>
-      </head>
-      <body>
-        ${printContent.innerHTML}
-        <div class="footer">
-          <p>ধন্যবাদ আপনার ব্যবসায়ের জন্য! | Thank you for your business!</p>
-          <p>এই ইনভয়েসটি কম্পিউটার দ্বারা জেনারেটেড | This is a computer-generated invoice</p>
-        </div>
-        <script>
-          window.onload = function() {
-            window.print();
-            window.close();
-          };
-        <\/script>
-      </body>
-    </html>
-  `);
-
-    printWindow.document.close();
   };
 
   // If loading, show loading state
@@ -472,12 +391,15 @@ export default function OrderConfirmationPage() {
                   </p>
                   <div className="flex items-center gap-3 mt-1">
                     <p className="text-xl font-extrabold text-emerald-600">
-                      {format(estimatedDelivery, "EEEE d MMMM", { locale: bn })}
+                      {formatDeliveryRange(
+                        deliveryWindow.minDate,
+                        deliveryWindow.maxDate,
+                      )}
                     </p>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-bold ${getDeliveryStatusColor(estimatedDelivery)} border`}
                     >
-                      {deliveryInfo.emoji} {deliveryInfo.message}
+                      {deliveryInfo.emoji} ২-৩ দিনের মধ্যে
                     </span>
                   </div>
                 </div>
@@ -670,6 +592,16 @@ export default function OrderConfirmationPage() {
               <Mail size={16} className="text-slate-400" />
               <span>{orderData.customerEmail}</span>
             </div>
+            {(orderData.district || orderData.upazila) && (
+              <div className="flex items-center gap-2 text-base text-slate-600">
+                <MapPin size={16} className="text-slate-400" />
+                <span>
+                  {[orderData.upazila, orderData.district]
+                    .filter(Boolean)
+                    .join(", ")}
+                </span>
+              </div>
+            )}
             <div className="flex items-start gap-2 text-base text-slate-600">
               <MapPin size={16} className="text-slate-400 mt-0.5" />
               <span>{orderData.shippingAddress}</span>
@@ -697,23 +629,6 @@ export default function OrderConfirmationPage() {
             )}
           </button>
 
-          <button
-            onClick={printInvoice}
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-emerald-500 text-slate-700 font-bold rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer"
-          >
-            <Printer size={18} />
-            প্রিন্ট করুন
-          </button>
-
-          <Link
-            href="/dashboard/account"
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-emerald-500 text-slate-700 font-bold rounded-xl transition-all shadow-sm hover:shadow-md"
-          >
-            <FileText size={18} />
-            অর্ডার দেখুন
-            <ArrowRight size={18} />
-          </Link>
-
           <Link
             href="/"
             className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-sm hover:shadow-md ml-auto"
@@ -738,12 +653,22 @@ export default function OrderConfirmationPage() {
                 marginBottom: "20px",
               }}
             >
+              <p
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  color: "#0f172a",
+                  margin: 0,
+                }}
+              >
+                ডক্টর ডেইরি টুলস
+              </p>
               <h1
                 style={{
                   fontSize: "28px",
                   fontWeight: "bold",
                   color: "#10b981",
-                  margin: 0,
+                  margin: "8px 0 0 0",
                 }}
               >
                 📄 চালান / INVOICE
@@ -754,100 +679,114 @@ export default function OrderConfirmationPage() {
             </div>
 
             {/* Order Info */}
-            <div
+            {/* Rendered as a table (not CSS grid) because html2canvas does not
+                reliably lay out CSS grid columns, which caused the two
+                columns' text to overlap in the downloaded/printed invoice. */}
+            <table
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "20px",
+                width: "100%",
+                borderCollapse: "collapse",
                 marginBottom: "20px",
               }}
             >
-              <div>
-                <p style={{ margin: "4px 0" }}>
-                  <strong>অর্ডার আইডি:</strong> {orderData.orderId}
-                </p>
-                <p style={{ margin: "4px 0" }}>
-                  <strong>তারিখ:</strong>{" "}
-                  {format(orderData.orderDate, "d MMMM yyyy, h:mm a", {
-                    locale: bn,
-                  })}
-                </p>
-                <p style={{ margin: "4px 0" }}>
-                  <strong>স্ট্যাটাস:</strong>
-                  <span
+              <tbody>
+                <tr>
+                  <td style={{ verticalAlign: "top", width: "50%" }}>
+                    <p style={{ margin: "4px 0" }}>
+                      <strong>অর্ডার আইডি:</strong> {orderData.orderId}
+                    </p>
+                    <p style={{ margin: "4px 0" }}>
+                      <strong>তারিখ:</strong>{" "}
+                      {format(orderData.orderDate, "d MMMM yyyy, h:mm a", {
+                        locale: bn,
+                      })}
+                    </p>
+                    <p style={{ margin: "4px 0" }}>
+                      <strong>স্ট্যাটাস:</strong>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "2px 10px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+
+                          color: "#92400e",
+                          marginLeft: "5px",
+                        }}
+                      >
+                        অপেক্ষমাণ
+                      </span>
+                    </p>
+                  </td>
+                  <td
                     style={{
-                      display: "inline-block",
-                      padding: "2px 10px",
-                      borderRadius: "20px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      background: "#fef3c7",
-                      color: "#92400e",
-                      marginLeft: "5px",
+                      verticalAlign: "top",
+                      width: "50%",
+                      textAlign: "right",
                     }}
                   >
-                    অপেক্ষমাণ
-                  </span>
-                </p>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ margin: "4px 0" }}>
-                  <strong>পেমেন্ট:</strong>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "2px 10px",
-                      borderRadius: "20px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      background: "#dbeafe",
-                      color: "#1e40af",
-                      marginLeft: "5px",
-                    }}
-                  >
-                    {orderData.paymentMethod === "cod"
-                      ? "ক্যাশ অন ডেলিভারি"
-                      : "অনলাইন পেমেন্ট"}
-                  </span>
-                </p>
-                <p style={{ margin: "4px 0" }}>
-                  <strong>ডেলিভারি:</strong>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "2px 10px",
-                      borderRadius: "20px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      background: "#dcfce7",
-                      color: "#166534",
-                      marginLeft: "5px",
-                    }}
-                  >
-                    {orderData.deliveryMethod === "standard"
-                      ? "স্ট্যান্ডার্ড"
-                      : "এক্সপ্রেস"}
-                  </span>
-                </p>
-                <p style={{ margin: "4px 0" }}>
-                  <strong>ডেলিভারি তারিখ:</strong>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "2px 10px",
-                      borderRadius: "20px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      background: "#fef3c7",
-                      color: "#92400e",
-                      marginLeft: "5px",
-                    }}
-                  >
-                    {format(estimatedDelivery, "d MMMM yyyy", { locale: bn })}
-                  </span>
-                </p>
-              </div>
-            </div>
+                    <p style={{ margin: "4px 0" }}>
+                      <strong>পেমেন্ট:</strong>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "2px 10px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+
+                          color: "#1e40af",
+                          marginLeft: "5px",
+                        }}
+                      >
+                        {orderData.paymentMethod === "cod"
+                          ? "ক্যাশ অন ডেলিভারি"
+                          : "অনলাইন পেমেন্ট"}
+                      </span>
+                    </p>
+                    <p style={{ margin: "4px 0" }}>
+                      <strong>ডেলিভারি:</strong>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "2px 10px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+
+                          color: "#166534",
+                          marginLeft: "5px",
+                        }}
+                      >
+                        {orderData.deliveryMethod === "standard"
+                          ? "স্ট্যান্ডার্ড"
+                          : "এক্সপ্রেস"}
+                      </span>
+                    </p>
+                    <p style={{ margin: "4px 0" }}>
+                      <strong>ডেলিভারি তারিখ:</strong>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "2px 10px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+
+                          color: "#92400e",
+                          marginLeft: "5px",
+                        }}
+                      >
+                        {format(estimatedDelivery, "d MMMM yyyy", {
+                          locale: bn,
+                        })}
+                      </span>
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
             {/* Customer Info */}
             <div
@@ -876,6 +815,14 @@ export default function OrderConfirmationPage() {
               <p style={{ margin: "4px 0" }}>
                 <strong>ইমেইল:</strong> {orderData.customerEmail}
               </p>
+              {(orderData.district || orderData.upazila) && (
+                <p style={{ margin: "4px 0" }}>
+                  <strong>জেলা/উপজেলা:</strong>{" "}
+                  {[orderData.upazila, orderData.district]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              )}
               <p style={{ margin: "4px 0" }}>
                 <strong>ঠিকানা:</strong> {orderData.shippingAddress}
               </p>
@@ -1058,10 +1005,6 @@ export default function OrderConfirmationPage() {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-4">
             <div className="p-2 bg-emerald-100 rounded-lg">
               <RefreshCw size={20} className="text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-base font-bold text-slate-700">সহজ রিটার্ন</p>
-              <p className="text-base text-slate-500">৭ দিনের রিটার্ন নীতি</p>
             </div>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-4">
