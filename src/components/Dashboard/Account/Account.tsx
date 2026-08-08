@@ -28,12 +28,15 @@ import {
   XCircle,
   AlertCircle,
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   useGetMyProfileQuery,
   useSignOutMutation,
+  useChangePasswordMutation,
   authApi,
 } from "@/src/redux/api/authApi";
 import { useUpdateMyProfileMutation } from "@/src/redux/api/usersApi";
@@ -929,6 +932,166 @@ const AddressesTab: React.FC = () => {
   );
 };
 
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+const PasswordTab: React.FC = () => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
+
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [formData, setFormData] = useState({
+    old_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (
+      !formData.old_password ||
+      !formData.new_password ||
+      !formData.confirm_password
+    ) {
+      toast.error("All fields are required.");
+      return;
+    }
+
+    if (formData.new_password !== formData.confirm_password) {
+      toast.error("New password and confirm password do not match.");
+      return;
+    }
+
+    if (!PASSWORD_REGEX.test(formData.new_password)) {
+      toast.error(
+        "New password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character.",
+      );
+      return;
+    }
+
+    try {
+      const res = await changePassword(formData).unwrap();
+
+      toast.success(
+        res?.data?.message ||
+          "Password changed successfully. Please sign in again.",
+      );
+      setFormData({ old_password: "", new_password: "", confirm_password: "" });
+
+      // Backend revoked every session on password change — the client
+      // must not keep acting as if it's still authenticated.
+      dispatch(logoutAction());
+      dispatch(authApi.util.resetApiState());
+      router.push("/login");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to change password");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-extrabold text-slate-900">
+          Change Password
+        </h2>
+      </div>
+
+      <div className="bg-white rounded-2xl p-6 border border-slate-100">
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                type={showOld ? "text" : "password"}
+                value={formData.old_password}
+                onChange={(e) =>
+                  setFormData({ ...formData, old_password: e.target.value })
+                }
+                autoComplete="current-password"
+                className="w-full px-4 py-2.5 pr-10 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 transition-all"
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowOld(!showOld)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+              >
+                {showOld ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">
+              New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showNew ? "text" : "password"}
+                value={formData.new_password}
+                onChange={(e) =>
+                  setFormData({ ...formData, new_password: e.target.value })
+                }
+                autoComplete="new-password"
+                className="w-full px-4 py-2.5 pr-10 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 transition-all"
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+              >
+                {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showConfirm ? "text" : "password"}
+                value={formData.confirm_password}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    confirm_password: e.target.value,
+                  })
+                }
+                autoComplete="new-password"
+                className="w-full px-4 py-2.5 pr-10 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 transition-all"
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+              >
+                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Updating..." : "Change Password"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // Main Account Page
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -954,6 +1117,8 @@ export default function AccountPage() {
         return <WishlistTab />;
       case "addresses":
         return <AddressesTab />;
+      case "password":
+        return <PasswordTab />;
 
       default:
         return <ProfileTab user={user} refetch={refetch} />;

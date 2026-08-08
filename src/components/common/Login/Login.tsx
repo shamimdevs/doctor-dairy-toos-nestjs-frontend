@@ -12,7 +12,6 @@ import {
   Lock,
   Mail,
   ChevronLeft,
-  ShieldCheck,
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
@@ -20,7 +19,6 @@ import { useRouter } from "next/navigation";
 
 import { useLoginMutation } from "@/src/redux/api/authApi";
 import { storeOTPData } from "@/src/redux/features/otpSlice";
-import { storeUser } from "@/src/redux/features/auth/authSlice";
 import CommonModal from "../CommonModal/CommonModal";
 import VerifyOtp from "../Otp/VerifyOtp";
 
@@ -59,15 +57,15 @@ const Login = () => {
 
       reset();
 
-      // Store OTP data
+      // Store OTP data — the real user object is stored only after OTP
+      // verification succeeds (see VerifyOtp.tsx), not here.
       dispatch(storeOTPData(res.data));
       setCredential(data);
-      dispatch(storeUser(res?.data));
       setOtpModalOpen(true);
 
       toast.success("OTP sent to your email");
     } catch (err: any) {
-      toast.error(err?.data?.message || "Login failed");
+      toast.error(err?.data?.data?.message || "Login failed");
     }
   };
 
@@ -87,22 +85,24 @@ const Login = () => {
 
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           {/* Logo / Brand Name */}
-          <div className="flex justify-center items-center gap-2 text-emerald-600">
-            <ShieldCheck className="h-10 w-10" />
-            <span className="text-3xl font-extrabold tracking-tight text-slate-950">
-              Medico<span className="text-emerald-500">.</span>
-            </span>
-          </div>
+          <Link
+            href="/"
+            className="flex justify-center items-center text-2xl sm:text-3xl font-black tracking-tight select-none"
+          >
+            <span className="text-emerald-700">Doctor</span>
+            <span className="text-amber-500 mx-1">Dairy</span>
+            <span className="text-emerald-700">Tools</span>
+          </Link>
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-slate-800">
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-slate-500">
-            Or{" "}
+            New to Doctor Dairy Tools?{" "}
             <Link
               href="/signup"
               className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
             >
-              create a new pharmacy account
+              Create an account
             </Link>
           </p>
         </div>
@@ -156,7 +156,7 @@ const Login = () => {
                   </label>
                   <div className="text-sm">
                     <Link
-                      href="/forgot-password"
+                      href="/forget-password"
                       className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
                     >
                       Forgot password?
@@ -239,18 +239,12 @@ const Login = () => {
                 </button>
               </div>
             </form>
-
-            {/* Optional Footer Notice */}
-            <div className="mt-6 border-t border-slate-100 pt-4 text-center">
-              <p className="text-xs text-slate-400">
-                Secured by DGDA standard compliance guidelines.
-              </p>
-            </div>
           </div>
         </div>
       </div>
 
       {/* OTP MODAL */}
+
       <CommonModal active={otpModalOpen} setActive={setOtpModalOpen}>
         <VerifyOtp
           credential={credential}

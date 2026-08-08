@@ -18,6 +18,7 @@ interface ApiErrorResponse {
 interface BaseQueryError {
   status: number;
   message: string;
+  data?: ApiErrorResponse;
 }
 
 export const axiosBaseQuery =
@@ -46,26 +47,35 @@ export const axiosBaseQuery =
 
       return { data: result.data };
     } catch (axiosError) {
-      console.log("axiosError", axiosError);
-      const err = axiosError as AxiosError<ApiErrorResponse>;
+      // axiosInstance.ts's own response interceptor normalizes most
+      // rejections into a flat `{ statusCode, message }` object (to keep
+      // its refresh-token retry logic simple), which strips off `.response`
+      // entirely before the error ever reaches here — so `err.response` is
+      // frequently undefined even for a real HTTP error. Handle both the
+      // raw AxiosError shape and that normalized shape so `err.data.message`
+      // is reliably populated for every caller across the app.
+      const err = axiosError as AxiosError<ApiErrorResponse> &
+        Partial<{ statusCode: number; message: string }>;
 
-      if (Array.isArray(err?.message)) {
-        err.message = err.message[0];
-      }
-      //   return {
-      //     error: {
-      //       status: err.response?.status || 500,
-      //       message: Array.isArray(err.response?.data?.message)
-      //         ? err.response?.data?.message[0]
-      //         : err.response?.data?.message || err.message,
-      //     },
-      //   };
+      // Backend validation/auth errors can come back as a single string or
+      // (from class-validator) an array of messages — normalize to one
+      // string so callers' `err.data.message` is always a plain message.
+      const responseMessage = Array.isArray(err.response?.data?.message)
+        ? err.response?.data?.message[0]
+        : err.response?.data?.message;
+
+      const message =
+        responseMessage || err.message || "Something went wrong.";
+
       return {
         error: {
           // Extract status code from error response
-          status: err.response?.status || 500,
-          // Extract error data from error response or use error message
-          message: err.message,
+          status: err.response?.status || err.statusCode || 500,
+          // Prefer the backend's actual error message (e.g. "Invalid email
+          // or password.") over axios's generic "Request failed with
+          // status code 401" — every caller reads `err.data.message` first.
+          message,
+          data: err.response?.data ?? { message },
         },
       };
     }

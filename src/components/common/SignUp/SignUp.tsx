@@ -12,7 +12,6 @@ import {
   Eye,
   EyeOff,
   UserPlus,
-  ShieldCheck,
   MapPin,
   ChevronLeft,
   ArrowRight,
@@ -88,6 +87,8 @@ const SignUp = () => {
   return (
     <>
       <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
+        <ToastContainer theme="light" position="top-right" />
+
         {/* Back to Home Button */}
         <div className="absolute top-6 left-6 sm:top-8 sm:left-8">
           <Link
@@ -99,16 +100,16 @@ const SignUp = () => {
           </Link>
         </div>
 
-        <ToastContainer theme="light" position="top-right" />
-
         <div className="sm:mx-auto sm:w-full sm:max-w-xl">
           {/* Logo / Brand Name */}
-          <div className="flex justify-center items-center gap-2 text-emerald-600">
-            <ShieldCheck className="h-10 w-10" />
-            <span className="text-3xl font-extrabold tracking-tight text-slate-950">
-              Medico<span className="text-emerald-500">.</span>
-            </span>
-          </div>
+          <Link
+            href="/"
+            className="flex justify-center items-center text-2xl sm:text-3xl font-black tracking-tight select-none"
+          >
+            <span className="text-emerald-700">Doctor</span>
+            <span className="text-amber-500 mx-1">Dairy</span>
+            <span className="text-emerald-700">Tools</span>
+          </Link>
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-slate-800">
             Create your account
           </h2>
@@ -124,264 +125,266 @@ const SignUp = () => {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-          <div className="bg-white py-8 px-4 shadow-sm border border-slate-200/80 sm:rounded-xl sm:px-10">
-            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-              {/* Full Name */}
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <User className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="name"
-                    type="text"
-                    {...register("name", { required: "Name is required" })}
-                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="John Doe"
-                    disabled={isLoading}
-                  />
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Email address <span className="text-red-500">*</span>
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Mail className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="email"
-                    type="email"
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: {
-                        value: /^\S+@\S+$/i,
-                        message: "Invalid email address",
-                      },
-                    })}
-                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="john@example.com"
-                    disabled={isLoading}
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Mobile Number */}
-              <div>
-                <label
-                  htmlFor="mobile"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Phone Number <span className="text-red-500">*</span>
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Phone className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="mobile"
-                    type="tel"
-                    {...register("mobile", {
-                      required: "Mobile number is required",
-                      minLength: {
-                        value: 11,
-                        message: "Enter a valid 11 digit number",
-                      },
-                      pattern: {
-                        value: /^01[3-9]\d{8}$/,
-                        message: "Enter a valid Bangladesh mobile number",
-                      },
-                    })}
-                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="01712345678"
-                    disabled={isLoading}
-                  />
-                  {errors.mobile && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.mobile.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Lock className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    {...register("password", {
-                      required: "Password is required",
-                      minLength: {
-                        value: 8,
-                        message: "Minimum 8 characters",
-                      },
-                    })}
-                    className="block w-full pl-9 pr-10 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="••••••••"
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+            <div className="bg-white py-8 px-4 shadow-sm border border-slate-200/80 sm:rounded-xl sm:px-10">
+              <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+                {/* Full Name */}
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-slate-700"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <User className="h-4 w-4" />
+                    </div>
+                    <input
+                      id="name"
+                      type="text"
+                      {...register("name", { required: "Name is required" })}
+                      className="block w-full pl-9 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="John Doe"
+                      disabled={isLoading}
+                    />
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.name.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-slate-700"
+                  >
+                    Email address <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Mail className="h-4 w-4" />
+                    </div>
+                    <input
+                      id="email"
+                      type="email"
+                      {...register("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /^\S+@\S+$/i,
+                          message: "Invalid email address",
+                        },
+                      })}
+                      className="block w-full pl-9 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="john@example.com"
+                      disabled={isLoading}
+                    />
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mobile Number */}
+                <div>
+                  <label
+                    htmlFor="mobile"
+                    className="block text-sm font-medium text-slate-700"
+                  >
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Phone className="h-4 w-4" />
+                    </div>
+                    <input
+                      id="mobile"
+                      type="tel"
+                      {...register("mobile", {
+                        required: "Mobile number is required",
+                        minLength: {
+                          value: 11,
+                          message: "Enter a valid 11 digit number",
+                        },
+                        pattern: {
+                          value: /^01[3-9]\d{8}$/,
+                          message: "Enter a valid Bangladesh mobile number",
+                        },
+                      })}
+                      className="block w-full pl-9 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="01712345678"
+                      disabled={isLoading}
+                    />
+                    {errors.mobile && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.mobile.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-slate-700"
+                  >
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Lock className="h-4 w-4" />
+                    </div>
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      {...register("password", {
+                        required: "Password is required",
+                        minLength: {
+                          value: 8,
+                          message: "Minimum 8 characters",
+                        },
+                      })}
+                      className="block w-full pl-9 pr-10 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="••••••••"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                    {errors.password && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-slate-700"
+                  >
+                    Confirm Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Lock className="h-4 w-4" />
+                    </div>
+                    <input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      {...register("confirmPassword", {
+                        required: "Please confirm your password",
+                        validate: (val) =>
+                          val === password || "Passwords do not match",
+                      })}
+                      className="block w-full pl-9 pr-10 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="••••••••"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                    {errors.confirmPassword && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-slate-700"
+                  >
+                    Detailed Address
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <MapPin className="h-4 w-4" />
+                    </div>
+                    <input
+                      id="address"
+                      type="text"
+                      {...register("address")}
+                      className="block w-full pl-9 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="House, Road, Area..."
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="mt-6">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                        Creating account...
+                      </>
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <>
+                        <UserPlus className="h-5 w-5" />
+                        Create account
+                        <ArrowRight className="h-4 w-4" />
+                      </>
                     )}
                   </button>
-                  {errors.password && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.password.message}
-                    </p>
-                  )}
                 </div>
-              </div>
 
-              {/* Confirm Password */}
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Confirm Password <span className="text-red-500">*</span>
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Lock className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    {...register("confirmPassword", {
-                      required: "Please confirm your password",
-                      validate: (val) =>
-                        val === password || "Passwords do not match",
-                    })}
-                    className="block w-full pl-9 pr-10 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="••••••••"
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                  {errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
+                {/* Terms & Conditions */}
+                <div className="text-center">
+                  <p className="text-xs text-slate-500">
+                    By signing up, you agree to our{" "}
+                    <Link
+                      href="/terms"
+                      className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+                    >
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      href="/privacy"
+                      className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </p>
                 </div>
-              </div>
-
-              {/* Address */}
-              <div>
-                <label
-                  htmlFor="address"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Detailed Address
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <MapPin className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="address"
-                    type="text"
-                    {...register("address")}
-                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="House, Road, Area..."
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="mt-6">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                      Creating account...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-5 w-5" />
-                      Create account
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Terms & Conditions */}
-              <div className="text-center">
-                <p className="text-xs text-slate-500">
-                  By signing up, you agree to our{" "}
-                  <Link
-                    href="/terms"
-                    className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
-                  >
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link
-                    href="/privacy"
-                    className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
-                  >
-                    Privacy Policy
-                  </Link>
-                </p>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* OTP Modal */}
       <CommonModal active={otpModalOpen} setActive={setOtpModalOpen}>

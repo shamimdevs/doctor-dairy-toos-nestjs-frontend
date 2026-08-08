@@ -13,7 +13,7 @@ const CommonModal: React.FC<Props> = ({ active, setActive, children }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div
-        onClick={() => setActive(false)}
+        // onClick={() => setActive(false)}
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
       />
       <div className="relative z-10 w-full max-w-md rounded-2xl bg-linear-to-br from-gray-900/80 to-gray-900/40 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-black/60">
