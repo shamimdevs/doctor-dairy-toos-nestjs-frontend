@@ -18,6 +18,7 @@ import {
 import {
   useDeleteOrderMutation,
   useGetAllOrdersQuery,
+  useLazyGetAllOrdersQuery,
   useUpdateOrderMutation,
   type IOrder,
   type IUpdateOrderDto,
@@ -64,16 +65,6 @@ const PAYMENT_BADGE: Record<string, string> = {
 };
 
 const AllOrders: React.FC = () => {
-  const { data, isLoading, refetch } = useGetAllOrdersQuery();
-  const [updateOrder] = useUpdateOrderMutation();
-  const [deleteOrder] = useDeleteOrderMutation();
-
-  const orders: IOrder[] = useMemo(() => {
-    if (Array.isArray(data)) return data;
-    const nested = (data as { data?: IOrder[] } | undefined)?.data;
-    return Array.isArray(nested) ? nested : [];
-  }, [data]);
-
   const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,32 +74,46 @@ const AllOrders: React.FC = () => {
 
   const debouncedSearch = useDebounce(searchValue, 400) as string;
 
-  const filteredOrders = useMemo(() => {
-    let result = orders;
+  // Server-side pagination: the backend applies search/status filtering and
+  // returns only the current page, along with `meta` (total/totalPages) —
+  // the table no longer fetches every order up front to slice client-side.
+  const { data, isLoading, isFetching, refetch } = useGetAllOrdersQuery({
+    search: debouncedSearch.trim() || undefined,
+    order_status: statusFilter || undefined,
+    page: currentPage,
+    limit: LIMIT,
+  });
 
-    if (statusFilter) {
-      result = result.filter((o) => o.order_status === statusFilter);
-    }
+  const [updateOrder] = useUpdateOrderMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
+  const [fetchAllMatchingOrders] = useLazyGetAllOrdersQuery();
 
-    if (debouncedSearch.trim()) {
-      const term = debouncedSearch.trim().toLowerCase();
-      result = result.filter(
-        (o) =>
-          o.order_number?.toLowerCase().includes(term) ||
-          o.customer_name?.toLowerCase().includes(term) ||
-          o.phone?.toLowerCase().includes(term),
-      );
-    }
+  const orders: IOrder[] = useMemo(() => {
+    if (Array.isArray(data)) return data;
+    const nested = (data as { data?: IOrder[] } | undefined)?.data;
+    return Array.isArray(nested) ? nested : [];
+  }, [data]);
 
-    return result;
-  }, [orders, statusFilter, debouncedSearch]);
+  const meta = !Array.isArray(data)
+    ? (data as { meta?: { total: number; totalPages: number } } | undefined)
+        ?.meta
+    : undefined;
+  const totalItems = meta?.total ?? orders.length;
+  const totalPages = Math.max(1, meta?.totalPages ?? 1);
 
-  const totalItems = filteredOrders.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / LIMIT));
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * LIMIT,
-    currentPage * LIMIT,
-  );
+  // Export/Print All operate on every order matching the current filters,
+  // not just the page currently on screen — fetch that full set on demand.
+  const fetchAllFilteredOrders = async (): Promise<IOrder[]> => {
+    const result = await fetchAllMatchingOrders({
+      search: debouncedSearch.trim() || undefined,
+      order_status: statusFilter || undefined,
+      limit: 1000,
+    }).unwrap();
+
+    if (Array.isArray(result)) return result;
+    const nested = (result as { data?: IOrder[] } | undefined)?.data;
+    return Array.isArray(nested) ? nested : [];
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -120,14 +125,20 @@ const AllOrders: React.FC = () => {
     status: NonNullable<IUpdateOrderDto["order_status"]>,
   ) => {
     try {
-      await updateOrder({ id: order.id, data: { order_status: status } }).unwrap();
+      await updateOrder({
+        id: order.id,
+        data: { order_status: status },
+      }).unwrap();
       toast.success(`Order ${order.order_number} marked as ${status}`);
     } catch (err) {
       const apiError = err as ApiError;
       Swal.fire({
         icon: "error",
         title: "Update Failed",
-        text: apiError.data?.message || apiError.message || "Could not update order status.",
+        text:
+          apiError.data?.message ||
+          apiError.message ||
+          "Could not update order status.",
       });
     }
   };
@@ -137,14 +148,20 @@ const AllOrders: React.FC = () => {
     status: NonNullable<IUpdateOrderDto["payment_status"]>,
   ) => {
     try {
-      await updateOrder({ id: order.id, data: { payment_status: status } }).unwrap();
+      await updateOrder({
+        id: order.id,
+        data: { payment_status: status },
+      }).unwrap();
       toast.success(`Payment status updated for ${order.order_number}`);
     } catch (err) {
       const apiError = err as ApiError;
       Swal.fire({
         icon: "error",
         title: "Update Failed",
-        text: apiError.data?.message || apiError.message || "Could not update payment status.",
+        text:
+          apiError.data?.message ||
+          apiError.message ||
+          "Could not update payment status.",
       });
     }
   };
@@ -192,13 +209,14 @@ const AllOrders: React.FC = () => {
   };
 
   const handleExportAll = async () => {
-    if (filteredOrders.length === 0) {
+    if (totalItems === 0) {
       toast.info("No orders to export.");
       return;
     }
     setIsExporting(true);
     try {
-      await downloadOrdersReportPDF(filteredOrders);
+      const allOrders = await fetchAllFilteredOrders();
+      await downloadOrdersReportPDF(allOrders);
     } catch {
       toast.error("Failed to generate report PDF.");
     } finally {
@@ -210,19 +228,24 @@ const AllOrders: React.FC = () => {
     try {
       printOrderInvoice(order);
     } catch {
-      toast.error("Could not open print dialog. Please allow pop-ups for this site.");
+      toast.error(
+        "Could not open print dialog. Please allow pop-ups for this site.",
+      );
     }
   };
 
-  const handlePrintAll = () => {
-    if (filteredOrders.length === 0) {
+  const handlePrintAll = async () => {
+    if (totalItems === 0) {
       toast.info("No orders to print.");
       return;
     }
     try {
-      printOrdersReport(filteredOrders);
+      const allOrders = await fetchAllFilteredOrders();
+      printOrdersReport(allOrders);
     } catch {
-      toast.error("Could not open print dialog. Please allow pop-ups for this site.");
+      toast.error(
+        "Could not open print dialog. Please allow pop-ups for this site.",
+      );
     }
   };
 
@@ -231,14 +254,21 @@ const AllOrders: React.FC = () => {
       toast.error("This order has no customer phone number to share with.");
       return;
     }
-    window.open(getOrderWhatsAppShareUrl(order), "_blank", "noopener,noreferrer");
+    window.open(
+      getOrderWhatsAppShareUrl(order),
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   if (isLoading) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-3">
         {[...Array(LIMIT)].map((_, i) => (
-          <div key={i} className="h-12 w-full animate-pulse rounded-md bg-gray-200" />
+          <div
+            key={i}
+            className="h-12 w-full animate-pulse rounded-md bg-gray-200"
+          />
         ))}
       </div>
     );
@@ -250,12 +280,17 @@ const AllOrders: React.FC = () => {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-6 border-b border-gray-200">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Orders</h1>
-          <p className="text-sm text-gray-500">Manage customer orders and payments</p>
+          <p className="text-sm text-gray-500">
+            Manage customer orders and payments
+          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
             <input
               type="text"
               placeholder="Search order, customer, phone..."
@@ -308,40 +343,64 @@ const AllOrders: React.FC = () => {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
+      {/* Table (md and up) */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700 w-8"></th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">Order</th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">Customer</th>
-              <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
-              <th className="px-5 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
-              <th className="px-5 py-3 text-center text-sm font-semibold text-gray-700">Payment</th>
-              <th className="px-5 py-3 text-right text-sm font-semibold text-gray-700">Amount</th>
-              <th className="px-5 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+              <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">
+                Order
+              </th>
+              <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">
+                Customer
+              </th>
+              <th className="px-5 py-3 text-left text-sm font-semibold text-gray-700">
+                Date
+              </th>
+              <th className="px-5 py-3 text-center text-sm font-semibold text-gray-700">
+                Status
+              </th>
+              <th className="px-5 py-3 text-center text-sm font-semibold text-gray-700">
+                Payment
+              </th>
+              <th className="px-5 py-3 text-right text-sm font-semibold text-gray-700">
+                Amount
+              </th>
+              <th className="px-5 py-3 text-center text-sm font-semibold text-gray-700">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
-            {paginatedOrders.length > 0 ? (
-              paginatedOrders.map((order) => {
+            {orders.length > 0 ? (
+              orders.map((order) => {
                 const isExpanded = expandedId === order.id;
                 return (
                   <React.Fragment key={order.id}>
                     <tr className="border-t border-gray-200 hover:bg-gray-50 transition">
                       <td className="px-5 py-3">
                         <button
-                          onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                          onClick={() =>
+                            setExpandedId(isExpanded ? null : order.id)
+                          }
                           className="cursor-pointer text-gray-400 hover:text-emerald-600"
                           title={isExpanded ? "Collapse" : "View items"}
                         >
-                          {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          {isExpanded ? (
+                            <ChevronDown size={16} />
+                          ) : (
+                            <ChevronRight size={16} />
+                          )}
                         </button>
                       </td>
-                      <td className="px-5 py-3 text-sm font-bold text-gray-800">{order.order_number}</td>
+                      <td className="px-5 py-3 text-sm font-bold text-gray-800">
+                        {order.order_number}
+                      </td>
                       <td className="px-5 py-3 text-sm">
-                        <p className="font-medium text-gray-800">{order.customer_name}</p>
+                        <p className="font-medium text-gray-800">
+                          {order.customer_name}
+                        </p>
                         <p className="text-xs text-gray-400">{order.phone}</p>
                       </td>
                       <td className="px-5 py-3 text-sm text-gray-600 whitespace-nowrap">
@@ -353,11 +412,14 @@ const AllOrders: React.FC = () => {
                           onChange={(e) =>
                             handleStatusChange(
                               order,
-                              e.target.value as NonNullable<IUpdateOrderDto["order_status"]>,
+                              e.target.value as NonNullable<
+                                IUpdateOrderDto["order_status"]
+                              >,
                             )
                           }
                           className={`cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-bold capitalize outline-none ${
-                            STATUS_BADGE[order.order_status] || "bg-gray-100 text-gray-600"
+                            STATUS_BADGE[order.order_status] ||
+                            "bg-gray-100 text-gray-600"
                           }`}
                         >
                           {ORDER_STATUSES.map((s) => (
@@ -373,11 +435,14 @@ const AllOrders: React.FC = () => {
                           onChange={(e) =>
                             handlePaymentStatusChange(
                               order,
-                              e.target.value as NonNullable<IUpdateOrderDto["payment_status"]>,
+                              e.target.value as NonNullable<
+                                IUpdateOrderDto["payment_status"]
+                              >,
                             )
                           }
                           className={`cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-bold capitalize outline-none ${
-                            PAYMENT_BADGE[order.payment_status] || "bg-gray-100 text-gray-600"
+                            PAYMENT_BADGE[order.payment_status] ||
+                            "bg-gray-100 text-gray-600"
                           }`}
                         >
                           {PAYMENT_STATUSES.map((s) => (
@@ -435,9 +500,13 @@ const AllOrders: React.FC = () => {
                               </h4>
                               <div className="space-y-1.5">
                                 {order.items?.map((item, idx) => (
-                                  <div key={idx} className="flex justify-between text-sm">
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between text-sm"
+                                  >
                                     <span className="text-gray-700">
-                                      {item.product_name} &times; {item.quantity}
+                                      {item.product_name} &times;{" "}
+                                      {item.quantity}
                                       {item.weight != null && (
                                         <span className="ml-1.5 text-xs text-gray-400">
                                           ({Number(item.weight).toFixed(2)} kg)
@@ -457,7 +526,10 @@ const AllOrders: React.FC = () => {
                                 </div>
                                 <div className="flex justify-between text-gray-500">
                                   <span>Total Weight</span>
-                                  <span>{Number(order.total_weight || 0).toFixed(2)} kg</span>
+                                  <span>
+                                    {Number(order.total_weight || 0).toFixed(2)}{" "}
+                                    kg
+                                  </span>
                                 </div>
                                 <div className="flex justify-between text-gray-500">
                                   <span>Delivery</span>
@@ -469,9 +541,24 @@ const AllOrders: React.FC = () => {
                               <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">
                                 Shipping &amp; Notes
                               </h4>
-                              <p className="text-sm text-gray-700">{order.address}</p>
+                              <div className="space-y-1 text-sm text-gray-700">
+                                <p className="font-semibold text-gray-800">
+                                  {order.customer_name}
+                                </p>
+                                <p className="text-gray-500">{order.phone}</p>
+                                {(order.upazila || order.district) && (
+                                  <p className="text-gray-500">
+                                    {[order.upazila, order.district]
+                                      .filter(Boolean)
+                                      .join(", ")}
+                                  </p>
+                                )}
+                                <p>{order.address}</p>
+                              </div>
                               {order.notes && (
-                                <p className="mt-2 text-sm italic text-gray-500">&quot;{order.notes}&quot;</p>
+                                <p className="mt-2 text-sm italic text-gray-500">
+                                  &quot;{order.notes}&quot;
+                                </p>
                               )}
                             </div>
                           </div>
@@ -492,13 +579,219 @@ const AllOrders: React.FC = () => {
         </table>
       </div>
 
-      {filteredOrders.length > 0 && (
+      {/* Cards (below md) — one card per order, same data as the table row */}
+      <div className="md:hidden space-y-3 bg-gray-50 p-3">
+        {orders.length > 0 ? (
+          orders.map((order) => {
+            const isExpanded = expandedId === order.id;
+            return (
+              <div
+                key={order.id}
+                className="space-y-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+              >
+                {/* Order # + Date */}
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-bold text-gray-800">
+                    {order.order_number}
+                  </p>
+                  <p className="text-xs text-gray-500 whitespace-nowrap">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+
+                {/* Customer */}
+                <div>
+                  <p className="font-medium text-gray-800 text-sm">
+                    {order.customer_name}
+                  </p>
+                  <p className="text-xs text-gray-400">{order.phone}</p>
+                </div>
+
+                {/* Status + Payment */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={order.order_status}
+                    onChange={(e) =>
+                      handleStatusChange(
+                        order,
+                        e.target.value as NonNullable<
+                          IUpdateOrderDto["order_status"]
+                        >,
+                      )
+                    }
+                    className={`cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-bold capitalize outline-none ${
+                      STATUS_BADGE[order.order_status] ||
+                      "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {ORDER_STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={order.payment_status}
+                    onChange={(e) =>
+                      handlePaymentStatusChange(
+                        order,
+                        e.target.value as NonNullable<
+                          IUpdateOrderDto["payment_status"]
+                        >,
+                      )
+                    }
+                    className={`cursor-pointer rounded-full border-0 px-2.5 py-1 text-xs font-bold capitalize outline-none ${
+                      PAYMENT_BADGE[order.payment_status] ||
+                      "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {PAYMENT_STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+
+                  <span className="ml-auto text-base font-extrabold text-emerald-600">
+                    ৳{Number(order.total_amount).toLocaleString()}
+                  </span>
+                </div>
+
+                {/* Details toggle */}
+                <button
+                  onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                  className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-lg border border-gray-200 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                >
+                  {isExpanded ? "Hide details" : "View details"}
+                  {isExpanded ? (
+                    <ChevronDown size={14} />
+                  ) : (
+                    <ChevronRight size={14} />
+                  )}
+                </button>
+
+                {isExpanded && (
+                  <div className="space-y-4 rounded-lg bg-gray-50/60 p-3">
+                    <div>
+                      <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+                        Items ({order.items?.length || 0})
+                      </h4>
+                      <div className="space-y-1.5">
+                        {order.items?.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between text-sm"
+                          >
+                            <span className="text-gray-700">
+                              {item.product_name} &times; {item.quantity}
+                              {item.weight != null && (
+                                <span className="ml-1.5 text-xs text-gray-400">
+                                  ({Number(item.weight).toFixed(2)} kg)
+                                </span>
+                              )}
+                            </span>
+                            <span className="font-semibold text-gray-800">
+                              ৳{item.total_price}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 space-y-1 border-t border-gray-200 pt-3 text-sm">
+                        <div className="flex justify-between text-gray-500">
+                          <span>Subtotal</span>
+                          <span>৳{order.subtotal}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-500">
+                          <span>Total Weight</span>
+                          <span>
+                            {Number(order.total_weight || 0).toFixed(2)} kg
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-gray-500">
+                          <span>Delivery</span>
+                          <span>৳{order.delivery_charge}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+                        Shipping &amp; Notes
+                      </h4>
+                      <div className="space-y-1 text-sm text-gray-700">
+                        <p className="font-semibold text-gray-800">
+                          {order.customer_name}
+                        </p>
+                        <p className="text-gray-500">{order.phone}</p>
+                        {(order.upazila || order.district) && (
+                          <p className="text-gray-500">
+                            {[order.upazila, order.district]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </p>
+                        )}
+                        <p>{order.address}</p>
+                      </div>
+                      {order.notes && (
+                        <p className="mt-2 text-sm italic text-gray-500">
+                          &quot;{order.notes}&quot;
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <button
+                    onClick={() => handlePrintInvoice(order)}
+                    className="flex-1 cursor-pointer rounded-lg p-2 text-center text-gray-600 transition hover:bg-gray-100"
+                    title="Print Invoice"
+                  >
+                    <Printer size={18} className="mx-auto" />
+                  </button>
+                  <button
+                    onClick={() => handleDownloadInvoice(order)}
+                    disabled={downloadingId === order.id}
+                    className="flex-1 cursor-pointer rounded-lg p-2 text-center text-blue-600 transition hover:bg-blue-100 disabled:opacity-50"
+                    title="Download Invoice PDF"
+                  >
+                    <Download size={18} className="mx-auto" />
+                  </button>
+                  <button
+                    onClick={() => handleShareWhatsApp(order)}
+                    className="flex-1 cursor-pointer rounded-lg p-2 text-center text-emerald-600 transition hover:bg-emerald-100"
+                    title="Share via WhatsApp"
+                  >
+                    <MessageCircle size={18} className="mx-auto" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(order)}
+                    className="flex-1 cursor-pointer rounded-lg p-2 text-center text-red-600 transition hover:bg-red-100"
+                    title="Delete"
+                  >
+                    <Trash2 size={18} className="mx-auto" />
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="py-10 text-center text-gray-500">
+            No orders found.
+          </div>
+        )}
+      </div>
+
+      {totalItems > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
           totalResults={totalItems}
           limit={LIMIT}
+          isFetching={isFetching}
         />
       )}
     </div>

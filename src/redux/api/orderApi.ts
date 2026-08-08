@@ -108,7 +108,14 @@ export const orderApi = baseApi.injectEndpoints({
     // Get All Orders (Admin)
     getAllOrders: build.query<
       IApiResponse<IOrder[]> | IOrder[],
-      { page?: number; limit?: number; order_status?: string } | void
+      | {
+          page?: number;
+          limit?: number;
+          search?: string;
+          order_status?: string;
+          payment_status?: string;
+        }
+      | void
     >({
       query: (params) => ({
         url: ORDER_URL,
@@ -196,6 +203,7 @@ export const orderApi = baseApi.injectEndpoints({
 export const {
   useCreateOrderMutation,
   useGetAllOrdersQuery,
+  useLazyGetAllOrdersQuery,
   useGetOrderByIdQuery,
   useGetMyOrdersQuery,
   useGetUserOrdersQuery,
