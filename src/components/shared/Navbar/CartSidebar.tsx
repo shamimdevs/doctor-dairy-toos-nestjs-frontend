@@ -77,16 +77,16 @@ export default function CartSidebar() {
           <div>
             <span className="text-xl  font-black text-slate-900 flex items-center gap-2">
               <ShoppingBag className="text-emerald-600" />
-              My Cart
+              আমার কার্ট
             </span>
             <div className="flex items-center gap-3 mt-0.5">
               <span className="text-xs font-semibold text-slate-500">
-                {uniqueProductCount}{" "}
-                {uniqueProductCount === 1 ? "Product" : "Products"}
+                {uniqueProductCount}টি{" "}
+                {uniqueProductCount === 1 ? "পণ্য" : "পণ্য"}
               </span>
               <span className="text-xs text-slate-300">•</span>
               <span className="text-xs font-semibold text-emerald-600">
-                {totalQuantity} {totalQuantity === 1 ? "Item" : "Items"} Total
+                মোট {totalQuantity}টি {totalQuantity === 1 ? "আইটেম" : "আইটেম"}
               </span>
               {/* Clear All Button */}
               {cartItems.length > 1 && (
@@ -95,7 +95,7 @@ export default function CartSidebar() {
                   className="text-xs text-red-500 cursor-pointer font-bold hover:text-red-600 transition-colors flex items-center gap-1"
                 >
                   <Trash2 size={12} />
-                  Clear All Items
+                  সব মুছুন
                 </button>
               )}
             </div>
@@ -129,7 +129,7 @@ export default function CartSidebar() {
                       />
                     ) : (
                       <span className="text-xs font-bold text-slate-400">
-                        Med
+                        মেড
                       </span>
                     )}
                   </div>
@@ -148,7 +148,7 @@ export default function CartSidebar() {
                           <button
                             onClick={() => handleRemoveFromCart(item.id)}
                             className="px-2.5 cursor-pointer py-1.5 hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-700 border-r border-slate-200"
-                            aria-label="Decrease quantity"
+                            aria-label="পরিমাণ কমান"
                           >
                             <Minus size={14} />
                           </button>
@@ -158,7 +158,7 @@ export default function CartSidebar() {
                           <button
                             onClick={() => handleAddToCart(item)}
                             className="px-2.5 py-1.5 cursor-pointer hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-700 border-l border-slate-200"
-                            aria-label="Increase quantity"
+                            aria-label="পরিমাণ বাড়ান"
                           >
                             <Plus size={14} />
                           </button>
@@ -168,7 +168,7 @@ export default function CartSidebar() {
                         <button
                           onClick={() => handleDeleteItem(item.id)}
                           className="p-1.5 cursor-pointer rounded-lg hover:bg-red-100 transition-colors text-slate-400 hover:text-red-500"
-                          aria-label="Remove item"
+                          aria-label="আইটেম সরান"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -196,10 +196,10 @@ export default function CartSidebar() {
             <div className="text-center py-12">
               <ShoppingBag size={48} className="mx-auto text-slate-300 mb-4" />
               <p className="text-sm text-slate-500 font-semibold">
-                Your cart is empty.
+                আপনার কার্ট খালি।
               </p>
               <p className="text-xs text-slate-400 mt-1">
-                Start adding some amazing products!
+                কিছু দারুণ পণ্য যোগ করা শুরু করুন!
               </p>
             </div>
           )}
@@ -210,7 +210,7 @@ export default function CartSidebar() {
           {/* Subtotal */}
           <div className="flex justify-between items-center">
             <span className="text-sm text-slate-500 font-semibold">
-              Subtotal:
+              সাবটোটাল:
             </span>
             <span className="text-xl font-black text-slate-900">
               ৳ {totalAmount.toFixed(2)}
@@ -220,9 +220,9 @@ export default function CartSidebar() {
           {/* Item Summary */}
           {cartItems && cartItems.length > 0 && (
             <div className="flex justify-between items-center text-xs text-slate-400">
-              <span>Total Items:</span>
+              <span>মোট আইটেম:</span>
               <span className="font-semibold text-slate-600">
-                {totalQuantity} items
+                {totalQuantity}টি আইটেম
               </span>
             </div>
           )}
@@ -240,8 +240,8 @@ export default function CartSidebar() {
             }`}
           >
             {cartItems && cartItems.length > 0
-              ? `Proceed to Checkout (${totalQuantity} items)`
-              : "Cart is Empty"}
+              ? `চেকআউট করুন (${totalQuantity}টি আইটেম)`
+              : "কার্ট খালি"}
           </Link>
 
           {/* Continue Shopping */}
@@ -250,7 +250,7 @@ export default function CartSidebar() {
               onClick={() => dispatch(sidebarToggle())}
               className="block w-full text-center text-sm font-semibold text-slate-500 hover:text-emerald-600 transition-colors"
             >
-              Continue Shopping →
+              কেনাকাটা চালিয়ে যান →
             </button>
           )}
         </div>
