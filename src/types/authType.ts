@@ -47,8 +47,21 @@ export interface EmailRequest {
 
 export interface ResetPasswordRequest {
   email: string;
-  otp: string;
-  password: string;
+  otp_code: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+export interface ChangePasswordRequest {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+export interface OtpMessageResponse {
+  success: boolean;
+  message: string;
+  data: { message: string };
 }
 
 export interface SignInRequest {

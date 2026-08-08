@@ -1,8 +1,10 @@
 // src/redux/api/authApi.ts
 import {
+  ChangePasswordRequest,
   EmailRequest,
   LoginResponse,
   LogoutResponse,
+  OtpMessageResponse,
   ResetPasswordRequest,
   SignInRequest,
   UserProfileResponse,
@@ -78,7 +80,7 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.auth],
     }),
     // ✅ RESET PASSWORD
-    resetPassword: builder.mutation<void, ResetPasswordRequest>({
+    resetPassword: builder.mutation<OtpMessageResponse, ResetPasswordRequest>({
       query: (data) => ({
         url: `${AUTH_URL}/reset-password`,
         method: "POST",
@@ -86,6 +88,17 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.auth],
     }),
+    // ✅ CHANGE PASSWORD (authenticated — revokes all sessions on success)
+    changePassword: builder.mutation<OtpMessageResponse, ChangePasswordRequest>(
+      {
+        query: (data) => ({
+          url: `${AUTH_URL}/change-password`,
+          method: "POST",
+          data,
+        }),
+        invalidatesTags: [tagTypes.auth],
+      },
+    ),
     // ✅ GET MY PROFILE
     getMyProfile: builder.query<UserProfileResponse, void>({
       query: () => ({
@@ -108,4 +121,5 @@ export const {
   useGetMyProfileQuery,
   useForgetPasswordResendOtpMutation,
   useVerifyMutation,
+  useChangePasswordMutation,
 } = authApi;

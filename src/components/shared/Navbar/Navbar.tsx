@@ -190,9 +190,7 @@ export default function Navbar() {
           }`}
         >
           <div className="flex items-center justify-between mb-6">
-            <span className="text-xl font-black text-slate-900">
-              Medico Menu
-            </span>
+            <span className="text-xl font-black text-slate-900">DDT Menu</span>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
               className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-all"

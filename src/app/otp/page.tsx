@@ -16,7 +16,7 @@ const OtpPage = () => {
         <div className="flex justify-center items-center gap-2 text-emerald-600">
           <ShieldCheck className="h-10 w-10" />
           <span className="text-3xl font-extrabold tracking-tight text-slate-950">
-            Medico<span className="text-emerald-500">.</span>
+            Doctor Dairy Tools<span className="text-emerald-500">.</span>
           </span>
         </div>
         <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-slate-800">
