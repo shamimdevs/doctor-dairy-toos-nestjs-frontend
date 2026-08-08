@@ -18,7 +18,14 @@ const Pagination: React.FC<PaginationProps> = ({
   limit,
   isFetching = false,
 }) => {
-  if (totalPages <= 1) return null;
+  // Always show the results bar (e.g. "Showing 1-5 of 5") once there's at
+  // least one item, even when everything fits on a single page — only the
+  // page-number buttons collapse to a lone disabled "1" in that case.
+  // Callers that don't pass totalResults keep the old single-page-hides
+  // behavior, since we can't tell "one page of items" from "no items" then.
+  const hasNoResults =
+    totalResults !== undefined ? totalResults <= 0 : totalPages <= 1;
+  if (hasNoResults) return null;
 
   // Generate page numbers with ellipsis logic
   const getPageNumbers = () => {
