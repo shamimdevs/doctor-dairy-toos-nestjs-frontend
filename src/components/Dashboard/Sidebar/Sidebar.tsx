@@ -64,11 +64,11 @@ const menuItems: MenuItem[] = [
       },
     ],
   },
-  {
-    label: "Purchases",
-    href: "/dashboard/purchases/all-purchases",
-    icon: Truck,
-  },
+  // {
+  //   label: "Purchases",
+  //   href: "/dashboard/purchases/all-purchases",
+  //   icon: Truck,
+  // },
 
   {
     label: "Product   Category",
