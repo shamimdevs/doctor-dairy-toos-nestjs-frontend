@@ -1,7 +1,4 @@
-"use client";
-
-import { useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import CategoryCard from "./CategoryCard";
 import { ProductCategory } from "@/src/types/productCategoriesType";
 
@@ -12,18 +9,6 @@ interface CategorySectionProps {
 export default function CategorySection({
   categories = [],
 }: CategorySectionProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const scrollAmount = 120;
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
     <section className="container py-6 sm:py-8">
       {/* Header Panel */}
@@ -31,40 +16,23 @@ export default function CategorySection({
         <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
           Shop by Category
         </h2>
-
-        {/* Action Controls — hidden on touch/mobile since swiping scrolls the row */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => scroll("left")}
-            className="p-2 md:p-2.5 cursor-pointer rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-md active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            aria-label="Scroll left categories"
-          >
-            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            className="p-2 md:p-2.5 cursor-pointer rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-md active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            aria-label="Scroll right categories"
-          >
-            <ChevronRight className="w-5 h-5 stroke-[2.5]" />
-          </button>
-        </div>
       </div>
 
-      {/* Horizontal Scroller Canvas */}
-      <div
-        ref={scrollRef}
-        className="flex items-stretch gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-4"
-        style={{
-          msOverflowStyle: "none",
-          scrollbarWidth: "none",
-        }}
-      >
+      {/* Category Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
         {categories?.map((category) => (
-          <div key={category.id} className="snap-start">
-            <CategoryCard category={category} />
-          </div>
+          <CategoryCard key={category.id} category={category} />
         ))}
+      </div>
+
+      {/* View All */}
+      <div className="flex justify-center mt-5 sm:mt-6">
+        <Link
+          href="/category"
+          className="px-6 py-2.5 rounded-xl border border-emerald-600  font-bold text-sm bg-emerald-600 hover:scale-105 duration-300 ease-in-out  text-white  transition-all"
+        >
+          View All Categories
+        </Link>
       </div>
     </section>
   );
