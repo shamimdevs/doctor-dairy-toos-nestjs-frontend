@@ -109,7 +109,7 @@ export default function MedicoFooter() {
           </p>
           <div className="flex items-center gap-3">
             <a
-              href="https://www.facebook.com/profile.php?id=100071985864951"
+              href="https://www.facebook.com/doctordairytools"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#1877F2] hover:scale-110 transition-transform duration-200 p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
