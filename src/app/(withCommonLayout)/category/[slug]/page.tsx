@@ -30,10 +30,19 @@ async function getCategories(baseUrl: string): Promise<ProductCategory[]> {
 }
 
 export default async function Page({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const categories = await getCategories(baseUrl!);
+
+  // Bangla (and other unicode) slugs arrive percent-encoded in the URL;
+  // decode before matching. Guard against already-decoded input.
+  let slug = rawSlug;
+  try {
+    slug = decodeURIComponent(rawSlug);
+  } catch {
+    // rawSlug wasn't percent-encoded; use as-is
+  }
 
   const targetSlug = slug.toLowerCase().trim();
 
