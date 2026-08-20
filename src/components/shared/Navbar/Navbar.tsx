@@ -17,6 +17,7 @@ import {
   Home,
   Info,
   MapPin,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { sidebarToggle } from "@/src/redux/features/sidebarSlice";
@@ -61,6 +62,30 @@ export default function Navbar() {
         behavior: "smooth",
       });
     }
+  };
+
+  const downloadAllCatalogImages = () => {
+    const files = [
+      "file1.jpeg",
+      "file2.jpeg",
+      "file3.jpeg",
+      "file4.jpeg",
+      "file5.jpeg",
+      "fil6.jpeg",
+      "file7.jpeg",
+      "file8.jpeg",
+    ];
+
+    files.forEach((file, index) => {
+      setTimeout(() => {
+        const link = document.createElement("a");
+        link.href = `/images/file/${file}`;
+        link.download = file;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, index * 800);
+    });
   };
 
   return (
@@ -362,6 +387,18 @@ export default function Navbar() {
               <Info size={16} className="text-emerald-600 shrink-0" />
               About Us
             </Link>
+
+            <button
+              type="button"
+              onClick={() => {
+                downloadAllCatalogImages();
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
+            >
+              <Download size={16} className="text-emerald-600 shrink-0" />
+              Download File
+            </button>
 
             {/* Product Categories Dropdown */}
             <button
