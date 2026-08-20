@@ -126,7 +126,7 @@ export default function HeroSection({ sliderBanners = [] }: HeroSectionProps) {
                       alt={slide.title}
                       fill
                       sizes="(max-width: 1024px) 100vw, 66vw"
-                      className="object-cover object-center"
+                      className=""
                       quality={90}
                       priority={index === current || index === 0}
                     />
