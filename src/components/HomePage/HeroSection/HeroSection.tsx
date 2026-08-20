@@ -17,12 +17,8 @@ interface HeroSectionProps {
   sideBanners?: HeroBanner[];
 }
 
-export default function HeroSection({
-  sliderBanners = [],
-  sideBanners = [],
-}: HeroSectionProps) {
+export default function HeroSection({ sliderBanners = [] }: HeroSectionProps) {
   const slides = sliderBanners;
-  const sideCards = sideBanners.slice(0, 2);
 
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -108,6 +104,7 @@ export default function HeroSection({
             sm:h-85
             lg:h-105
             lg:col-span-4
+            lg:col-start-2
           "
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
@@ -187,7 +184,9 @@ export default function HeroSection({
                         key={index}
                         onClick={() => setCurrent(index)}
                         className={`h-1.5 rounded-full transition-all ${
-                          current === index ? "w-5 bg-white" : "w-1.5 bg-white/50"
+                          current === index
+                            ? "w-5 bg-white"
+                            : "w-1.5 bg-white/50"
                         }`}
                         aria-label={`Go to slide ${index + 1}`}
                       />
@@ -197,40 +196,6 @@ export default function HeroSection({
               )}
             </>
           )}
-        </div>
-
-        {/* Right Side Cards: Spans 2 Columns out of 6 (max 2 banners) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 lg:col-span-2 gap-4 items-stretch">
-          {sideCards.map((card) => {
-            const image = (
-              <Image
-                src={card.image_url}
-                alt={card.title}
-                fill
-                sizes="(max-width: 1024px) 50vw, 33vw"
-                className=""
-              />
-            );
-
-            return (
-              <div
-                key={card.id}
-                className="relative overflow-hidden rounded-2xl shadow-lg min-h-32.5 lg:h-auto bg-slate-100"
-              >
-                {card.redirect_url ? (
-                  <Link
-                    href={card.redirect_url}
-                    className="block relative w-full h-full"
-                    aria-label={card.title}
-                  >
-                    {image}
-                  </Link>
-                ) : (
-                  image
-                )}
-              </div>
-            );
-          })}
         </div>
       </div>
     </section>

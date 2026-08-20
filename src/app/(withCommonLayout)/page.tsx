@@ -2,12 +2,15 @@
 import HomeBlogSection from "@/src/components/BlogSection/HomeBlogSection";
 import FAQSection from "@/src/components/FAQSection/FAQSection";
 import CategorySection from "@/src/components/HomePage/CategorySection/CategorySection";
-import FeaturesSection from "@/src/components/HomePage/HeroSection/FeaturesSection";
+// import FeaturesSection from "@/src/components/HomePage/HeroSection/FeaturesSection";
 import HeroSection from "@/src/components/HomePage/HeroSection/HeroSection";
 import ProductShowcase from "@/src/components/HomePage/ProductShowcase/ProductShowcase";
 import TestimonialSection from "@/src/components/TestimonialSection/TestimonialSection";
 import HomeVideoSection from "@/src/components/VideoGallery/HomeVideoSection";
-import { getVideos, IVideoGallary } from "@/src/components/services/videoService";
+import {
+  getVideos,
+  IVideoGallary,
+} from "@/src/components/services/videoService";
 import { ProductCategory } from "@/src/types/productCategoriesType";
 
 interface ICategoriesApiResponse {
@@ -268,7 +271,7 @@ const Page = async () => {
   return (
     <>
       <HeroSection sliderBanners={sliderBanners} sideBanners={sideBanners} />
-      <FeaturesSection />
+      {/* <FeaturesSection /> */}
       <CategorySection categories={categories} />
       <ProductShowcase products={products} categories={categories} />
       <HomeVideoSection videos={videos} />
