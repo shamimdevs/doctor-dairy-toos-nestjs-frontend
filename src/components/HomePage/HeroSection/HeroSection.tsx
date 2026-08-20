@@ -128,7 +128,7 @@ export default function HeroSection({ sliderBanners = [] }: HeroSectionProps) {
                       sizes="(max-width: 1024px) 100vw, 66vw"
                       className="object-cover object-center"
                       quality={90}
-                      priority={index === 0}
+                      priority={index === current || index === 0}
                     />
                   );
 
