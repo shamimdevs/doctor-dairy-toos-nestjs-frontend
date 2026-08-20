@@ -63,13 +63,19 @@ export function TestimonialCard({ item }: TestimonialCardProps) {
         {/* Header info / Avatar */}
         <div className="flex items-center gap-4 mb-4">
           <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-500 shrink-0">
-            <Image
-              src={item?.image || "/placeholder.jpg"}
-              alt={item?.name || "Client Avatar"}
-              fill
-              className="object-cover"
-              unoptimized
-            />
+            {item?.image ? (
+              <Image
+                src={item.image}
+                alt={item?.name || "Client Avatar"}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-emerald-100 text-emerald-700 font-bold text-lg">
+                {item?.name?.trim()?.charAt(0)?.toUpperCase() || "?"}
+              </div>
+            )}
           </div>
           <div className="overflow-hidden">
             <h3 className="text-base font-bold text-slate-800 truncate">
