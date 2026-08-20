@@ -89,9 +89,8 @@ export default function HeroSection({ sliderBanners = [] }: HeroSectionProps) {
 
   return (
     <section className="container py-4 md:py-8">
-      {/* 6-Column CSS Grid Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
-        {/* Main Carousel: Spans 4 Columns out of 6 (Pure Image Carousel) */}
+      <div className="grid grid-cols-1 gap-4 md:gap-6 items-stretch">
+        {/* Main Carousel: Full Width (Pure Image Carousel) */}
         <div
           className="
             relative
@@ -103,8 +102,7 @@ export default function HeroSection({ sliderBanners = [] }: HeroSectionProps) {
             h-70
             sm:h-85
             lg:h-105
-            lg:col-span-4
-            lg:col-start-2
+            lg:col-span-6
           "
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
