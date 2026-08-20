@@ -6,37 +6,18 @@ import {
   Clock,
   Mail,
   MapPin,
-  Microscope,
-  Milk,
-  Package,
   Phone,
-  Pill,
   RotateCcw,
   ShieldCheck,
-  Stethoscope,
-  Syringe,
   Target,
-  Egg,
-  Tractor,
   Truck,
   Users,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import type { ProductCategory } from "@/src/types/productCategoriesType";
+import CategoryCard from "@/src/components/HomePage/CategorySection/CategoryCard";
 
 interface AboutPageProps {
   categories: ProductCategory[];
-}
-
-function getCategoryIcon(slug: string): LucideIcon {
-  if (slug.includes("surgical")) return Stethoscope;
-  if (slug.includes("medicine")) return Pill;
-  if (slug.includes("insemination")) return Syringe;
-  if (slug.includes("machinery")) return Tractor;
-  if (slug.includes("dairy")) return Milk;
-  if (slug.includes("poultry")) return Egg;
-  if (slug.includes("lab")) return Microscope;
-  return Package;
 }
 
 const valueProps = [
@@ -54,7 +35,8 @@ const valueProps = [
   {
     icon: RotateCcw,
     title: "Easy Returns & Refunds",
-    description: "A straightforward, hassle-free return policy on eligible items.",
+    description:
+      "A straightforward, hassle-free return policy on eligible items.",
   },
   {
     icon: Clock,
@@ -66,7 +48,7 @@ const valueProps = [
 const socialLinks = [
   {
     label: "Facebook",
-    href: "https://www.facebook.com/share/191ytz3M7S/",
+    href: "https://www.facebook.com/doctordairytools",
     path: "M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z",
   },
   {
@@ -100,35 +82,39 @@ export default function AboutPage({ categories }: AboutPageProps) {
             </h1>
             <p className="mt-5 text-sm sm:text-base text-slate-400 leading-relaxed max-w-xl">
               We supply genuine veterinary surgical instruments, AI supplies,
-              dairy farm tools and machinery, poultry equipment, and lab
-              items to farmers, veterinarians, and clinics across the
-              country &mdash; trusted online since 2019.
+              dairy farm tools and machinery, poultry equipment, and lab items
+              to farmers, veterinarians, and clinics across the country &mdash;
+              trusted online since 2019.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link
-                href="/products"
+              <a
+                href="https://wa.me/8801797980777"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 rounded-xl text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
               >
-                Browse Products
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
-              <a
-                href="tel:+8801797980777"
-                className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white font-bold px-5 py-3 rounded-xl text-sm border border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <Phone size={16} aria-hidden="true" />
-                Talk to Us
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                  <path d="M12.001 2C6.478 2 2 6.477 2 12c0 1.986.579 3.837 1.579 5.395L2 22l4.72-1.55A9.947 9.947 0 0 0 12.001 22C17.523 22 22 17.523 22 12S17.523 2 12.001 2zm0 18.062a8.02 8.02 0 0 1-4.09-1.122l-.293-.174-2.802.92.933-2.732-.19-.28A8.02 8.02 0 1 1 20.02 12a8.03 8.03 0 0 1-8.019 8.062z" />
+                </svg>
+                Chat on WhatsApp
               </a>
             </div>
           </div>
 
           <div className="relative h-56 sm:h-72 lg:h-96 rounded-3xl overflow-hidden shadow-xl">
             <Image
-              src="/images/dairay-2.jpg"
+              src="/images/sajib.jpg"
               alt="Dairy farm and livestock care in Bangladesh"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
+              className=""
               priority
             />
           </div>
@@ -139,7 +125,7 @@ export default function AboutPage({ categories }: AboutPageProps) {
       <div className="container py-14 sm:py-20 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
         <div className="relative h-56 sm:h-72 lg:h-96 rounded-3xl overflow-hidden shadow-lg order-2 lg:order-1">
           <Image
-            src="/images/di2.jpg"
+            src="/images/abt.jpg"
             alt="Veterinary and farm equipment supplied by Doctor Dairy Tools"
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
@@ -157,15 +143,15 @@ export default function AboutPage({ categories }: AboutPageProps) {
           <p className="mt-4 text-sm sm:text-[15px] text-slate-600 leading-relaxed">
             Doctor Dairy Tools started with a simple goal: make it easy for
             farmers, veterinarians, and clinics across Bangladesh to find
-            genuine veterinary and dairy equipment without the guesswork.
-            From our base in Bogra, we source surgical instruments, AI
-            supplies, dairy machinery, poultry equipment, and lab items
-            directly from trusted manufacturers and deliver them nationwide.
+            genuine veterinary and dairy equipment without the guesswork. From
+            our base in Bogra, we source surgical instruments, AI supplies,
+            dairy machinery, poultry equipment, and lab items directly from
+            trusted manufacturers and deliver them nationwide.
           </p>
           <p className="mt-3 text-sm sm:text-[15px] text-slate-600 leading-relaxed">
-            Every product we list is chosen with one question in mind:
-            would we trust this on our own farm? That standard hasn&rsquo;t
-            changed as we&rsquo;ve grown.
+            Every product we list is chosen with one question in mind: would we
+            trust this on our own farm? That standard hasn&rsquo;t changed as
+            we&rsquo;ve grown.
           </p>
 
           <div className="mt-6 grid grid-cols-2 gap-4">
@@ -193,7 +179,7 @@ export default function AboutPage({ categories }: AboutPageProps) {
 
       {/* What We Offer */}
       {categories.length > 0 && (
-        <div className="bg-secoundary/[0.03] border-y border-slate-200">
+        <div className="bg-secoundary/3 border-y border-slate-200">
           <div className="container py-14 sm:py-20">
             <div className="text-center max-w-2xl mx-auto mb-10">
               <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-3">
@@ -204,24 +190,10 @@ export default function AboutPage({ categories }: AboutPageProps) {
               </h2>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {categories.map((category) => {
-                const Icon = getCategoryIcon(category.slug);
-                return (
-                  <Link
-                    key={category.id}
-                    href={`/category/${category.slug}`}
-                    className="a-card flex flex-col items-center text-center gap-3 py-6"
-                  >
-                    <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-700">
-                      <Icon size={22} aria-hidden="true" />
-                    </div>
-                    <span className="text-sm font-semibold text-foreground">
-                      {category.name}
-                    </span>
-                  </Link>
-                );
-              })}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {categories.map((category) => (
+                <CategoryCard key={category.id} category={category} />
+              ))}
             </div>
           </div>
         </div>
@@ -254,14 +226,20 @@ export default function AboutPage({ categories }: AboutPageProps) {
       </div>
 
       {/* Meet the Founder */}
-      <div className="bg-secoundary/[0.03] border-y border-slate-200">
+      <div className="bg-secoundary/3 border-y border-slate-200">
         <div className="container py-14 sm:py-20">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-3">
               Meet the Founder
             </p>
-            <div className="flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-700 text-2xl font-black mx-auto mb-4">
-              SR
+            <div className="relative w-32 h-32 rounded-full overflow-hidden mx-auto  ring-2 ring-emerald-100">
+              <Image
+                src="/images/sajizdr.jpg"
+                alt="Dr. Sajeeb Rana, Founder of Doctor Dairy Tools"
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
               Dr. Sajeeb Rana
@@ -272,8 +250,8 @@ export default function AboutPage({ categories }: AboutPageProps) {
             <p className="mt-4 text-sm sm:text-[15px] text-slate-600 leading-relaxed">
               A practicing veterinarian with a passion for supporting
               Bangladesh&rsquo;s farming community, Dr. Sajeeb Rana founded
-              Doctor Dairy Tools to make genuine veterinary and dairy
-              equipment accessible to farmers and clinics nationwide.
+              Doctor Dairy Tools to make genuine veterinary and dairy equipment
+              accessible to farmers and clinics nationwide.
             </p>
 
             <div className="flex items-center justify-center gap-3 mt-6">
@@ -292,7 +270,11 @@ export default function AboutPage({ categories }: AboutPageProps) {
                     aria-hidden="true"
                   >
                     {social.evenOdd ? (
-                      <path fillRule="evenodd" d={social.path} clipRule="evenodd" />
+                      <path
+                        fillRule="evenodd"
+                        d={social.path}
+                        clipRule="evenodd"
+                      />
                     ) : (
                       <path d={social.path} />
                     )}
@@ -315,8 +297,8 @@ export default function AboutPage({ categories }: AboutPageProps) {
               Ready to equip your farm or clinic?
             </h2>
             <p className="mt-3 text-sm sm:text-base text-slate-400 max-w-lg">
-              Explore our full catalog of veterinary and dairy farm products,
-              or reach out and our team will help you find what you need.
+              Explore our full catalog of veterinary and dairy farm products, or
+              reach out and our team will help you find what you need.
             </p>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -342,19 +324,27 @@ export default function AboutPage({ categories }: AboutPageProps) {
       <div className="container pb-14 sm:pb-20">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
           <div className="a-card p-5 flex items-start gap-3">
-            <MapPin size={18} className="text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
+            <MapPin
+              size={18}
+              className="text-emerald-600 shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
             <div>
               <p className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Visit Us
               </p>
               <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                প্রজাবাহীনী প্রেস লেন (অন্নপূর্ণা হোটেলের গলি), সাতমাথা,
-                বগুড়া সদর, Puran Bogra, Bangladesh, 5800
+                প্রজাবাহীনী প্রেস লেন (অন্নপূর্ণা হোটেলের গলি), সাতমাথা, বগুড়া
+                সদর, Puran Bogra, Bangladesh, 5800
               </p>
             </div>
           </div>
           <div className="a-card p-5 flex items-start gap-3">
-            <Phone size={18} className="text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
+            <Phone
+              size={18}
+              className="text-emerald-600 shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
             <div>
               <p className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Call Us
@@ -368,7 +358,11 @@ export default function AboutPage({ categories }: AboutPageProps) {
             </div>
           </div>
           <div className="a-card p-5 flex items-start gap-3">
-            <Users size={18} className="text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
+            <Users
+              size={18}
+              className="text-emerald-600 shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
             <div>
               <p className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Email Us
