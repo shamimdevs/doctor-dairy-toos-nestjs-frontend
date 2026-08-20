@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -22,7 +21,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
     >
       {/* ইমেজ কন্টেইনার — every breakpoint gets a fixed box, so the icon
           never changes the card's overall height */}
-      <div className="relative  w-28 h-28 mb-2 rounded-xl flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300 group-hover:scale-105">
+      <div className="relative  w-24 md:w-32 lg:w-36  h-28 mb-2 rounded-xl flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300 group-hover:scale-105">
         {isImageLoading && (
           <div className="absolute inset-0 bg-slate-100 animate-pulse rounded-xl" />
         )}
