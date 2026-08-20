@@ -126,8 +126,8 @@ async function fetchCategories(baseUrl: string) {
 }
 
 async function fetchProducts(baseUrl: string) {
-  const res = await fetch(`${baseUrl}/products?limit=200`, {
-    cache: "no-store",
+  const res = await fetch(`${baseUrl}/products?limit=300`, {
+    next: { revalidate: 20 },
   });
 
   if (!res.ok) {
