@@ -23,7 +23,7 @@ interface BlogDetailClientProps {
 
 const IMG_BASE = process.env.NEXT_PUBLIC_IMAGE_PATH || "";
 
-function blogImg(path?: string) {
+function blogImg(path?: string | null) {
   if (!path) return null;
   return path.startsWith("http") ? path : IMG_BASE + path;
 }
@@ -296,7 +296,7 @@ export default function BlogDetailClient({
                       (hasHTML ? (
                         <div
                           className="text-gray-600 leading-relaxed text-base blog-body"
-                          dangerouslySetInnerHTML={{ __html: processedBody }}
+                          dangerouslySetInnerHTML={{ __html: processedBody ?? "" }}
                         />
                       ) : (
                         section.body

@@ -3,7 +3,7 @@
 /* eslint-disable react-hooks/incompatible-library */
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Swal from "sweetalert2";
 import { Save, ArrowLeft } from "lucide-react";
@@ -47,10 +47,13 @@ const generateSlug = (text: string) => {
     .replace(/-+/g, "-");
 };
 
-const EditBlogPost = () => {
-  const params = useParams();
+interface EditBlogPostProps {
+  id: string;
+}
+
+const EditBlogPost: React.FC<EditBlogPostProps> = ({ id }) => {
   const router = useRouter();
-  const blogId = params?.id as string;
+  const blogId = id;
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 

@@ -343,7 +343,7 @@ const OrdersTab: React.FC = () => {
   const [filter, setFilter] = useState<string>("all");
   const { data, isLoading, refetch } = useGetMyOrdersQuery({});
 
-  const orders = data?.data || [];
+  const orders = Array.isArray(data) ? data : data?.data || [];
 
   // Fix: Use proper type assertion for filter
   const filteredOrders = orders.filter((order: any) =>
