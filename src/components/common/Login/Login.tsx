@@ -46,7 +46,7 @@ const Login = () => {
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
     try {
       const res = await login({
-        email: data.email.trim(),
+        email: data.email.trim().toLowerCase(),
         password: data.password.trim(),
       }).unwrap();
 
@@ -133,6 +133,9 @@ const Login = () => {
                       },
                     })}
                     autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     className="block w-full pl-10 pr-3 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="name@example.com"
                     disabled={isLoading}
