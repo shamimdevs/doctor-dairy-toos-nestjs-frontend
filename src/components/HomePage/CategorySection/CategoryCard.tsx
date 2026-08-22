@@ -17,18 +17,18 @@ export default function CategoryCard({ category }: CategoryCardProps) {
   return (
     <Link
       href={targetPath}
-      className="h-full w-full bg-white border border-slate-200 rounded-2xl p-1.5 flex flex-col items-center justify-start text-center transition-all ease-in-out  duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-emerald-200 group"
+      className="h-full w-full bg-white border border-slate-200 rounded-2xl  flex flex-col items-center justify-start text-center transition-all ease-in-out  duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-emerald-200 group"
     >
-      <div className="relative w-full aspect-8/3 mb-1.5 rounded-xl flex items-center justify-center overflow-hidden shrink-0 transition-all ease-in-out duration-300 group-hover:scale-105">
+      <div className="relative w-full aspect-4/3 mb-1.5 rounded-t-xl flex items-center justify-center overflow-hidden shrink-0 transition-all ease-in-out duration-300 group-hover:scale-105">
         {isImageLoading && (
-          <div className="absolute inset-0 bg-slate-100 animate-pulse rounded-xl" />
+          <div className="absolute inset-0 bg-slate-100 animate-pulse " />
         )}
         <Image
           src={category?.image || "/placeholder-category.png"}
           alt={category?.name || "Category"}
           fill
           sizes="(max-width: 640px) 56px, (max-width: 768px) 64px, (max-width: 1024px) 80px, 96px"
-          className={`object-contain p-1.5 sm:p-2 transition-all ease-in-out duration-300 ${
+          className={` transition-all ease-in-out duration-300 ${
             isImageLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"
           }`}
           onLoad={() => setIsImageLoading(false)}
