@@ -23,6 +23,7 @@ import {
   Building2,
   Weight,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -35,7 +36,17 @@ import { useCreateOrderMutation } from "@/src/redux/api/orderApi";
 import {
   BD_DISTRICTS,
   BD_DISTRICTS_UPAZILAS,
+  BD_PLACE_NAME_EN,
 } from "@/src/data/bangladeshDistricts";
+
+// Matches a place name against a search query in both Bangla and English
+const matchesPlaceSearch = (name: string, query: string) => {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  if (name.toLowerCase().includes(q)) return true;
+  const en = BD_PLACE_NAME_EN[name];
+  return en ? en.toLowerCase().includes(q) : false;
+};
 
 // Types
 interface CartItem {
@@ -168,6 +179,8 @@ export default function ProductCheckout() {
   // Custom District / Upazila Dropdown State
   const [isDistrictOpen, setIsDistrictOpen] = useState(false);
   const [isUpazilaOpen, setIsUpazilaOpen] = useState(false);
+  const [districtSearch, setDistrictSearch] = useState("");
+  const [upazilaSearch, setUpazilaSearch] = useState("");
   const districtRef = useRef<HTMLDivElement>(null);
   const upazilaRef = useRef<HTMLDivElement>(null);
 
@@ -179,12 +192,14 @@ export default function ProductCheckout() {
         !districtRef.current.contains(e.target as Node)
       ) {
         setIsDistrictOpen(false);
+        setDistrictSearch("");
       }
       if (
         upazilaRef.current &&
         !upazilaRef.current.contains(e.target as Node)
       ) {
         setIsUpazilaOpen(false);
+        setUpazilaSearch("");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -196,6 +211,7 @@ export default function ProductCheckout() {
     setFormData((prev) => ({ ...prev, district, upazila: "" }));
     setApiError(null);
     setIsDistrictOpen(false);
+    setDistrictSearch("");
   };
 
   // Upazila Selection Handler
@@ -203,12 +219,27 @@ export default function ProductCheckout() {
     setFormData((prev) => ({ ...prev, upazila }));
     setApiError(null);
     setIsUpazilaOpen(false);
+    setUpazilaSearch("");
   };
 
   // Upazila options for the currently selected district
   const upazilaOptions = useMemo(() => {
     return BD_DISTRICTS_UPAZILAS[formData.district] || [];
   }, [formData.district]);
+
+  // District list filtered by search query (matches Bangla or English)
+  const filteredDistricts = useMemo(() => {
+    return BD_DISTRICTS.filter((district) =>
+      matchesPlaceSearch(district, districtSearch)
+    );
+  }, [districtSearch]);
+
+  // Upazila list filtered by search query (matches Bangla or English)
+  const filteredUpazilas = useMemo(() => {
+    return upazilaOptions.filter((upazila) =>
+      matchesPlaceSearch(upazila, upazilaSearch)
+    );
+  }, [upazilaOptions, upazilaSearch]);
 
   // Quantity Update Handler
   const handleUpdateQuantity = (item: CartItem, newQuantity: number) => {
@@ -501,21 +532,47 @@ export default function ProductCheckout() {
                       </button>
 
                       {isDistrictOpen && (
-                        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-52 overflow-y-auto">
-                          {BD_DISTRICTS.map((district) => (
-                            <button
-                              type="button"
-                              key={district}
-                              onClick={() => handleSelectDistrict(district)}
-                              className={`w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 transition-colors ${
-                                formData.district === district
-                                  ? "bg-emerald-50 text-emerald-700 font-semibold"
-                                  : "text-slate-700"
-                              }`}
-                            >
-                              {district}
-                            </button>
-                          ))}
+                        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+                          <div className="p-2 border-b border-slate-100 sticky top-0 bg-white">
+                            <div className="relative">
+                              <Search
+                                size={14}
+                                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                              />
+                              <input
+                                type="text"
+                                autoFocus
+                                value={districtSearch}
+                                onChange={(e) =>
+                                  setDistrictSearch(e.target.value)
+                                }
+                                placeholder="জেলা খুঁজুন... (District)"
+                                className="w-full pl-8 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                              />
+                            </div>
+                          </div>
+                          <div className="max-h-44 overflow-y-auto">
+                            {filteredDistricts.length > 0 ? (
+                              filteredDistricts.map((district) => (
+                                <button
+                                  type="button"
+                                  key={district}
+                                  onClick={() => handleSelectDistrict(district)}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 transition-colors ${
+                                    formData.district === district
+                                      ? "bg-emerald-50 text-emerald-700 font-semibold"
+                                      : "text-slate-700"
+                                  }`}
+                                >
+                                  {district}
+                                </button>
+                              ))
+                            ) : (
+                              <p className="px-4 py-3 text-sm text-slate-400 text-center">
+                                কোনো জেলা পাওয়া যায়নি
+                              </p>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -560,21 +617,47 @@ export default function ProductCheckout() {
                       </button>
 
                       {isUpazilaOpen && (
-                        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-52 overflow-y-auto">
-                          {upazilaOptions.map((upazila) => (
-                            <button
-                              type="button"
-                              key={upazila}
-                              onClick={() => handleSelectUpazila(upazila)}
-                              className={`w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 transition-colors ${
-                                formData.upazila === upazila
-                                  ? "bg-emerald-50 text-emerald-700 font-semibold"
-                                  : "text-slate-700"
-                              }`}
-                            >
-                              {upazila}
-                            </button>
-                          ))}
+                        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+                          <div className="p-2 border-b border-slate-100 sticky top-0 bg-white">
+                            <div className="relative">
+                              <Search
+                                size={14}
+                                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                              />
+                              <input
+                                type="text"
+                                autoFocus
+                                value={upazilaSearch}
+                                onChange={(e) =>
+                                  setUpazilaSearch(e.target.value)
+                                }
+                                placeholder="উপজেলা খুঁজুন... (Upazila)"
+                                className="w-full pl-8 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                              />
+                            </div>
+                          </div>
+                          <div className="max-h-44 overflow-y-auto">
+                            {filteredUpazilas.length > 0 ? (
+                              filteredUpazilas.map((upazila) => (
+                                <button
+                                  type="button"
+                                  key={upazila}
+                                  onClick={() => handleSelectUpazila(upazila)}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 transition-colors ${
+                                    formData.upazila === upazila
+                                      ? "bg-emerald-50 text-emerald-700 font-semibold"
+                                      : "text-slate-700"
+                                  }`}
+                                >
+                                  {upazila}
+                                </button>
+                              ))
+                            ) : (
+                              <p className="px-4 py-3 text-sm text-slate-400 text-center">
+                                কোনো উপজেলা পাওয়া যায়নি
+                              </p>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>

@@ -240,7 +240,7 @@ export default function CartSidebar() {
             }`}
           >
             {cartItems && cartItems.length > 0
-              ? `চেকআউট করুন (${totalQuantity}টি আইটেম)`
+              ? `অর্ডার করুন (${totalQuantity}টি আইটেম)`
               : "কার্ট খালি"}
           </Link>
 

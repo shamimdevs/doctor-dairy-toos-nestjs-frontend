@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { InputHTMLAttributes } from "react";
 import type { FieldErrors, UseFormRegisterReturn } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -11,6 +12,8 @@ interface InputProps {
   errors?: FieldErrors;
   required?: boolean;
   readOnly?: boolean; // ✅ added
+  step?: string | number;
+  inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
 }
 
 const Input = ({
@@ -22,6 +25,8 @@ const Input = ({
   errors,
   required = true,
   readOnly = false, // ✅ default false
+  step,
+  inputMode,
 }: InputProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -43,6 +48,8 @@ const Input = ({
           placeholder={placeholder}
           autoComplete="off"
           readOnly={readOnly} // ✅ applied
+          step={type === "number" ? (step ?? "any") : undefined}
+          inputMode={inputMode}
           {...register}
           className={`w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-1 focus:ring-blue-400 ${"bg-white border-gray-300 text-gray-900"} ${readOnly ? "opacity-70 cursor-not-allowed" : ""}`} // ✅ UI feedback
         />

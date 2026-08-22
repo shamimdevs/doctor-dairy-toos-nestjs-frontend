@@ -374,6 +374,7 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
             label="Stock Quantity"
             text="stock"
             type="number"
+            step={1}
             register={register("stock", {
               setValueAs: (v) => safeNumber(v, 0),
               min: { value: 0, message: "Stock must be >= 0" },
@@ -382,16 +383,27 @@ const EditProducts: React.FC<EditProductsProps> = ({ id }) => {
           />
 
           {/* Weight */}
-          <Input
-            label="Weight (kg)"
-            text="weight"
-            type="number"
-            register={register("weight", {
-              setValueAs: (v) => safeNumber(v, 0),
-              min: { value: 0, message: "Weight must be >= 0" },
-            })}
-            errors={errors}
-          />
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Weight (kg)
+            </label>
+            <input
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="e.g. 0.5"
+              className="w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white border-gray-300 text-gray-900"
+              {...register("weight", {
+                setValueAs: (v) => safeNumber(v, 0),
+                min: { value: 0, message: "Weight must be >= 0" },
+              })}
+            />
+            {errors?.weight && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.weight.message as string}
+              </p>
+            )}
+          </div>
 
           {/* Display Position */}
           <Input
