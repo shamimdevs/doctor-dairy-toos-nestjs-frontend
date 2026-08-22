@@ -96,7 +96,7 @@ export default function Navbar() {
         <div
           className={`w-full bg-slate-900 text-slate-200 overflow-hidden transition-all duration-300 ease-in-out ${
             isTopBarVisible
-              ? "max-h-10 opacity-100"
+              ? "max-h-16 opacity-100"
               : "max-h-0 opacity-0 pointer-events-none"
           }`}
         >
@@ -111,7 +111,7 @@ export default function Navbar() {
                 />
                 <a
                   href="tel:+8801797980777"
-                  className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline whitespace-nowrap"
+                  className="hover:text-emerald-400 text-base transition-colors focus:outline-none focus:underline whitespace-nowrap"
                 >
                   +880 1797-980777
                 </a>
@@ -124,7 +124,7 @@ export default function Navbar() {
                 />
                 <a
                   href="mailto:doctordairytoolsbd@gmail.com"
-                  className="hover:text-emerald-400 transition-colors focus:outline-none focus:underline whitespace-nowrap"
+                  className="hover:text-emerald-400 text-sm transition-colors focus:outline-none focus:underline whitespace-nowrap"
                 >
                   doctordairytoolsbd@gmail.com
                 </a>
@@ -137,11 +137,11 @@ export default function Navbar() {
                 href="https://www.facebook.com/doctordairytools"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#1877F2] hover:scale-110 transition-transform duration-200 p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="text-white inline-flex items-center justify-center hover:scale-110 transition-transform duration-200 p-1.5 bg-[#1877F2] rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 aria-label="Visit Doctor Dairy Tools on Facebook"
               >
                 <svg
-                  className="w-3.5 h-3.5 fill-current"
+                  className="w-5 h-5 fill-current"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
@@ -153,11 +153,11 @@ export default function Navbar() {
                 href="https://www.linkedin.com/in/dr-sajeeb-rana-064045423/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#0A66C2] hover:scale-110 transition-transform duration-200 p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="text-white inline-flex items-center justify-center hover:scale-110 transition-transform duration-200 p-1.5 bg-[#0A66C2] rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 aria-label="Visit Doctor Dairy Tools on LinkedIn"
               >
                 <svg
-                  className="w-3.5 h-3.5 fill-current"
+                  className="w-5 h-5 mt-0.5 fill-current"
                   viewBox="0 0 22 30"
                   aria-hidden="true"
                 >
@@ -173,11 +173,11 @@ export default function Navbar() {
                 href="https://www.youtube.com/@vetcare2019"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#FF0000] hover:scale-110 transition-transform duration-200 p-1.5 bg-slate-800 rounded-full border border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="text-white inline-flex items-center justify-center hover:scale-110 transition-transform duration-200 p-1.5 bg-[#FF0000] rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 aria-label="Visit Doctor Dairy Tools on YouTube"
               >
                 <svg
-                  className="w-3.5 h-3.5 fill-current"
+                  className="w-5 h-5 fill-current"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
@@ -192,14 +192,15 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-base sm:text-2xl font-black tracking-tight text-slate-900 rounded p-1 shrink-0 select-none"
+            className="flex flex-col leading-tight rounded p-1 shrink-0 select-none"
           >
-            <span className="text-emerald-700 flex items-center">
+            <span className="flex items-center text-xl sm:text-2xl font-black tracking-tight text-emerald-700">
               Doctor
-              <span className="text-amber-500 flex items-center mx-1">
-                Dairy
-              </span>
+              <span className="text-amber-500 mx-1">Dairy</span>
               Tools
+            </span>
+            <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Total Livestock Solutions
             </span>
           </Link>
 

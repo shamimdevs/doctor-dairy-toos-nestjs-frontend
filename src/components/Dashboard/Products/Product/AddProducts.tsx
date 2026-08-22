@@ -37,6 +37,13 @@ interface AddProductFormValues {
   meta_description?: string;
 }
 
+// Safely converts a raw input value (e.g. ".1", "2.3", "") to a number
+const safeNumber = (val: unknown, fallback?: number): number | undefined => {
+  if (val === "" || val === undefined || val === null) return fallback;
+  const num = Number(val);
+  return Number.isNaN(num) ? fallback : num;
+};
+
 // Supports English + Bangla
 const generateSlug = (text: string) => {
   return text
@@ -268,10 +275,11 @@ const AddProducts = () => {
           <Input
             label="Original Price "
             text="price"
-            type="number"
+            type="text"
+            inputMode="decimal"
             register={register("price", {
               required: "Price is required",
-              valueAsNumber: true,
+              setValueAs: (v) => safeNumber(v),
               min: { value: 0, message: "Price must be >= 0" },
             })}
             errors={errors}
@@ -281,9 +289,10 @@ const AddProducts = () => {
           <Input
             label="Discount Price "
             text="discount_price"
-            type="number"
+            type="text"
+            inputMode="decimal"
             register={register("discount_price", {
-              valueAsNumber: true,
+              setValueAs: (v) => safeNumber(v),
               min: { value: 0, message: "Discount must be >= 0" },
             })}
             errors={errors}
@@ -303,25 +312,37 @@ const AddProducts = () => {
           <Input
             label="Stock Quantity"
             text="stock"
-            type="number"
+            type="text"
+            inputMode="decimal"
             register={register("stock", {
-              valueAsNumber: true,
+              setValueAs: (v) => safeNumber(v),
               min: { value: 0, message: "Stock must be >= 0" },
             })}
             errors={errors}
           />
 
           {/* Weight */}
-          <Input
-            label="Weight (kg)"
-            text="weight"
-            type="number"
-            register={register("weight", {
-              valueAsNumber: true,
-              min: { value: 0, message: "Weight must be >= 0" },
-            })}
-            errors={errors}
-          />
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Weight (kg)
+            </label>
+            <input
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="e.g. 0.5"
+              className="w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white border-gray-300 text-gray-900"
+              {...register("weight", {
+                setValueAs: (v) => safeNumber(v),
+                min: { value: 0, message: "Weight must be >= 0" },
+              })}
+            />
+            {errors?.weight && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.weight.message as string}
+              </p>
+            )}
+          </div>
 
           {/* Display Position */}
           <Input
