@@ -398,7 +398,7 @@ export default function Navbar() {
               className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
             >
               <Download size={16} className="text-emerald-600 shrink-0" />
-              Download File
+              Download Catalogue
             </button>
 
             {/* Product Categories Dropdown */}
