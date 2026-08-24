@@ -23,6 +23,9 @@ async function getCategories(baseUrl: string): Promise<ProductCategory[]> {
 export default async function AllCategoriesPage() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   const categories = baseUrl ? await getCategories(baseUrl) : [];
+  const sortedCategories = [...categories].sort(
+    (a, b) => a.position - b.position
+  );
 
   return (
     <section className="container py-6 sm:py-16">
@@ -31,7 +34,7 @@ export default async function AllCategoriesPage() {
       </h1>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-        {categories?.map((category) => (
+        {sortedCategories?.map((category) => (
           <CategoryCard key={category.id} category={category} />
         ))}
       </div>
