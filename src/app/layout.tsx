@@ -27,27 +27,26 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://doctordairytools.com"),
 
   title: {
-    default: "Doctor Dairy Tools | Dairy Farm Management Software",
+    default: "Doctor Dairy Tools | Dairy Farm Equipment E-commerce Store",
     template: "%s | Doctor Dairy Tools",
   },
 
   description:
-    "Doctor Dairy Tools is a complete dairy farm management platform that helps farmers manage cattle, milk production, breeding, health records, vaccination, finance, inventory, and farm operations efficiently.",
+    "Doctor Dairy Tools is an online e-commerce store for premium dairy farm equipment and veterinary tools. Shop and order cattle care, milking, breeding, and farm supplies online with delivery across Bangladesh.",
 
   keywords: [
     "Doctor Dairy Tools",
-    "Dairy Farm Management Software",
-    "Dairy ERP",
-    "Livestock Management",
-    "Cow Management",
-    "Milk Production Software",
-    "Farm Management System",
-    "Veterinary Management",
-    "Cattle Health Tracking",
-    "Breeding Management",
-    "Vaccination Records",
-    "Bangladesh Dairy Software",
-    "Livestock ERP",
+    "Dairy Farm Equipment Online",
+    "Dairy Tools E-commerce",
+    "Veterinary Tools Shop",
+    "Cattle Care Products",
+    "Milking Equipment",
+    "Dairy Farm Supplies",
+    "Livestock Equipment Store",
+    "Online Dairy Shop Bangladesh",
+    "Breeding Equipment",
+    "Farm Equipment Marketplace",
+    "Buy Dairy Tools Online",
   ],
 
   authors: [
@@ -59,7 +58,7 @@ export const metadata: Metadata = {
   creator: "Doctor Dairy Tools",
   publisher: "Doctor Dairy Tools",
   applicationName: "Doctor Dairy Tools",
-  category: "Agriculture",
+  category: "E-commerce",
 
   robots: {
     index: true,
@@ -78,9 +77,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Doctor Dairy Tools | Dairy Farm Management Software",
+    title: "Doctor Dairy Tools | Dairy Farm Equipment E-commerce Store",
     description:
-      "Manage cattle, milk production, breeding, health records, vaccination, finance, inventory, and dairy farm operations from one powerful platform.",
+      "Shop premium dairy farm equipment and veterinary tools online — milking gear, cattle care, breeding, and farm supplies delivered across Bangladesh.",
     url: "https://doctordairytools.com",
     siteName: "Doctor Dairy Tools",
     locale: "en_US",
@@ -97,9 +96,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Doctor Dairy Tools | Dairy Farm Management Software",
+    title: "Doctor Dairy Tools | Dairy Farm Equipment E-commerce Store",
     description:
-      "Complete dairy farm management software for modern dairy farms.",
+      "Shop premium dairy farm equipment and veterinary tools online, delivered across Bangladesh.",
     images: ["/og-image.jpg"],
   },
 
