@@ -33,9 +33,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   // ✅ Get weight from product
   const productWeight = product?.weight;
 
-  const stock = typeof product?.stock === "number" ? product.stock : 99;
-  const isOutOfStock = stock <= 0;
-  const maxQty = Math.max(0, Math.min(99, stock));
+  const maxQty = 99;
 
   const getCartItemQuantity = () => {
     const existingItem = cartItems.find((item: any) => item.id === product.id);
@@ -198,7 +196,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           </div>
           <span className="text-xs text-gray-500">Already in cart</span>
         </div>
-      ) : !isOutOfStock ? (
+      ) : (
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
             <button
@@ -220,18 +218,10 @@ export function ProductActions({ product }: ProductActionsProps) {
             </button>
           </div>
         </div>
-      ) : null}
+      )}
 
       <div className="flex flex-wrap gap-3">
-        {isOutOfStock ? (
-          <button
-            type="button"
-            disabled
-            className="flex-1 px-6 py-3 rounded-xl font-bold tracking-wide flex items-center justify-center gap-2 bg-gray-200 text-gray-500 cursor-not-allowed"
-          >
-            Out of Stock
-          </button>
-        ) : isInCart ? (
+        {isInCart ? (
           <button
             onClick={handleAddToCart}
             disabled={isAdding}

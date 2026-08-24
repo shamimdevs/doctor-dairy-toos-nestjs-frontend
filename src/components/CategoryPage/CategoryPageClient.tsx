@@ -28,11 +28,11 @@ interface FilterState {
 }
 
 const SORT_OPTIONS = [
+  { value: "popular", label: "Popularity" },
   { value: "newest", label: "Newest First" },
   { value: "price-low", label: "Price: Low to High" },
   { value: "price-high", label: "Price: High to Low" },
   { value: "discount", label: "Biggest Discount" },
-  { value: "popular", label: "Popularity" },
 ];
 
 export default function CategoryPageClient({
@@ -47,7 +47,7 @@ export default function CategoryPageClient({
     categories: initialCategory.slug
       ? [initialCategory.slug.toLowerCase()]
       : [],
-    sortBy: "newest",
+    sortBy: "popular",
   });
 
   // Next.js reuses this component instance when navigating between
@@ -62,7 +62,7 @@ export default function CategoryPageClient({
       categories: initialCategory.slug
         ? [initialCategory.slug.toLowerCase()]
         : [],
-      sortBy: "newest",
+      sortBy: "popular",
     });
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [initialCategory.slug]);
@@ -92,7 +92,7 @@ export default function CategoryPageClient({
 
   const currentSortLabel =
     SORT_OPTIONS.find((option) => option.value === filters.sortBy)?.label ||
-    "Newest First";
+    "popular";
 
   // Only a single selected category can be pushed down to the backend as
   // `category_id` (the API has no multi-id filter). With zero or several
@@ -217,6 +217,11 @@ export default function CategoryPageClient({
     }
 
     switch (filters.sortBy) {
+      case "popular":
+        filtered = [...filtered].sort(
+          (a, b) => (a.position ?? 0) - (b.position ?? 0),
+        );
+        break;
       case "newest":
         filtered = [...filtered].sort(
           (a, b) =>
@@ -238,12 +243,7 @@ export default function CategoryPageClient({
           (a, b) => getProductDiscount(b) - getProductDiscount(a),
         );
         break;
-      case "popular":
-        filtered = [...filtered].sort(
-          (a, b) =>
-            ((b as any).reviewsCount || 0) - ((a as any).reviewsCount || 0),
-        );
-        break;
+
       default:
         break;
     }
@@ -256,7 +256,7 @@ export default function CategoryPageClient({
       price: null,
       discount: null,
       categories: [],
-      sortBy: "newest",
+      sortBy: "popular",
     });
   }, []);
 

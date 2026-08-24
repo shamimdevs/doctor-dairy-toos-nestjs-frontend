@@ -39,6 +39,7 @@ export interface Product {
   specifications?: ProductSpecification[];
   rating_avg?: number | null; // Average rating out of 5
   reviews_count?: number;
+  position?: number;
   manufacturer?: string;
   is_prescription_required: boolean;
   is_active: boolean;
