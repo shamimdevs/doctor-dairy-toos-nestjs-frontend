@@ -4,8 +4,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { Share2, ShoppingBag, Minus, Plus, Check } from "lucide-react";
+import { Share2, ShoppingBag, Minus, Plus, Check, Zap } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ADD_TO_CART, REMOVE_FROM_CART } from "@/src/redux/features/cartSlice";
@@ -16,11 +17,13 @@ interface ProductActionsProps {
 
 export function ProductActions({ product }: ProductActionsProps) {
   const dispatch = useDispatch();
+  const router = useRouter();
   const cartItems = useSelector((state: any) => state?.cart?.cartItems || []);
 
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
 
   // Direct product pricing
   const currentPrice = product?.price || 0;
@@ -53,24 +56,26 @@ export function ProductActions({ product }: ProductActionsProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems]);
 
+  const buildCartItem = () => ({
+    id: product.id,
+    productId: product.id,
+    name: product.name,
+    price: currentPrice,
+    quantity: quantity,
+    packSizeId: product.id,
+    packSizeLabel: "Default",
+    image: product.thumbnail,
+    maxQuantity: maxQty,
+    weight: productWeight, // ✅ Use product weight
+    discount: discountPercentage,
+    originalPrice: originalPrice,
+    sku: product.slug || "",
+  });
+
   const handleAddToCart = () => {
     setIsAdding(true);
 
-    const cartItem = {
-      id: product.id,
-      productId: product.id,
-      name: product.name,
-      price: currentPrice,
-      quantity: quantity,
-      packSizeId: product.id,
-      packSizeLabel: "Default",
-      image: product.thumbnail,
-      maxQuantity: maxQty,
-      weight: productWeight, // ✅ Use product weight
-      discount: discountPercentage,
-      originalPrice: originalPrice,
-      sku: product.slug || "",
-    };
+    const cartItem = buildCartItem();
 
     dispatch(ADD_TO_CART(cartItem));
 
@@ -133,6 +138,12 @@ export function ProductActions({ product }: ProductActionsProps) {
 
     setIsRemoving(false);
     setQuantity(1);
+  };
+
+  const handleBuyNow = () => {
+    setIsBuyingNow(true);
+    dispatch(ADD_TO_CART(buildCartItem()));
+    router.push("/checkout");
   };
 
   const handleShare = () => {
@@ -225,7 +236,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className="flex-1 px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+            className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
           >
             {isAdding ? (
               <>
@@ -243,7 +254,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className="flex-1 px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+            className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
           >
             {isAdding ? (
               <>
@@ -258,6 +269,24 @@ export function ProductActions({ product }: ProductActionsProps) {
             )}
           </button>
         )}
+
+        <button
+          onClick={handleBuyNow}
+          disabled={isBuyingNow}
+          className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+        >
+          {isBuyingNow ? (
+            <>
+              <span className="animate-spin">⟳</span>
+              Processing...
+            </>
+          ) : (
+            <>
+              <Zap size={18} />
+              Buy Now
+            </>
+          )}
+        </button>
 
         <button
           onClick={handleShare}
