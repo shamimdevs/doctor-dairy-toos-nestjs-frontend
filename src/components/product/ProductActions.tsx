@@ -236,7 +236,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+            className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
           >
             {isAdding ? (
               <>
@@ -254,7 +254,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+            className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2  bg-amber-600 text-white hover:bg-amber-700 shadow-lg shadow-amber-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
           >
             {isAdding ? (
               <>
@@ -273,7 +273,7 @@ export function ProductActions({ product }: ProductActionsProps) {
         <button
           onClick={handleBuyNow}
           disabled={isBuyingNow}
-          className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+          className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
         >
           {isBuyingNow ? (
             <>
