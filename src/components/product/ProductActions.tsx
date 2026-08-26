@@ -231,70 +231,82 @@ export function ProductActions({ product }: ProductActionsProps) {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3">
-        {isInCart ? (
-          <button
-            onClick={handleAddToCart}
-            disabled={isAdding}
-            className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
-          >
-            {isAdding ? (
-              <>
-                <span className="animate-spin">⟳</span>
-                Adding...
-              </>
-            ) : (
-              <>
-                <Plus size={18} />
-                Add More
-              </>
-            )}
-          </button>
-        ) : (
-          <button
-            onClick={handleAddToCart}
-            disabled={isAdding}
-            className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2  bg-amber-600 text-white hover:bg-amber-700 shadow-lg shadow-amber-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
-          >
-            {isAdding ? (
-              <>
-                <span className="animate-spin">⟳</span>
-                Adding...
-              </>
-            ) : (
-              <>
-                <ShoppingBag size={18} />
-                Add to Cart
-              </>
-            )}
-          </button>
-        )}
-
-        <button
-          onClick={handleBuyNow}
-          disabled={isBuyingNow}
-          className="flex-1 cursor-pointer px-6 py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
-        >
-          {isBuyingNow ? (
-            <>
-              <span className="animate-spin">⟳</span>
-              Processing...
-            </>
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+        <div className="flex gap-3">
+          {isInCart ? (
+            <button
+              onClick={handleAddToCart}
+              disabled={isAdding}
+              className="flex-1 sm:min-w-35 cursor-pointer px-6 py-3.5 sm:py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+            >
+              {isAdding ? (
+                <>
+                  <span className="animate-spin">⟳</span>
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus size={18} />
+                  <span className="whitespace-nowrap">Add More</span>
+                </>
+              )}
+            </button>
           ) : (
-            <>
-              <Zap size={18} />
-              Buy Now
-            </>
+            <button
+              onClick={handleAddToCart}
+              disabled={isAdding}
+              className="flex-1 sm:min-w-35 cursor-pointer px-6 py-3.5 sm:py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-amber-600 text-white hover:bg-amber-700 shadow-lg shadow-amber-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+            >
+              {isAdding ? (
+                <>
+                  <span className="animate-spin">⟳</span>
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <ShoppingBag size={18} />
+                  <span className="whitespace-nowrap">Add to Cart</span>
+                </>
+              )}
+            </button>
           )}
-        </button>
 
-        <button
-          onClick={handleShare}
-          className="p-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all"
-          aria-label="Share product"
-        >
-          <Share2 size={20} className="text-gray-600" />
-        </button>
+          <button
+            onClick={handleShare}
+            className="shrink-0 p-3.5 sm:p-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all sm:hidden"
+            aria-label="Share product"
+          >
+            <Share2 size={20} className="text-gray-600" />
+          </button>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleBuyNow}
+            disabled={isBuyingNow}
+            className="flex-1 sm:min-w-35 cursor-pointer px-6 py-3.5 sm:py-3 rounded-xl font-bold tracking-wide transition-all flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/10 active:scale-[0.99] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+          >
+            {isBuyingNow ? (
+              <>
+                <span className="animate-spin">⟳</span>
+                Processing...
+              </>
+            ) : (
+              <>
+                <Zap size={18} />
+                <span className="whitespace-nowrap">Buy Now</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="hidden sm:flex shrink-0 p-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all items-center justify-center"
+            aria-label="Share product"
+          >
+            <Share2 size={20} className="text-gray-600" />
+          </button>
+        </div>
       </div>
     </div>
   );
