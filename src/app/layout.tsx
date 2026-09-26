@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
+
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+
 import "./globals.css";
+
 import Script from "next/script";
+
 import Providers from "../lib/providers/Providers";
+
 import ToastProvider from "../components/ToastProvider/ToastProvider";
 
 const inter = Inter({
@@ -25,6 +30,10 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://doctordairytools.com"),
+
+  verification: {
+    google: "D8GPSe8nmjHifHkpeD_zY3z_e5DjmS0xlFSPE3W59MA",
+  },
 
   title: {
     default: "Doctor Dairy Tools | Dairy Farm Equipment E-commerce Store",
@@ -92,12 +101,16 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: "Doctor Dairy Tools | Dairy Farm Equipment E-commerce Store",
+
     description:
       "Shop premium dairy farm equipment and veterinary tools online — milking gear, cattle care, breeding, and farm supplies delivered across Bangladesh.",
+
     url: "https://doctordairytools.com",
+
     siteName: "Doctor Dairy Tools",
     locale: "en_US",
     type: "website",
+
     images: [
       {
         url: "/og-image.jpg",
@@ -110,9 +123,12 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
+
     title: "Doctor Dairy Tools | Dairy Farm Equipment E-commerce Store",
+
     description:
       "Shop premium dairy farm equipment and veterinary tools online, delivered across Bangladesh.",
+
     images: ["/og-image.jpg"],
   },
 
@@ -144,11 +160,17 @@ export default function RootLayout({
           src="https://www.googletagmanager.com/gtag/js?id=G-242fdsf2"
           strategy="afterInteractive"
         />
+
         <Script id="ga4-init" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
+
+            function gtag(){
+              dataLayer.push(arguments);
+            }
+
             gtag('js', new Date());
+
             gtag('config', 'G-242fdsf2', {
               page_path: window.location.pathname,
             });
