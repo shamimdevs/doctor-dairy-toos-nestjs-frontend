@@ -152,7 +152,6 @@ export default function RootLayout({
           {children}
           <ToastProvider />
         </Providers>
-        <GoogleAnalytics gaId="G-XYZ" />
 
         {/* Google Analytics Setup */}
         <GoogleAnalytics gaId="G-HX5FMSMERQ" />
