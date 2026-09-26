@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
-
-import Script from "next/script";
 
 import Providers from "../lib/providers/Providers";
 
@@ -154,28 +152,30 @@ export default function RootLayout({
           {children}
           <ToastProvider />
         </Providers>
+        <GoogleAnalytics gaId="G-XYZ" />
 
         {/* Google Analytics Setup */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-242fdsf2"
+        <GoogleAnalytics gaId="G-HX5FMSMERQ" />
+        {/* <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-HX5FMSMERQ"
           strategy="afterInteractive"
         />
 
         <Script id="ga4-init" strategy="afterInteractive">
           {`
-            window.dataLayer = window.dataLayer || [];
+        window.dataLayer = window.dataLayer || [];
 
-            function gtag(){
-              dataLayer.push(arguments);
-            }
+        function gtag() {
+          dataLayer.push(arguments);
+        }
 
-            gtag('js', new Date());
+        gtag('js', new Date());
 
-            gtag('config', 'G-242fdsf2', {
-              page_path: window.location.pathname,
-            });
-          `}
-        </Script>
+        gtag('config', 'G-HX5FMSMERQ', {
+          page_path: window.location.pathname,
+        });
+      `}
+        </Script> */}
       </body>
     </html>
   );
