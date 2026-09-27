@@ -21,8 +21,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   // Image handling
   const image = product.thumbnail || "/placeholder.png";
 
-  console.log(product, "product");
-
   // Price handling - using API fields directly
   const currentPrice = product?.price;
   const originalPrice = product.original_price || product.price;
@@ -91,7 +89,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       }),
     );
 
-    toast.info(`🛒 Removed 1 ${product.name} from cart`, {
+    toast.info(` Removed 1 ${product.name} from cart`, {
       position: "bottom-right",
       autoClose: 2000,
       hideProgressBar: false,

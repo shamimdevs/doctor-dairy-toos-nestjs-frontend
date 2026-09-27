@@ -1,4 +1,5 @@
-// types/product.ts
+// src/types/product.ts
+
 export interface PackSize {
   id: string;
   label: string;
@@ -10,7 +11,6 @@ export interface PackSize {
   inStock?: boolean;
 }
 
-// types/product.ts
 export interface ProductVariant {
   id: string;
   strength: string;
@@ -29,51 +29,88 @@ export interface ProductSpecification {
   value: string;
 }
 
-export interface Product {
+export interface ProductCategory {
   id: string;
   name: string;
   slug: string;
+}
+
+export interface ProductBrand {
+  id: string;
+  name: string;
+}
+
+export interface ProductAddedBy {
+  id: string;
+  name?: string;
+  email?: string;
+  role?: string;
+}
+
+export interface Product {
+  // Basic information
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+
+  // Pricing
+  price: number;
+  original_price?: number;
+  discount_price?: number;
+
+  // Inventory
+  stock?: number;
+  weight?: number;
+
+  // Images
   thumbnail?: string;
-  images?: string[]; // Additional gallery images (up to 5)
-  description?: string;
-  specifications?: ProductSpecification[];
-  rating_avg?: number | null; // Average rating out of 5
-  reviews_count?: number;
-  position?: number;
-  manufacturer?: string;
-  is_prescription_required: boolean;
+  images?: string[];
+
+  // Status
   is_active: boolean;
-  price: number; // Regular price
-  original_price: number; // Regular price
-  discount_price?: number; // Discounted price (optional)
-  stock: number; // Stock quantity
-  weight?: number; // Product weight
-  category?: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-  brand?: {
-    id: string;
-    name: string;
-  };
-  addedBy?: {
-    id: string;
-    name: string;
-    email: string;
-    role?: string;
-  };
+
+  // Description
+  description?: string;
+
+  // Specifications
+  specifications?: ProductSpecification[];
+
+  // Reviews
+  rating_avg?: number | null;
+  reviews_count?: number;
+
+  // Display
+  position?: number;
+
+  // Optional product information
+  manufacturer?: string;
+  is_prescription_required?: boolean;
+
+  // Relations
+  category?: ProductCategory;
+  brand?: ProductBrand;
+  addedBy?: ProductAddedBy;
+
+  // SEO
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;
+
+  // Dates
   created_at: string;
   updated_at: string;
-  // Optional: If you still need these for some cases
+
+  // Optional variants
   variants?: ProductVariant[];
+
+  // Optional price range
   price_range?: {
     min: number;
     max: number;
   };
+
+  // Optional discount range
   discount_range?: {
     min: number;
     max: number;
