@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
-  Sparkles,
   ShoppingCart,
 } from "lucide-react";
 import Link from "next/link";

@@ -155,26 +155,6 @@ export default function RootLayout({
 
         {/* Google Analytics Setup */}
         <GoogleAnalytics gaId="G-HX5FMSMERQ" />
-        {/* <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-HX5FMSMERQ"
-          strategy="afterInteractive"
-        />
-
-        <Script id="ga4-init" strategy="afterInteractive">
-          {`
-        window.dataLayer = window.dataLayer || [];
-
-        function gtag() {
-          dataLayer.push(arguments);
-        }
-
-        gtag('js', new Date());
-
-        gtag('config', 'G-HX5FMSMERQ', {
-          page_path: window.location.pathname,
-        });
-      `}
-        </Script> */}
       </body>
     </html>
   );
