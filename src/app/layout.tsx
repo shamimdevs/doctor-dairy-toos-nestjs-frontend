@@ -111,7 +111,7 @@ export const metadata: Metadata = {
 
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/images/sajib.jpg",
         width: 1200,
         height: 630,
         alt: "Doctor Dairy Tools",
@@ -127,7 +127,7 @@ export const metadata: Metadata = {
     description:
       "Shop premium dairy farm equipment and veterinary tools online, delivered across Bangladesh.",
 
-    images: ["/og-image.jpg"],
+    images: ["/images/abt.jpg"],
   },
 
   icons: {
