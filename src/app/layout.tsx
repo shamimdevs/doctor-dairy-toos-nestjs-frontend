@@ -5,7 +5,6 @@ import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 import Providers from "../lib/providers/Providers";
-
 import ToastProvider from "../components/ToastProvider/ToastProvider";
 
 const inter = Inter({
@@ -71,11 +70,8 @@ export const metadata: Metadata = {
   ],
 
   authors: [
-    {
-      name: "Doctor Dairy Tools",
-    },
+    { name: "Doctor Dairy Tools", url: "https://doctordairytools.com" },
   ],
-
   creator: "Doctor Dairy Tools",
   publisher: "Doctor Dairy Tools",
   applicationName: "Doctor Dairy Tools",
@@ -99,35 +95,37 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: "Doctor Dairy Tools | Dairy Farm Equipment E-commerce Store",
-
     description:
       "Shop premium dairy farm equipment and veterinary tools online — milking gear, cattle care, breeding, and farm supplies delivered across Bangladesh.",
-
     url: "https://doctordairytools.com",
-
     siteName: "Doctor Dairy Tools",
     locale: "en_US",
+    alternateLocale: ["bn_BD"],
     type: "website",
-
     images: [
       {
-        url: "/images/sajib.jpg",
+        url: "https://doctordairytools.com/images/sajib.jpg",
         width: 1200,
         height: 630,
-        alt: "Doctor Dairy Tools",
+        alt: "Doctor Dairy Tools - Dairy Farm Equipment & Veterinary Tools",
+        type: "image/jpeg",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-
     title: "Doctor Dairy Tools | Dairy Farm Equipment E-commerce Store",
-
     description:
       "Shop premium dairy farm equipment and veterinary tools online, delivered across Bangladesh.",
-
-    images: ["/images/abt.jpg"],
+    images: [
+      {
+        url: "https://doctordairytools.com/images/sajib.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Doctor Dairy Tools - Dairy Farm Equipment & Veterinary Tools",
+      },
+    ],
   },
 
   icons: {
